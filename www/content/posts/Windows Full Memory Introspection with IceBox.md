@@ -1,6 +1,6 @@
 ---
 title: "Windows Memory Introspection with IceBox"
-date: 2020-05-12T12:00:00+01:00
+date: 2020-06-22T12:00:00+01:00
 draft: false
 author: "Jean-Marie Borello"
 ---

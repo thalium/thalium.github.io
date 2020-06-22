@@ -7,7 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>Copyright (c) 2020, all rights reserved.</copyright>
-    <lastBuildDate>Tue, 12 May 2020 12:00:00 +0100</lastBuildDate>
+    <lastBuildDate>Mon, 22 Jun 2020 12:00:00 +0100</lastBuildDate>
     
 	<atom:link href="https://thalium.github.io/blog/posts/index.xml" rel="self" type="application/rss+xml" />
     
@@ -15,7 +15,7 @@
     <item>
       <title>Windows Memory Introspection with IceBox</title>
       <link>https://thalium.github.io/blog/posts/windows-full-memory-introspection-with-icebox/</link>
-      <pubDate>Tue, 12 May 2020 12:00:00 +0100</pubDate>
+      <pubDate>Mon, 22 Jun 2020 12:00:00 +0100</pubDate>
       
       <guid>https://thalium.github.io/blog/posts/windows-full-memory-introspection-with-icebox/</guid>
       <description>Virtual Machine Introspection (VMI) is an extremely powerful technique to explore a guest OS. Directly acting on the hypervisor allows a stealth and precise control of the guest state, which means its CPU context as well as its memory.
