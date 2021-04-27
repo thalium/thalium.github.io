@@ -31,4 +31,22 @@
 {{ end }}
 </title>
 
+<!-- http://docs.mathjax.org/en/v3.1-latest/web/configuration.html -->
+<!-- ∳ is CTRL + SHIFT + u, 2233, Enter -->
+<script>
+  MathJax = {
+    tex: {
+      inlineMath: [['∳', '∳']],  /* CTRL + SHIFT + u, 2233, Enter */
+      displayMath: [['∳∳','∳∳']],
+      processEscapes: true,
+    },
+    svg: {
+      fontCache: 'global'
+    }
+  };
+</script>
+<script type="text/javascript" id="MathJax-script" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+</script>
+
 </head>
