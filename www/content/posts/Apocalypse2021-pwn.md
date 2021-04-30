@@ -1056,7 +1056,7 @@ We have a shell:
 
 ## Conclusion
 
-These pwn challenges were fun but not that complicated, at least a good start for begginers to practice linux exploitation.
+These pwn challenges were fun but not that complicated, at least a good start for beginners to practice linux exploitation.
 
 The Thalium team would like to thank the organizers for this exciting and well-balanced CTF.
 
