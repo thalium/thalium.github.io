@@ -95,7 +95,7 @@ Our script can be found below.
 
 This is how we solved the challenge, but we were curious about the [Erdős–Straus conjecture](https://en.wikipedia.org/wiki/Erd%C5%91s%E2%80%93Straus_conjecture) and looked back at our equation with ∳α = 1∳.
 
-We have the following determinant:
+We have the following discriminant:
 
 ∳∳
 \\begin{aligned}
