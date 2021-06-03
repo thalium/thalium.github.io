@@ -1,11 +1,3 @@
-Ajouter sur le git les liens vers le blog
-Ajouter le texte du challenge 2 sur le github
-
-Ajouter ce qu'il faut dans le github "offline"
-
-Faire une pull request vers AppJailLauncher
-
-
 # Introduction
 
 This post aims to present how to easily setup a lightweight secure user pwning environment for Windows. From your binary challenge communicating with stdin/stdout, this environment leads to have a multi-client broker listening on a socket, redirecting it to the IO of your binary, and executing it in a jail. This environment is mainly based on the project [AppJaillauncher-rs](https://github.com/trailofbits/AppJailLauncher-rs) from trailofbits, with some security fixes and some tips to easily setup the RW rights to the system files from the jail.
@@ -134,9 +126,11 @@ More parameters can be defined, as the port where the program listens, the job l
 
 
 
-# Remaining work
+# Future work
 
-Rendre propre le code car je découvre le rust
-Probleme avec netcat ?
-Ajouter des stats de connexion 
+As the time was constrained for the deployment of the infrastructure some things could be improved : 
+
+* As it was the first time for the author to read and write Rust, the written code could be slightly improved.
+* It seems that some implementations of netcat are not compatible with the functionality that ask the UID of the player. The program will still answer that it needs 64 chars exactly even if the player inputs 64 chars. The problem is certainly due to the end of line character. 
+* Add some statistics of usage (total number of connections, number of crashes, number of connections alive, etc.)
 
