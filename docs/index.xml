@@ -7,7 +7,16 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>Copyright (c) 2020, all rights reserved.</copyright>
-    <lastBuildDate>Wed, 28 Apr 2021 12:00:04 +0100</lastBuildDate><atom:link href="https://thalium.github.io/blog/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 02 Jun 2021 15:30:00 +0100</lastBuildDate><atom:link href="https://thalium.github.io/blog/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>SSTIC : how to setup a ctf win10 pwn user environment</title>
+      <link>https://thalium.github.io/blog/posts/sstic_infra_windows/</link>
+      <pubDate>Wed, 02 Jun 2021 15:30:00 +0100</pubDate>
+      
+      <guid>https://thalium.github.io/blog/posts/sstic_infra_windows/</guid>
+      <description>Introduction This post aims to present how to easily setup a lightweight secure user pwning environment for Windows. From your binary challenge communicating with stdin/stdout, this environment provides a multi-client broker listening on a socket, redirecting it to the IO of your binary, and executing it in a jail. This environment is mainly based on the project AppJaillauncher-rs from trailofbits, with some security fixes and some tips to easily setup the RW rights to the system files from the jail.</description>
+    </item>
+    
     <item>
       <title>Cyber Apocalypse 2021 5/5 - Artillery</title>
       <link>https://thalium.github.io/blog/posts/apocalypse2021-artillery/</link>
