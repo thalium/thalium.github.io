@@ -1,7 +1,7 @@
 ---
-title: "Please give me a TITLE FIX MEE"
+title: "SSTIC : how to setup a ctf win10 pwn user environment"
 date: 2021-06-02T15:30:00+01:00
-draft: true
+draft: false
 author: "Thalium"
 twitter: "thalium_team"
 ---
