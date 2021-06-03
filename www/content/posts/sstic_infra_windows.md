@@ -9,7 +9,7 @@ twitter: "thalium_team"
 # Introduction
 
 This post aims to present how to easily setup a lightweight secure user pwning environment for Windows.
-From your binary challenge communicating with stdin/stdout, this environment leads to a multi-client broker listening on a socket, redirecting it to the IO of your binary, and executing it in a jail.
+From your binary challenge communicating with stdin/stdout, this environment provides a multi-client broker listening on a socket, redirecting it to the IO of your binary, and executing it in a jail.
 This environment is mainly based on the project [AppJaillauncher-rs](https://github.com/trailofbits/AppJailLauncher-rs) from trailofbits, with some security fixes and some tips to easily setup the RW rights to the system files from the jail.
 
 The code of our fork of AppJailLauncher-rs is available [here](https://github.com/challengeSSTIC2021/appjaillauncher-rs) and the code of the pwn user windows 10 challenge is available [here](https://github.com/challengeSSTIC2021/Step2_challenge).
@@ -17,7 +17,7 @@ The code of our fork of AppJailLauncher-rs is available [here](https://github.co
 
 ## Context 
 
-As a finisher of the previous year challenge, one of Thalium team members contributed to the conception of the [SSTIC challenge 2021](https://www.sstic.org/2021/challenge_en/).
+As a finisher of the previous year challenge, one of Thalium team members participated in the design of the [SSTIC challenge 2021](https://www.sstic.org/2021/challenge_en/).
 [SSTIC](https://www.sstic.org/) is one of the most important French cybersecurity conference. It is held in Rennes every year since 2003, and since 2009 a challenge is proposed several weeks before the start of the conference.
 This challenge is usually relatively hard/long to solve, this year, b2xiao, the fastest player tooks more than 3 days to solve it.
 The challenge was split into 5 parts, the Thalium's member contribution was on the step 2.
@@ -34,7 +34,7 @@ The specification can be listed as below :
 
 * Limited resources, the proposed machine to use for the remote was [16GO DDR3, 2*1 To Storage, Intel® Xeon E3 1220v2 (4 cores)](https://www.scaleway.com/fr/dedibox/start/start-1-l/).
 This machine also hosts the remote infrastructure for other steps, and is running with KVM;
-* As this challenge is the second step and the first is an easy step, it is possible than dozens of players connects to this challenge simultaneously;
+* As this challenge is the second step and the first is an easy step, it is possible than dozens of players connect to this challenge simultaneously;
 * As it is a CTF challenge, it is mandatory that players can not interfere with other players once they get an RCE;
 * Players can not make network connections once a RCE is obtained;
 * Be somewhat resistant to *script-kiddies* tentative of DOS;
@@ -106,7 +106,7 @@ All these information are configurable with the command line as described in the
 During the SSTIC competition, the limitations were quite restricted, 2 minutes, 100 MB of RAM, 2 parallel processes.
 
 There is still one problem that was not addressed, a DoS by writing a lot of data to the disk.
-This was quite mitigated by the fact that the only one folder that was writable for each player was removed 10 minutes after its creation.
+This was somewhat mitigated by the fact that the only one folder that was writable for each player was removed 10 minutes after its creation.
 
 
 
@@ -114,9 +114,9 @@ This was quite mitigated by the fact that the only one folder that was writable 
 
 Due to context of the challenge, players need to be able to write to the disk.
 This folder needs to be private for each player, as the files created are used to exploit the binary.
-As with the modification of AppJailLauncher, each process is nows spawned with a different AppContainerProfile, it is enough to create a folder and add the RW rights for the SID of the AppContainerProfile.
+As with the modification of AppJailLauncher, each process is now spawned with a different AppContainerProfile. That is enough to create a folder and add the RW rights for the SID of the AppContainerProfile.
 
-The duration of these private folders is 10 minutes.
+These private folders were available for 10 minutes before being automatically removed.
 In order to be able to reuse this folder during its lifetime, the AppJailLauncher project has been modified and gives to the user a UID when it creates the private folder.
 For the following connections, the user can give its UID and it will be used to associate the previously created folder to the player.
 In order to avoid players bruteforcing this UID, it was hashed together with the IP address of the player, and a secret string to generate the folder name.
@@ -154,9 +154,9 @@ Command line to execute AppJailLauncher :
 "C:\Tools\SSTIC.exe" argument is the binary that will be executed when a player connects to the port where appjaillauncher listen.
 
 `Foldermazes` parameter is the folder that will contain the private folders.
-It is mandatory that this folder exists before running appjaillauncher.
+This folder needs to exist before running appjaillauncher.
 
-More parameters can be defined, as the port where the program listens, the job limitations (time, memory, number of processes), etc.
+More parameters can be defined, such as the port where the program listens, the job limitations (time, memory, number of processes), etc.
 
 During the competition, this command was launched with Powershell.
 
@@ -211,12 +211,12 @@ Many thanks to the TrailOfBits team for their AppJailLauncher project.
 
 ## Future work
 
-As the time was constrained for the deployment of the infrastructure some things could be improved : 
+As the time was constrained for the deployment of the infrastructure some things remain to be improved : 
 
 * As it was the first time for the author to read and write Rust, the written code could be slightly improved.
-* It seems that some implementations of netcat are not compatible with the functionality that ask the UID of the player.
+* It seems that some implementations of netcat are not compatible with the UID feature.
 The program will still answer that it needs 64 chars exactly even if the player inputs 64 chars.
-The problem is certainly due to the end of line character.
+The problem is certainly due to the mishandling of the end of line character.
 
-* Add some statistics of usage (total number of connections, number of crashes, number of connections alive, etc.)
+* Add some usage statistics (total number of connections, number of crashes, number of live connections, etc.)
 
