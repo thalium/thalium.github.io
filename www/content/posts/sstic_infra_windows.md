@@ -1,7 +1,9 @@
 Ajouter sur le git les liens vers le blog
 Ajouter le texte du challenge 2 sur le github
+
 Ajouter ce qu'il faut dans le github "offline"
-Faire une pull request
+
+Faire une pull request vers AppJailLauncher
 
 
 # Introduction
@@ -89,10 +91,13 @@ The duration of these private folders is 10 minutes. In order to be able to reus
 
 ## Access to the Desktop file 
 
+After obtaining a remote code execution, players need to exfiltrate a file that is present on the Desktop of a user of the system. As all the processes are running under different AppContainerProfile, it seems to be a bad idea to add the rights dynamically for each spawned process. 
+Indeed, it exists an SID corresponding to `APPLICATION PACKAGE AUTHORITY\ALL RESTRICTED APPLICATION PACKAGES` that will be effective for all AppContainerProfile. This SID is S-1-15-2-2. The RX rights are needed in order to allow the players to list the folders from C:\ to the file on the Desktop.
+
 
 ## Commands to execute
 
-Command line to add the RW rights to the file on the Desktop of the user 
+Command line to add the RW rights to the file on the Desktop of the user, only needed to be executed once per machine :
 
 ```
 ICACLS "C:\Users" /grant "*S-1-15-2-2:(R,RX)"
@@ -101,7 +106,6 @@ ICACLS "C:\Users\Challenge\Desktop" /grant "*S-1-15-2-2:(R,RX)"
 ICACLS "C:\Users\Challenge\Desktop\DRM.zip" /grant "*S-1-15-2-2:(R,RX)"
 ```
 
-This SID corresponds to `APPLICATION PACKAGE AUTHORITY\ALL RESTRICTED APPLICATION PACKAGES` and will be effective for all AppContainerProfile. The RX rights is needed in order that the players can list the folders from C:\ to C:\Users\Challenge\Desktop\DRM.zip.
 
 
 Command line to execute AppJailLauncher : 
@@ -115,10 +119,6 @@ Command line to execute AppJailLauncher :
 `Foldermazes` parameter is the folder that will contain the private folders. It is needed that this folder exists before running appjaillauncher.
 
 More parameters can be defined, as the port where the program listens, the job limitations (time, memory, number of processes), etc.
-
-
-
-
 
 
 
