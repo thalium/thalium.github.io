@@ -9,36 +9,35 @@ twitter: "thalium_team"
 # Introduction
 
 This post aims to present how to easily setup a lightweight secure user pwning environment for Windows.
-From your binary challenge communicating with stdin/stdout, this environment leads to have a multi-client broker listening on a socket, redirecting it to the IO of your binary, and executing it in a jail.
+From your binary challenge communicating with stdin/stdout, this environment leads to a multi-client broker listening on a socket, redirecting it to the IO of your binary, and executing it in a jail.
 This environment is mainly based on the project [AppJaillauncher-rs](https://github.com/trailofbits/AppJailLauncher-rs) from trailofbits, with some security fixes and some tips to easily setup the RW rights to the system files from the jail.
 
-The code of the modified AppJailLauncher-rs is available [here](https://github.com/challengeSSTIC2021/appjaillauncher-rs) and the code of the pwn user windows 10 challenge is available [here](https://github.com/challengeSSTIC2021/Step2_challenge).
+The code of our fork of AppJailLauncher-rs is available [here](https://github.com/challengeSSTIC2021/appjaillauncher-rs) and the code of the pwn user windows 10 challenge is available [here](https://github.com/challengeSSTIC2021/Step2_challenge).
 
 
 ## Context 
 
-A Thalium Team's member participates to the conception of the [SSTIC challenge 2021](https://www.sstic.org/2021/challenge_en/).
-[SSTIC](https://www.sstic.org/) is one of the most important French cybersecurity conference that is organized every year since 2003.
-Since 2009 a challenge is proposed several weeks before the start of the conference.
+As a finisher of the previous year challenge, one of Thalium team members contributed to the conception of the [SSTIC challenge 2021](https://www.sstic.org/2021/challenge_en/).
+[SSTIC](https://www.sstic.org/) is one of the most important French cybersecurity conference. It is held in Rennes every year since 2003, and since 2009 a challenge is proposed several weeks before the start of the conference.
 This challenge is usually relatively hard/long to solve, this year, b2xiao, the fastest player tooks more than 3 days to solve it.
 The challenge was split into 5 parts, the Thalium's member contribution was on the step 2.
 You can find other steps of the challenge on the [GitHub Page](https://github.com/challengeSSTIC2021) of the challenge 
 
 This second step was a userland pwn challenge running on a Windows 10 operating system.
 After reversing the binary and finding the vulnerabilities, the players obtained a heap leak and a RW primitive leading to a RCE.
-For more information, about solving the challenge you can read the solutions of the participants of the challenge, available on [this page](https://www.sstic.org/2021/challenge/).
+For more information about solving the challenge you can read the solutions of the participants, available on [this page](https://www.sstic.org/2021/challenge/).
 
 
 ## Requirements
 
-The specifications can be listed as below : 
+The specification can be listed as below : 
 
 * Limited resources, the proposed machine to use for the remote was [16GO DDR3, 2*1 To Storage, Intel® Xeon E3 1220v2 (4 cores)](https://www.scaleway.com/fr/dedibox/start/start-1-l/).
-This machine needs to also host the remote infrastructure for other steps, and is running with KVM;
-* As this challenge is the second step and the first is an easy step, it is possible than dozens of challengers connects to this challenge simultaneously;
-* As it is a CTF challenge, it is needed that players can not interfere with other players once they get an RCE;
+This machine also hosts the remote infrastructure for other steps, and is running with KVM;
+* As this challenge is the second step and the first is an easy step, it is possible than dozens of players connects to this challenge simultaneously;
+* As it is a CTF challenge, it is mandatory that players can not interfere with other players once they get an RCE;
 * Players can not make network connections once a RCE is obtained;
-* Be somewhere resistant to *script-kiddies* tentative of DOS;
+* Be somewhat resistant to *script-kiddies* tentative of DOS;
 * Preferable that the binary challenge communicates with stdin/stdout in order to not handle network connection;
 * Private temporary RW folder for each participant.
 This requirement is related to the context of the binary challenge;
@@ -85,8 +84,8 @@ For more information about the AppContainer sandboxing mechanism you can read th
 
 ### Killing processes
 
-After auditing the AppJailLauncher project, it turns out that all the processes of the challengers are spawned with the same AppContainerProfile.
-This could lead to a kind of DoS if a malicious challenger is present.
+After auditing the AppJailLauncher project, it turns out that all the processes of the players are spawned with the same AppContainerProfile.
+This could lead to a kind of DoS if a malicious player is present.
 Indeed, once a player obtains its remote code execution, he can try to continuously kill all the processes containing the name of the binary challenge.
 As the duration of the script exploiting the challenge is of several seconds, the malicious player can prevent other people to solve the challenge with a ratio of 100%.
 
@@ -152,10 +151,10 @@ Command line to execute AppJailLauncher :
  C:\Tools\appjaillauncher-rs.exe run --foldermazes "C:\users\challenge\\mazes" "C:\Tools\SSTIC.exe"
 ```
 
-"C:\Tools\SSTIC.exe" argument is the binary that will be executed when a challenger connects to the port where appjaillauncher listen.
+"C:\Tools\SSTIC.exe" argument is the binary that will be executed when a player connects to the port where appjaillauncher listen.
 
 `Foldermazes` parameter is the folder that will contain the private folders.
-It is needed that this folder exists before running appjaillauncher.
+It is mandatory that this folder exists before running appjaillauncher.
 
 More parameters can be defined, as the port where the program listens, the job limitations (time, memory, number of processes), etc.
 
@@ -166,7 +165,7 @@ During the competition, this command was launched with Powershell.
 # Problems to investigate 
 
 Some weirds problem happened during the development and the competition.
-There are listed below : 
+There are listed below, but not explained, we may investigate it in the future, but if you know why, feel free to contact us :).
 
 ## ASLR
 
@@ -174,7 +173,7 @@ On Windows OS, it is known that well-known DLLs (e.g., ntdll) are mapped at the 
 This value is modified at each reboot of the system.
 Nevertheless, the mapping of executed PE, like the binary challenge is known to be different at each execution.
 During the development phase of the binary challenge, it appears that executed binaries are always mapped at the same address during a boot life.
-This value changes when the system is reboot.
+This value changes when the system is rebooted.
 
 
 ## cmd Vs Powershell
@@ -183,21 +182,28 @@ Most of players obtaining a remote code execution have launched a process with t
 Some of them have used Powershell and some of them have used cmd.
 It turns out that people using cmd.exe were not able to list directories and access the file from the Desktop.
 Though, people spawning powershell were able to reach the file on the Desktop and read it.
+Moreover, people who have spawned a cmd.exe then a powershell from it were able to access the file from the Desktop.
+
 
 ## DOS Powershell
 
+It appears that some players found a kind of Denial Of Service by executing some commands with their Remote Code Execution. Indeed, it seems they where able to make the AppJailLauncher process crash from their jail. It happens two times.
+
 ## Powershell arguments
+
+When players executed powershell commands asking arguments from their RCE, the arguments were asked in the powershell terminal from which the AppJailLauncher were launched.
 
 
 # Conclusion 
 
 Deploy such a CTF infrastructure for a windows pwn user is not so documented on internet.
 Two options seem to be interesting (i) Docker and (ii) AppJailLauncher project from TrailOfBits.
-Here AppJailLauncher have been chosen and after some modifications, the obtained solution was satisfying all the requirements.
+Here, AppJailLauncher have been chosen and after some modifications, the obtained solution was satisfying all the requirements.
 During the competition, from the 2nd of April to the 20th May, dozens of participants have been connecting to the remote infrastructure.
 At least 29 participants exploited the binary and get a remote shell.
 None of them have defeat the infrastructure, or maybe we did not see it or maybe nobody tried to defeat it.
 The AppJailLauncher has crashed only 3 times, restarting it is easy as run one command line.
+As seen in the section problems of this post, there are still weird behaviours that can be related to the AppJailLauncher project.
 
 
 Many thanks to the TrailOfBits team for their AppJailLauncher project.
