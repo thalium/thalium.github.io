@@ -1,3 +1,11 @@
+---
+title: "Please give me a TITLE FIX MEE"
+date: 2021-06-02T15:30:00+01:00
+draft: true
+author: "Thalium"
+twitter: "thalium_team"
+---
+
 # Introduction
 
 This post aims to present how to easily setup a lightweight secure user pwning environment for Windows. From your binary challenge communicating with stdin/stdout, this environment leads to have a multi-client broker listening on a socket, redirecting it to the IO of your binary, and executing it in a jail. This environment is mainly based on the project [AppJaillauncher-rs](https://github.com/trailofbits/AppJailLauncher-rs) from trailofbits, with some security fixes and some tips to easily setup the RW rights to the system files from the jail.
