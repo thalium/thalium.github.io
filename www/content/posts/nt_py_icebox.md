@@ -43,7 +43,7 @@ With Icebox, there are two ways to monitor processes:
 * list living processes
 * observe the creation of processes
 
-These two methods have been documented in a [previous blogpost](/blog/posts/getting_started/):
+These two methods have been documented in a [previous blogpost](/posts/getting_started/):
 
 ```python
 import icebox
