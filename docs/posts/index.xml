@@ -7,7 +7,18 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>Copyright (c) 2020, all rights reserved.</copyright>
-    <lastBuildDate>Wed, 02 Jun 2021 15:30:00 +0100</lastBuildDate><atom:link href="https://thalium.github.io/blog/posts/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 07 Jun 2021 12:00:00 +0100</lastBuildDate><atom:link href="https://thalium.github.io/blog/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>NT objects access tracing</title>
+      <link>https://thalium.github.io/blog/posts/nt_py_icebox/</link>
+      <pubDate>Mon, 07 Jun 2021 12:00:00 +0100</pubDate>
+      
+      <guid>https://thalium.github.io/blog/posts/nt_py_icebox/</guid>
+      <description>Draw me a map As homework during the lockdown, I wanted to automate the attack surface analysis of a target on Windows. The main objective was to construct a view of a software architecture to highlight the attack surface (whether remote or local).
+The software architecture can be composed of several elements:
+ processes privileges ipc etc  Usually, software architecture analysis is done with tools that give a view at a specific time (ProcessHacker, WinObjEx, etc).</description>
+    </item>
+    
     <item>
       <title>SSTIC : how to setup a ctf win10 pwn user environment</title>
       <link>https://thalium.github.io/blog/posts/sstic_infra_windows/</link>
