@@ -24,7 +24,7 @@ Thalium's challenges have been less resolved than others. They were not that dif
 * EMU (3 solve) - reverse
 * Hospital simulator (3 solve) - exploitation
 
-As a reminder, Thalium - part of THALES group - is a cybersecurity team dedicated to vulnerability research and development of Red Team-type tools. The team is located in Rennes and we are actively recruiting experienced or high potential profiles in reverse, forensics, and software development. Spoiler: we also offer internships, see [below](#interships-2022).
+As a reminder, Thalium - part of THALES group - is a cybersecurity team dedicated to vulnerability research and development of Red Team-type tools. The team is located in Rennes and we are actively recruiting experienced or high potential profiles in reverse, forensics, and software development. Spoiler: we also offer internships, see [below](#internships-2022).
 
 ## Chest <!-- omit in toc -->
 
@@ -582,7 +582,7 @@ We hope you had fun with these challenges and you definitely learned something e
 
 We look forward to reading your write-ups and techniques you used in order to solve these challenges.
 
-## Interships 2022
+## Internships 2022
 
 * [Fuzzing Android System Services](https://emploi.thalesgroup.com/emploi/rennes/fuzzing-android-system-services-stage-h-f/17883/16071146400)
 * [AI assisted Fuzzing](https://emploi.thalesgroup.com/emploi/rennes/ai-assisted-fuzzing-stage-h-f/17883/15757478912)
