@@ -7,7 +7,7 @@
 <meta name="description" content="Thalium blog." />
 <meta name="keywords" content="blog, tech" />
 <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
-<meta name="generator" content="Hugo 0.83.1" />
+<meta name="generator" content="Hugo 0.88.1" />
 
 <link rel="canonical" href="https://thalium.github.io/blog/posts/ecw2021-writeup/">
 <meta property="og:title" content="ECW 2021 - WriteUp" />
@@ -25,8 +25,8 @@ the author posted his solution on his personal blog
 Thalium&rsquo;s challenges have been less resolved than others. They were not that difficult, but probably a bit more unexpected than others. A few additional challenges designed by Thalium are:" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://thalium.github.io/blog/posts/ecw2021-writeup/" /><meta property="article:section" content="posts" />
-<meta property="article:published_time" content="2021-10-25T12:00:01&#43;01:00" />
-<meta property="article:modified_time" content="2021-10-25T12:00:01&#43;01:00" />
+<meta property="article:published_time" content="2021-10-25T12:00:01+01:00" />
+<meta property="article:modified_time" content="2021-10-25T12:00:01+01:00" />
 
 
 <meta name="twitter:card" content="summary"/>
@@ -57,8 +57,8 @@ the author posted his solution on his personal blog
 
 
 
-Thalium&rsquo;s challenges have been less resolved than others. They were not that difficult, but probably a bit more unexpected than others. A few additional challenges designed by Thalium are:"><meta itemprop="datePublished" content="2021-10-25T12:00:01&#43;01:00" />
-<meta itemprop="dateModified" content="2021-10-25T12:00:01&#43;01:00" />
+Thalium&rsquo;s challenges have been less resolved than others. They were not that difficult, but probably a bit more unexpected than others. A few additional challenges designed by Thalium are:"><meta itemprop="datePublished" content="2021-10-25T12:00:01+01:00" />
+<meta itemprop="dateModified" content="2021-10-25T12:00:01+01:00" />
 <meta itemprop="wordCount" content="3868">
 <meta itemprop="keywords" content="CTF,Writeup,ECW 2021,Reverse Engineering,Exploitation," />
 
@@ -201,7 +201,7 @@ if (!doNotTrack) {
 <p>As a reminder Thalium - part of THALES group - is a cybersecurity team dedicated to vulnerability research and development of Red Team-type tools. The team is located in Rennes and we are actively recruiting experienced or high potential profiles in reverse, forensics and software development. Spoiler: we also offer internships, see <a href="#interships-2022">below</a>.</p>
 <h2 id="chest----omit-in-toc---">Chest <!-- raw HTML omitted --></h2>
 <p>The provided file <a href="https://thalium.github.io/blog/posts/binaries/ECW_2021/chest.hex">chest.hex</a> file is in <a href="https://www.intel.com/content/www/us/en/support/programmable/articles/000076770.html">Intel HEX format</a>.</p>
-<pre><code class="language-console" data-lang="console">$ cat chest.hex
+<pre tabindex="0"><code class="language-console" data-lang="console">$ cat chest.hex
 :100000000C9434000C9449000C9449000C94490061
 :100010000C9449000C9449000C9449000C9449003C
 :100020000C9449000C9449000C9449000C9449002C
@@ -233,7 +233,7 @@ if (!doNotTrack) {
 :0E01C000773300456E746572206B65790A0016
 :00000001FF
 </code></pre><p>The Intel HEX is a transitional file format for microcontrollers, (E)PROMs and other devices. The documentation states that HEXs can be converted to binary files and programmed into a configuration device.</p>
-<pre><code class="language-console" data-lang="console">$ objcopy -I ihex chest.hex -O binary chest.bin ; xxd chest.bin
+<pre tabindex="0"><code class="language-console" data-lang="console">$ objcopy -I ihex chest.hex -O binary chest.bin ; xxd chest.bin
 00000000: 0c94 3400 0c94 4900 0c94 4900 0c94 4900  ..4...I...I...I.
 00000010: 0c94 4900 0c94 4900 0c94 4900 0c94 4900  ..I...I...I...I.
 00000020: 0c94 4900 0c94 4900 0c94 4900 0c94 4900  ..I...I...I...I.
@@ -265,7 +265,7 @@ if (!doNotTrack) {
 000001c0: 7733 0045 6e74 6572 206b 6579 0a00       w3.Enter key..
 </code></pre><p>Note that we can also use the online tool <a href="http://matrixstorm.com/avr/hextobin/ihexconverter.html">matrixstorm</a> to do this.</p>
 <p>Now that we have our binary, we need to identify for which architecture it was compiled for.</p>
-<pre><code class="language-console" data-lang="console">file chest.bin
+<pre tabindex="0"><code class="language-console" data-lang="console">file chest.bin
 chest.bin: data
 </code></pre><p>Well, our beloved friend <code>file</code> didn&rsquo;t recognized the file format. At that point, we have several options to discover the architecture:</p>
 <ul>
@@ -276,7 +276,7 @@ chest.bin: data
 <p>The Googling technique is definetly the fastest and the easiest. It gives us a
 lot of results concerning <a href="https://www.microchip.com/en-us/products/microcontrollers-and-microprocessors/8-bit-mcus/avr-mcus">AVR</a>.
 Let&rsquo;s give the <code>avr-objdump</code> disassembler a try:</p>
-<pre><code class="language-console" data-lang="console">$ avr-objdump -m avr -D chest.hex
+<pre tabindex="0"><code class="language-console" data-lang="console">$ avr-objdump -m avr -D chest.hex
 
 00000000 &lt;.sec1&gt;:
    0:    0c 94 34 00     jmp    0x68    ;  0x68
@@ -325,7 +325,7 @@ Here is a <a href="https://gcc.gnu.org/onlinedocs/gcc/AVR-Options.html">list of 
 quickly find a <a href="https://stackoverflow.com/q/17323757">dump like ours</a> that is targeting an ATmega328P.</p>
 <p>We can proceed with a static analysis using the <a href="https://thalium.github.io/blog/posts/misc/ECW2021_chest/atmel-0856-avr-instruction-set-manual.pdf">AVR instruction set manual</a>
 and the <a href="https://thalium.github.io/blog/posts/misc/ECW2021_chest/ATmega328-328P_Datasheet_Full.pdf">ATMega328P datasheet</a>:</p>
-<pre><code class="language-console" data-lang="console">[...]
+<pre tabindex="0"><code class="language-console" data-lang="console">[...]
 
   __decode:
    15e:    ff 92           push   r15
@@ -371,7 +371,7 @@ and the <a href="https://thalium.github.io/blog/posts/misc/ECW2021_chest/ATmega3
 </code></pre><p>There is a decoding routine at <code>0x15e</code> for the encoded flag at <code>0x1a8</code>. This
 routine needs a xor key, which is received using a serial line. We can pursue
 the static analysis by bruteforcing the key. This python script will do the job:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">encoded <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;OUQP]by]sToWpBCUqz&gt;8BECxw3&#34;</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">encoded <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;OUQP]by]sToWpBCUqz&gt;8BECxw3&#34;</span>
 rot_key <span style="color:#f92672">=</span> <span style="color:#ae81ff">4</span>
 <span style="color:#66d9ef">for</span> xor_key <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">0xFF</span>):
     decoded <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;&#34;</span><span style="color:#f92672">.</span>join(
@@ -382,11 +382,11 @@ rot_key <span style="color:#f92672">=</span> <span style="color:#ae81ff">4</span
         ]
     )
     <span style="color:#66d9ef">if</span> decoded<span style="color:#f92672">.</span>casefold()<span style="color:#f92672">.</span>startswith(<span style="color:#e6db74">&#34;ecw{&#34;</span>):
-        <span style="color:#66d9ef">print</span>(f<span style="color:#e6db74">&#34;{xor_key:#04x}: {decoded}&#34;</span>)
-</code></pre></div><pre><code class="language-console" data-lang="console">$ python3 decode.py
+        print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">{</span>xor_key<span style="color:#e6db74">:</span><span style="color:#e6db74">#04x</span><span style="color:#e6db74">}</span><span style="color:#e6db74">: </span><span style="color:#e6db74">{</span>decoded<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
+</code></pre></div><pre tabindex="0"><code class="language-console" data-lang="console">$ python3 decode.py
 0x0e ECW{aeb1c401}
 </code></pre><p>Another approach was to emulate the MCU and bruteforce the key like this:</p>
-<pre><code class="language-console" data-lang="console">$ qemu-system-avr -S -s -nographic -serial tcp::5678,server=on,wait=off -machine uno -bios chest.bin
+<pre tabindex="0"><code class="language-console" data-lang="console">$ qemu-system-avr -S -s -nographic -serial tcp::5678,server=on,wait=off -machine uno -bios chest.bin
 $ printf &quot;\x0e&quot; | nc localhost 5678
 ECW{aeb1c401}
 </code></pre><p>I hope you enjoyed it as much as I do, see you next year!</p>
@@ -398,7 +398,7 @@ ECW{aeb1c401}
 <li>challenge binary</li>
 </ul>
 <p>Let&rsquo;s start with a basic <code>checksec</code>:</p>
-<pre><code class="language-console" data-lang="console">pwn checksec challenge
+<pre tabindex="0"><code class="language-console" data-lang="console">pwn checksec challenge
 [*] '/Users/gteissier/Downloads/ecw2021-fsb_as_a_service/challenge'
     Arch:     aarch64-64-little
     RELRO:    Full RELRO
@@ -406,7 +406,7 @@ ECW{aeb1c401}
     NX:       NX enabled
     PIE:      PIE enabled
 </code></pre><p>The binary is rather small, compiled for aarch64, and we spot three things:</p>
-<pre><code class="language-console" data-lang="console">0000000000000a90 &lt;shell&gt;:
+<pre tabindex="0"><code class="language-console" data-lang="console">0000000000000a90 &lt;shell&gt;:
  a90:	d503233f 	paciasp
  a94:	a9bf7bfd 	stp	x29, x30, [sp, #-16]!
  a98:	910003fd 	mov	x29, sp
@@ -419,7 +419,7 @@ ECW{aeb1c401}
 </code></pre><ol>
 <li>The binary is cool enough to give us a shell function ! <code>paciasp</code> and <code>retaa</code> are ARMv8.3 pointer-authentication instructions, they shield integrity of return addresses stored on the stack. Curious French readers can go and enjoy this <a href="https://connect.ed-diamond.com/MISC/misc-113/armv8.5-un-support-materiel-contre-les-bugs-memoires">article</a>.</li>
 </ol>
-<pre><code class="language-console" data-lang="console">0000000000000ab4 &lt;make_readonly&gt;:
+<pre tabindex="0"><code class="language-console" data-lang="console">0000000000000ab4 &lt;make_readonly&gt;:
  ab4:	d503233f 	paciasp
  ab8:	a9be7bfd 	stp	x29, x30, [sp, #-32]!
  abc:	910003fd 	mov	x29, sp
@@ -440,7 +440,7 @@ ECW{aeb1c401}
 </code></pre><ol start="2">
 <li>A memory region is made read-only. Further examination reveals the memory region made read-only contains <code>__malloc_hook</code>, and this page also coincidently contains other hooks such as <code>__realloc_hook</code> or <code>__free_hook</code>.</li>
 </ol>
-<pre><code class="language-console" data-lang="console">0000000000000af8 &lt;main&gt;:
+<pre tabindex="0"><code class="language-console" data-lang="console">0000000000000af8 &lt;main&gt;:
  af8:	d503233f 	paciasp
  afc:	a9be7bfd 	stp	x29, x30, [sp, #-32]!
  b00:	910003fd 	mov	x29, sp
@@ -489,13 +489,13 @@ ECW{aeb1c401}
 </ul>
 <p>How to gain code execution then ? There are a number of options, but looking at files contained in the initial archive, we spot a hidden file, <code>.gdb_history</code>.
 This dot file is indeed a hint: <code>disassemble register_printf_specifier</code>.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">/* Register FUNC to be called to format SPEC specifiers; ARGINFO must be
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">/* Register FUNC to be called to format SPEC specifiers; ARGINFO must be
 </span><span style="color:#75715e">   specified to determine how many arguments a SPEC conversion requires and
 </span><span style="color:#75715e">   what their types are.  */</span>
 <span style="color:#66d9ef">extern</span> <span style="color:#66d9ef">int</span> register_printf_specifier (<span style="color:#66d9ef">int</span> __spec, printf_function __func,
                                       printf_arginfo_size_function __arginfo)
 </code></pre></div><p>The code speaks for itself:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">__register_printf_specifier</span> (<span style="color:#66d9ef">int</span> spec, printf_function converter,
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">__register_printf_specifier</span> (<span style="color:#66d9ef">int</span> spec, printf_function converter,
 	                             printf_arginfo_size_function arginfo)
 	{
 	  <span style="color:#66d9ef">if</span> (spec <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">||</span> spec <span style="color:#f92672">&gt;</span> (<span style="color:#66d9ef">int</span>) UCHAR_MAX)
@@ -534,18 +534,18 @@ This dot file is indeed a hint: <code>disassemble register_printf_specifier</cod
 <h3 id="hints">Hints</h3>
 <p>Let&rsquo;s start with the hints that were there !</p>
 <p>Executing the challenge gives a message:</p>
-<pre><code>$ ./wysiwyg
+<pre tabindex="0"><code>$ ./wysiwyg
 Welcome to the challenge !
 </code></pre><p>The thing is that when you disassemble the challenge you won&rsquo;t see the corresponding call to printf. This was a first line of approach.</p>
 <p>Now executing it with an input it will give you:</p>
-<pre><code>$ ./wysiwyg toto
+<pre tabindex="0"><code>$ ./wysiwyg toto
 Welcome to the challenge !
 Your key is:
 toto
 The message should be deciphered correctly if you did things right ;)
 Nop !
 </code></pre><p>If you&rsquo;re a try-harder and execute it a second time you would get:</p>
-<pre><code>$ ./wysiwyg toto
+<pre tabindex="0"><code>$ ./wysiwyg toto
 Welcome to the challenge !
 Your key is:
 Are 
@@ -641,7 +641,7 @@ Because of this, the process is in a tricky state where quite a lot of bugs and 
 </ul>
 <p>To summarize, to resolve the challenge you must create a file called <em>chang_me.txt</em> and then find the correct formula by bruteforcing (there is only 256 possibilities and the main returns -1 if you failed).</p>
 <p>Finally you will get:</p>
-<pre><code>$ touch change_me.txt
+<pre tabindex="0"><code>$ touch change_me.txt
 $ ./wysiwyg facebeef_26-19_12-26_19-30_30-12
 Welcome to the challenge !
 Your key is:

