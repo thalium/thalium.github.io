@@ -12,7 +12,7 @@ tags:
 ---
 
 
-For the [European Cyber Week](https://www.european-cyber-week.eu/) CTF 2021 Thalium wrote some challenges in our core competencies: reverse and exploitation. This blog post presents some of the write-ups:
+For the [European Cyber Week](https://www.european-cyber-week.eu/) CTF 2021 Thalium created some challenges in our core competencies: reverse and exploitation. This blog post presents some of the write-ups:
 * [Chest (36 solve) - reverse](#chest)
 * [FSB as a service (3 solve) - exploitation](#fsb-as-a-service)
 * [WYSIWYG (3 solve) - reverse](#wysiwyg)
@@ -28,7 +28,7 @@ As a reminder, Thalium - part of THALES group - is a cybersecurity team dedicate
 
 ## Chest <!-- omit in toc -->
 
-The provided file [chest.hex](/posts/binaries/ECW_2021/chest.hex) file is in [Intel HEX format](https://www.intel.com/content/www/us/en/support/programmable/articles/000076770.html).
+The provided file [chest.hex](/posts/binaries/ECW_2021/chest.hex) is in [Intel HEX format](https://www.intel.com/content/www/us/en/support/programmable/articles/000076770.html).
 
 ```console
 $ cat chest.hex
@@ -457,11 +457,11 @@ What you see here is that the announced key (after *Your key is:* has changed). 
 
 The main function of the challenge is not very helpful and quite weird at first read.
 If you give an argument it reads a file called *text.txt* into `argv[1]` with a length equal to `strlen(argv[1])`.
-It then copies `argv[1]` up to a maximum of it a 32 bytes in a buffer and prints it after *Your key is*.
+It then copies `argv[1]` up to a maximum of 32 bytes in a buffer and prints it after *Your key is*.
 
 The first 8 bytes of the key are set to upper case and the rest of the key is *xored* with the result of `sqrt(log(1337.3615)) + sinh(asinh(3615.1337))`.
 
-Using mbedTLS this key will be used to decipher a message using AES-CBC with and IV set to `"yolo pour l'iv!"`
+Using mbedTLS this key will be used to decipher a message using AES-CBC with an IV set to `"yolo pour l'iv!"`
 
 Finally a `sha1` is computed on the deciphered message and if it's the right one, it's printed and it gives you the flag.
 
@@ -472,7 +472,7 @@ You must find where the input affects the challenge.
 
 The second time we execute the challenge, we get a different key after *Your key is:* even if we did not create and write something in *text.txt*. So something is done with *text.txt* elsewhere in the binary.
 
-In the same way, *Welcome to the challenge !* is not printed in the main and there is associated call to `printf` anywhere in the binary. definitively something is executed elsewhere.
+In the same way, *Welcome to the challenge !* is not printed in the main and there is no associated call to `printf` anywhere in the binary. definitively something is executed elsewhere.
 
 ### Constructor function
 
@@ -493,7 +493,7 @@ Once it has the .dynamic section, it finds other information it needs about the 
 * the size in bytes of the PLT relocations : `DT_PLTRELSZ`
 * the size of one of the PLT relocation: `DT_RELAENT`
 
-If your are not familiar with how the PLT and the GOT work please go and check how it works [here](https://www.technovelty.org/linux/plt-and-got-the-key-to-code-sharing-and-dynamic-libraries.html) or [here](https://ypl.coffee/dl-resolve/). The challenge is compiled with *lazy-bindings*.
+If your are not familiar with how the PLT and the GOT work please go and check [this](https://www.technovelty.org/linux/plt-and-got-the-key-to-code-sharing-and-dynamic-libraries.html) or [here](https://ypl.coffee/dl-resolve/). The challenge is compiled with *lazy-bindings*.
 
 The challenge then gets the offsets in the `.got.plt` of the following functions using the symbol table, the string table, and the PLT relocations:
 * `read`
@@ -530,7 +530,7 @@ The hook acts differently depending on the resolved function.
 
 <u>**Note:**</u>
 
-I hope you understood that it was `sscanf` just by looking at the input and output of the function... Otherwise, I'm sorry, it might have been hard! While developping the challenge, it kept on breaking the stack and the arguments of the resolved function when calling `sscanf`. This came from variadic arguments which were a pain in the a** to use in the context of a hook of `_dl_runtime_resolve`. In the end, I decided to use a custom `sscanf` using [musl](https://musl.libc.org/) to remove variadic arguments.
+I hope you understood that it was `sscanf` just by looking at the input and output of the function... Otherwise, I'm sorry, it might have been hard! While developping the challenge, it kept on breaking the stack and the arguments of the resolved function when calling `sscanf`. This came from variadic arguments which were a pain to use in the context of a hook of `_dl_runtime_resolve`. In the end, I decided to use a custom `sscanf` using [musl](https://musl.libc.org/) to remove variadic arguments.
 
 ### Take a step back
 
@@ -553,7 +553,7 @@ That is why the second time you execute the challenge a part of "Are your sure a
 
 Now, if you create a file named *chang_me.txt* this is what happens:
 
-* read is called but it changed to write by the hook so `argv[1]` is written to *text.txt*
+* read is called but is changed to write by the hook so `argv[1]` is written to *text.txt*
 * memcpy is resolved, the hook calls write but it is changed to read. So the file *text.txt* is read in a buffer which is then parsed by a `sscanf` using the format string `%x_%d-%d_%d-%d_%d-%d_%d-%d`. The first `%x` is a magic that is checked later and the `%d` are stored in an array.
 * memcpy `argv[1]` into a 32 bit buffer and print it.
 * `sqrt(log(1337.3615)) + sinh(asinh(3615.1337))` is computed. This will call the hook at the resolution of `sqrt`, `log`, `sinh` and `asinh`. If the magic parsed by the `sscanf` is equal to *0xfacebeef* these four functions will be swapped using the indexes you gave. In the format string `%x_%d-%d_%d-%d_%d-%d_%d-%d` each `%d-%d` corresponds to a permutation, you must give the indexes of `sqrt` (26), `log` (12), `sinh` (19) and `asinh` (30) otherwise it will not work. In other words you can control the formula of this computation through `argv[1]`.

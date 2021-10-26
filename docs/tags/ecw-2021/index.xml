@@ -14,7 +14,7 @@
       <pubDate>Mon, 25 Oct 2021 12:00:01 +0100</pubDate>
       
       <guid>https://thalium.github.io/blog/posts/ecw2021-writeup/</guid>
-      <description>&lt;p&gt;For the &lt;a href=&#34;https://www.european-cyber-week.eu/&#34;&gt;European Cyber Week&lt;/a&gt; CTF 2021 Thalium wrote some challenges in our core competencies: reverse and exploitation. This blog post presents some of the write-ups:&lt;/p&gt;
+      <description>&lt;p&gt;For the &lt;a href=&#34;https://www.european-cyber-week.eu/&#34;&gt;European Cyber Week&lt;/a&gt; CTF 2021 Thalium created some challenges in our core competencies: reverse and exploitation. This blog post presents some of the write-ups:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;#chest&#34;&gt;Chest (36 solve) - reverse&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;#fsb-as-a-service&#34;&gt;FSB as a service (3 solve) - exploitation&lt;/a&gt;&lt;/li&gt;

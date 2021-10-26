@@ -11,7 +11,7 @@
 
 <link rel="canonical" href="https://thalium.github.io/blog/posts/ecw2021-writeup/">
 <meta property="og:title" content="ECW 2021 - WriteUp" />
-<meta property="og:description" content="For the European Cyber Week CTF 2021 Thalium wrote some challenges in our core competencies: reverse and exploitation. This blog post presents some of the write-ups:
+<meta property="og:description" content="For the European Cyber Week CTF 2021 Thalium created some challenges in our core competencies: reverse and exploitation. This blog post presents some of the write-ups:
 
 Chest (36 solve) - reverse
 FSB as a service (3 solve) - exploitation
@@ -22,7 +22,7 @@ the author posted his solution on his personal blog
 
 
 
-Thalium&rsquo;s challenges have been less resolved than others. They were not that difficult, but probably a bit more unexpected than others. A few additional challenges designed by Thalium are:" />
+Thalium&rsquo;s challenges have been less resolved than others. They were not that difficult, but probably a bit more unexpected. A few additional challenges designed by Thalium are:" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://thalium.github.io/blog/posts/ecw2021-writeup/" /><meta property="article:section" content="posts" />
 <meta property="article:published_time" content="2021-10-25T12:00:01+01:00" />
@@ -31,7 +31,7 @@ Thalium&rsquo;s challenges have been less resolved than others. They were not th
 
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="ECW 2021 - WriteUp"/>
-<meta name="twitter:description" content="For the European Cyber Week CTF 2021 Thalium wrote some challenges in our core competencies: reverse and exploitation. This blog post presents some of the write-ups:
+<meta name="twitter:description" content="For the European Cyber Week CTF 2021 Thalium created some challenges in our core competencies: reverse and exploitation. This blog post presents some of the write-ups:
 
 Chest (36 solve) - reverse
 FSB as a service (3 solve) - exploitation
@@ -42,11 +42,11 @@ the author posted his solution on his personal blog
 
 
 
-Thalium&rsquo;s challenges have been less resolved than others. They were not that difficult, but probably a bit more unexpected than others. A few additional challenges designed by Thalium are:"/>
+Thalium&rsquo;s challenges have been less resolved than others. They were not that difficult, but probably a bit more unexpected. A few additional challenges designed by Thalium are:"/>
 
 
 <meta itemprop="name" content="ECW 2021 - WriteUp">
-<meta itemprop="description" content="For the European Cyber Week CTF 2021 Thalium wrote some challenges in our core competencies: reverse and exploitation. This blog post presents some of the write-ups:
+<meta itemprop="description" content="For the European Cyber Week CTF 2021 Thalium created some challenges in our core competencies: reverse and exploitation. This blog post presents some of the write-ups:
 
 Chest (36 solve) - reverse
 FSB as a service (3 solve) - exploitation
@@ -57,9 +57,9 @@ the author posted his solution on his personal blog
 
 
 
-Thalium&rsquo;s challenges have been less resolved than others. They were not that difficult, but probably a bit more unexpected than others. A few additional challenges designed by Thalium are:"><meta itemprop="datePublished" content="2021-10-25T12:00:01+01:00" />
+Thalium&rsquo;s challenges have been less resolved than others. They were not that difficult, but probably a bit more unexpected. A few additional challenges designed by Thalium are:"><meta itemprop="datePublished" content="2021-10-25T12:00:01+01:00" />
 <meta itemprop="dateModified" content="2021-10-25T12:00:01+01:00" />
-<meta itemprop="wordCount" content="3868">
+<meta itemprop="wordCount" content="3851">
 <meta itemprop="keywords" content="CTF,Writeup,ECW 2021,Reverse Engineering,Exploitation," />
 
 <link rel="stylesheet" href="https://thalium.github.io/blog/css/layout.css" />
@@ -182,7 +182,7 @@ if (!doNotTrack) {
 
 <article class="post">
     <h1 class="title"> ECW 2021 - WriteUp </h1>
-    <div class="content"> <p>For the <a href="https://www.european-cyber-week.eu/">European Cyber Week</a> CTF 2021 Thalium wrote some challenges in our core competencies: reverse and exploitation. This blog post presents some of the write-ups:</p>
+    <div class="content"> <p>For the <a href="https://www.european-cyber-week.eu/">European Cyber Week</a> CTF 2021 Thalium created some challenges in our core competencies: reverse and exploitation. This blog post presents some of the write-ups:</p>
 <ul>
 <li><a href="#chest">Chest (36 solve) - reverse</a></li>
 <li><a href="#fsb-as-a-service">FSB as a service (3 solve) - exploitation</a></li>
@@ -193,14 +193,14 @@ if (!doNotTrack) {
 </ul>
 </li>
 </ul>
-<p>Thalium&rsquo;s challenges have been less resolved than others. They were not that difficult, but probably a bit more unexpected than others. A few additional challenges designed by Thalium are:</p>
+<p>Thalium&rsquo;s challenges have been less resolved than others. They were not that difficult, but probably a bit more unexpected. A few additional challenges designed by Thalium are:</p>
 <ul>
 <li>EMU (3 solve) - reverse</li>
 <li>Hospital simulator (3 solve) - exploitation</li>
 </ul>
-<p>As a reminder Thalium - part of THALES group - is a cybersecurity team dedicated to vulnerability research and development of Red Team-type tools. The team is located in Rennes and we are actively recruiting experienced or high potential profiles in reverse, forensics and software development. Spoiler: we also offer internships, see <a href="#interships-2022">below</a>.</p>
+<p>As a reminder, Thalium - part of THALES group - is a cybersecurity team dedicated to vulnerability research and development of Red Team-type tools. The team is located in Rennes and we are actively recruiting experienced or high potential profiles in reverse, forensics, and software development. Spoiler: we also offer internships, see <a href="#interships-2022">below</a>.</p>
 <h2 id="chest----omit-in-toc---">Chest <!-- raw HTML omitted --></h2>
-<p>The provided file <a href="https://thalium.github.io/blog/posts/binaries/ECW_2021/chest.hex">chest.hex</a> file is in <a href="https://www.intel.com/content/www/us/en/support/programmable/articles/000076770.html">Intel HEX format</a>.</p>
+<p>The provided file <a href="https://thalium.github.io/blog/posts/binaries/ECW_2021/chest.hex">chest.hex</a> is in <a href="https://www.intel.com/content/www/us/en/support/programmable/articles/000076770.html">Intel HEX format</a>.</p>
 <pre tabindex="0"><code class="language-console" data-lang="console">$ cat chest.hex
 :100000000C9434000C9449000C9449000C94490061
 :100010000C9449000C9449000C9449000C9449003C
@@ -232,7 +232,7 @@ if (!doNotTrack) {
 :1001B00073546F5770424355717A3E3842454378C5
 :0E01C000773300456E746572206B65790A0016
 :00000001FF
-</code></pre><p>The Intel HEX is a transitional file format for microcontrollers, (E)PROMs and other devices. The documentation states that HEXs can be converted to binary files and programmed into a configuration device.</p>
+</code></pre><p>The Intel HEX is a transitional file format for microcontrollers, (E)PROMs, and other devices. The documentation states that HEXs can be converted to binary files and programmed into a configuration device.</p>
 <pre tabindex="0"><code class="language-console" data-lang="console">$ objcopy -I ihex chest.hex -O binary chest.bin ; xxd chest.bin
 00000000: 0c94 3400 0c94 4900 0c94 4900 0c94 4900  ..4...I...I...I.
 00000010: 0c94 4900 0c94 4900 0c94 4900 0c94 4900  ..I...I...I...I.
@@ -264,12 +264,12 @@ if (!doNotTrack) {
 000001b0: 7354 6f57 7042 4355 717a 3e38 4245 4378  sToWpBCUqz&gt;8BECx
 000001c0: 7733 0045 6e74 6572 206b 6579 0a00       w3.Enter key..
 </code></pre><p>Note that we can also use the online tool <a href="http://matrixstorm.com/avr/hextobin/ihexconverter.html">matrixstorm</a> to do this.</p>
-<p>Now that we have our binary, we need to identify for which architecture it was compiled for.</p>
+<p>Now that we have our binary, we need to identify which architecture it was compiled for.</p>
 <pre tabindex="0"><code class="language-console" data-lang="console">file chest.bin
 chest.bin: data
-</code></pre><p>Well, our beloved friend <code>file</code> didn&rsquo;t recognized the file format. At that point, we have several options to discover the architecture:</p>
+</code></pre><p>Well, our beloved friend <code>file</code> didn&rsquo;t recognize the file format. At that point, we have several options to discover the architecture:</p>
 <ul>
-<li>compile a sample project for many architectures and clustering the outputs using correlation techniques like binary diffing in the hope of identifying the correct architecture</li>
+<li>compiling a sample project for many architectures and clustering the outputs using correlation techniques like binary diffing in the hope of identifying the correct architecture</li>
 <li>try disassembling for many architectures in the hope of discovering the right code</li>
 <li>googling the HEX</li>
 </ul>
@@ -317,8 +317,8 @@ Let&rsquo;s give the <code>avr-objdump</code> disassembler a try:</p>
 Here is a <a href="https://gcc.gnu.org/onlinedocs/gcc/AVR-Options.html">list of the most common ones</a>, and here is a <a href="https://thalium.github.io/blog/posts/img/ECW2021_chest/avr_matrix.png">matrix</a> listing some of their available features.</p>
 <p>Again, we have multiple options to discover the correct microcontroller:</p>
 <ul>
-<li>compile samples with all the different MCU types supported by <code>avr-gcc</code> and again, use some correlation techniques against our dump</li>
-<li>searching more infos about what we already know, like the <a href="https://ece-classes.usc.edu/ee459/library/documents/avr_intr_vectors/">interrupt vectors</a></li>
+<li>compiling samples with all the different MCU types supported by <code>avr-gcc</code> and, again, use some correlation techniques against our dump</li>
+<li>searching more information about what we already know, like the <a href="https://ece-classes.usc.edu/ee459/library/documents/avr_intr_vectors/">interrupt vectors</a></li>
 <li>googling the code</li>
 </ul>
 <p>Again, the googling technique is the fastest and the less painful. We can
@@ -389,13 +389,13 @@ rot_key <span style="color:#f92672">=</span> <span style="color:#ae81ff">4</span
 <pre tabindex="0"><code class="language-console" data-lang="console">$ qemu-system-avr -S -s -nographic -serial tcp::5678,server=on,wait=off -machine uno -bios chest.bin
 $ printf &quot;\x0e&quot; | nc localhost 5678
 ECW{aeb1c401}
-</code></pre><p>I hope you enjoyed it as much as I do, see you next year!</p>
+</code></pre><p>I hope you enjoyed it as much as I did, see you next year!</p>
 <h2 id="fsb-as-a-service">FSB as a service</h2>
-<p>The downloadable <a href="https://thalium.github.io/blog/posts/binaries/ECW_2021/fsb_as_a_service.txz">archive</a> contains elements used to build the docker image you can access to online. It contains:</p>
+<p>The downloadable <a href="https://thalium.github.io/blog/posts/binaries/ECW_2021/fsb_as_a_service.txz">archive</a> contains elements used to build the docker image you can access online. It contains:</p>
 <ul>
-<li>dynamic loader</li>
-<li>c library</li>
-<li>challenge binary</li>
+<li>a dynamic loader</li>
+<li>a C library</li>
+<li>a challenge binary</li>
 </ul>
 <p>Let&rsquo;s start with a basic <code>checksec</code>:</p>
 <pre tabindex="0"><code class="language-console" data-lang="console">pwn checksec challenge
@@ -417,7 +417,7 @@ ECW{aeb1c401}
  aac:	a8c17bfd 	ldp	x29, x30, [sp], #16
  ab0:	d65f0bff 	retaa
 </code></pre><ol>
-<li>The binary is cool enough to give us a shell function ! <code>paciasp</code> and <code>retaa</code> are ARMv8.3 pointer-authentication instructions, they shield integrity of return addresses stored on the stack. Curious French readers can go and enjoy this <a href="https://connect.ed-diamond.com/MISC/misc-113/armv8.5-un-support-materiel-contre-les-bugs-memoires">article</a>.</li>
+<li>The binary is cool enough to give us a shell function! <code>paciasp</code> and <code>retaa</code> are ARMv8.3 pointer-authentication instructions, they shield integrity of return addresses stored on the stack. Curious French readers can go and enjoy this <a href="https://connect.ed-diamond.com/MISC/misc-113/armv8.5-un-support-materiel-contre-les-bugs-memoires">article</a>.</li>
 </ol>
 <pre tabindex="0"><code class="language-console" data-lang="console">0000000000000ab4 &lt;make_readonly&gt;:
  ab4:	d503233f 	paciasp
@@ -474,7 +474,7 @@ ECW{aeb1c401}
  ba8:	52800060 	mov	w0, #0x3                   	// #3
  bac:	97ffff49 	bl	8d0 &lt;_exit@plt&gt;
 </code></pre><ol start="3">
-<li>After having allocated a buffer from heap, the hooks&rsquo;page is made readonly. This buffer is then used to read from stdin, and the buffer is directly fed to printf. We have a format string ! There is no limit on the number of calls to <code>printf</code> we can do, thus we may:</li>
+<li>After having allocated a buffer from heap, the hooks' page is made read-only. This buffer is then used to read from stdin, and the buffer is directly fed to printf. We have a format string! There is no limit on the number of calls to <code>printf</code> we can do, thus we may:</li>
 </ol>
 <ul>
 <li>leak values in stack located below our frame: stack and code locations</li>
@@ -484,10 +484,10 @@ ECW{aeb1c401}
 <p>However, to go further, we need to turn arbitrary write to code execution:</p>
 <ul>
 <li>The stack does not look easily malleable: return addresses are protected through the use of <code>paciasp</code> / <code>retaa</code>;</li>
-<li>Dynamic memory hooks have been turned readonly: there is no hope in overwriting them;</li>
-<li>Inserting a destructor is made useless by use of <code>_exit</code>.</li>
+<li>Dynamic memory hooks have been turned read-only: there is no hope in overwriting them;</li>
+<li>Inserting a destructor is made useless by the use of <code>_exit</code>.</li>
 </ul>
-<p>How to gain code execution then ? There are a number of options, but looking at files contained in the initial archive, we spot a hidden file, <code>.gdb_history</code>.
+<p>How to gain code execution then? There are a number of options, but looking at files contained in the initial archive, we spot a hidden file, <code>.gdb_history</code>.
 This dot file is indeed a hint: <code>disassemble register_printf_specifier</code>.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">/* Register FUNC to be called to format SPEC specifiers; ARGINFO must be
 </span><span style="color:#75715e">   specified to determine how many arguments a SPEC conversion requires and
@@ -529,15 +529,15 @@ This dot file is indeed a hint: <code>disassemble register_printf_specifier</cod
 	
 	  <span style="color:#66d9ef">return</span> result;
 	}
-</code></pre></div><p>This is a little known feature of <code>glibc</code>: users can register custom printf specifiers through the use of <code>register_printf_specifier</code>. This function makes use of an array of function pointers indexed by the char specifier. We can leverage this feature to overwrite one element of the array and later call <code>printf</code> with the associated specifier: the overwritten address will be called !</p>
+</code></pre></div><p>This is a little known feature of <code>glibc</code>: users can register custom printf specifiers through the use of <code>register_printf_specifier</code>. This function makes use of an array of function pointers indexed by the char specifier. We can leverage this feature to overwrite one element of the array and later call <code>printf</code> with the associated specifier: the overwritten address will be called!</p>
 <h2 id="wysiwyg">WYSIWYG</h2>
 <h3 id="hints">Hints</h3>
-<p>Let&rsquo;s start with the hints that were there !</p>
+<p>Let&rsquo;s start with the hints that were there!</p>
 <p>Executing the challenge gives a message:</p>
 <pre tabindex="0"><code>$ ./wysiwyg
 Welcome to the challenge !
 </code></pre><p>The thing is that when you disassemble the challenge you won&rsquo;t see the corresponding call to printf. This was a first line of approach.</p>
-<p>Now executing it with an input it will give you:</p>
+<p>Now, executing it with an input will give you:</p>
 <pre tabindex="0"><code>$ ./wysiwyg toto
 Welcome to the challenge !
 Your key is:
@@ -555,22 +555,22 @@ Nop !
 <h3 id="main-function">Main function</h3>
 <p>The main function of the challenge is not very helpful and quite weird at first read.
 If you give an argument it reads a file called <em>text.txt</em> into <code>argv[1]</code> with a length equal to <code>strlen(argv[1])</code>.
-It then copies <code>argv[1]</code> up to a maximum of it a 32 bytes in a buffer and prints it after <em>Your key is</em>.</p>
-<p>The first 8 bytes of the key is set to upper case and the rest of the key is <em>xored</em> with the result of <code>sqrt(log(1337.3615)) + sinh(asinh(3615.1337))</code>.</p>
-<p>Using mbedTLS this key will be used to decipher a message using AES-CBC with and IV set to <code>&quot;yolo pour l'iv!&quot;</code></p>
+It then copies <code>argv[1]</code> up to a maximum of 32 bytes in a buffer and prints it after <em>Your key is</em>.</p>
+<p>The first 8 bytes of the key are set to upper case and the rest of the key is <em>xored</em> with the result of <code>sqrt(log(1337.3615)) + sinh(asinh(3615.1337))</code>.</p>
+<p>Using mbedTLS this key will be used to decipher a message using AES-CBC with an IV set to <code>&quot;yolo pour l'iv!&quot;</code></p>
 <p>Finally a <code>sha1</code> is computed on the deciphered message and if it&rsquo;s the right one, it&rsquo;s printed and it gives you the flag.</p>
-<p>What must be seen here (and I hope you didn&rsquo;t reversed to much cryptography because it was some kind of trap !) is that the input you gave is not used which is weird.
+<p>What must be seen here (and I hope you didn&rsquo;t reversed too much cryptography because it was some kind of trap!) is that the input you gave is not used which is weird.
 You must find where the input affects the challenge.</p>
-<h3 id="back-to-hints-">Back to hints !</h3>
-<p>The second time we execute the challenge we get a different key after <em>Your key is:</em> even if we did not create and write something in <em>text.txt</em>. So something is done with <em>text.txt</em> elsewhere in the binary.</p>
-<p>In the same way, <em>Welcome to the challenge !</em> is not printed in the main and there is associated call to <code>printf</code> anywhere in the binary. definitively something is executed elsewhere.</p>
+<h3 id="back-to-hints">Back to hints!</h3>
+<p>The second time we execute the challenge, we get a different key after <em>Your key is:</em> even if we did not create and write something in <em>text.txt</em>. So something is done with <em>text.txt</em> elsewhere in the binary.</p>
+<p>In the same way, <em>Welcome to the challenge !</em> is not printed in the main and there is no associated call to <code>printf</code> anywhere in the binary. definitively something is executed elsewhere.</p>
 <h3 id="constructor-function">Constructor function</h3>
-<p>! SPOILER ALERT ! The binary is going to play with the loader by changing the resolved functions.</p>
-<p>If you look closely there is a constructor function (<em><code>__attribute__ ((constructor))</code></em>).</p>
-<p>This function finds the base address of the binary by reading the beggining of the pages starting from the one that contains the current function and going up until it reads the magic <code>\x7fELF</code> (0x7f454c46).</p>
-<p>Then it parses the elf file header to find the <code>.dynamic</code> (PT_DYNAMIC) section
+<p>!SPOILER ALERT! The binary is going to play with the loader by changing the resolved functions.</p>
+<p>If you look closely, there is a constructor function (<em><code>__attribute__ ((constructor))</code></em>).</p>
+<p>This function finds the base address of the binary by reading the beginning of the pages starting from the one that contains the current function and going up until it reads the magic <code>\x7fELF</code> (0x7f454c46).</p>
+<p>Then it parses the ELF file header to find the <code>.dynamic</code> (PT_DYNAMIC) section
 (see <a href="https://code.woboq.org/linux/include/elf.h.html">here</a> and <a href="https://docs.oracle.com/cd/E19683-01/816-1386/chapter6-83432/index.html">here</a>).</p>
-<p>Once it has the .dynamic section it finds other informations it needs about the binary:</p>
+<p>Once it has the .dynamic section, it finds other information it needs about the binary:</p>
 <ul>
 <li>the address of the GOT (specifically the <code>.got.plt</code>): <code>DT_PLTGOT</code></li>
 <li>the address of the symbol table: <code>DT_SYMTAB</code></li>
@@ -579,8 +579,8 @@ You must find where the input affects the challenge.</p>
 <li>the size in bytes of the PLT relocations : <code>DT_PLTRELSZ</code></li>
 <li>the size of one of the PLT relocation: <code>DT_RELAENT</code></li>
 </ul>
-<p>If your are not familiar with how the PLT and the GOT work please go and check how it works <a href="https://www.technovelty.org/linux/plt-and-got-the-key-to-code-sharing-and-dynamic-libraries.html">here</a> or <a href="https://ypl.coffee/dl-resolve/">here</a>. The challenge is compiled with <em>lazy-bindings</em>.</p>
-<p>The challenge then gets the offsets in the <code>.got.plt</code> of the following functions using the symbol table, the string table and the PLT relocations:</p>
+<p>If your are not familiar with how the PLT and the GOT work please go and check <a href="https://www.technovelty.org/linux/plt-and-got-the-key-to-code-sharing-and-dynamic-libraries.html">this</a> or <a href="https://ypl.coffee/dl-resolve/">here</a>. The challenge is compiled with <em>lazy-bindings</em>.</p>
+<p>The challenge then gets the offsets in the <code>.got.plt</code> of the following functions using the symbol table, the string table, and the PLT relocations:</p>
 <ul>
 <li><code>read</code></li>
 <li><code>write</code></li>
@@ -607,32 +607,32 @@ Because of this, the process is in a tricky state where quite a lot of bugs and 
 <ul>
 <li>read: checks if a file called <em>change_me.txt</em> exists in the current folder and <strong>swaps read with write</strong>. read and write have the same prototypes.</li>
 <li>write: checks if a file called <em>change_me.txt</em> exists in the current folder and <strong>swaps write with read</strong>.</li>
-<li>memcpy (precisely <em>__memcpy_chk</em>): opens <em>text.txt</em> and write the content of a buffer containing &ldquo;Are your sure about the formula ?&rdquo; in it. It then parse the buffer with a custom <code>sscanf</code> function using the format string <code>%x_%d-%d_%d-%d_%d-%d_%d-%d</code>.</li>
+<li>memcpy (precisely <em>__memcpy_chk</em>): opens <em>text.txt</em> and writes the content of a buffer containing &ldquo;Are your sure about the formula ?&rdquo; in it. It then parses the buffer with a custom <code>sscanf</code> function using the format string <code>%x_%d-%d_%d-%d_%d-%d_%d-%d</code>.</li>
 <li>The last effects can swap <code>sqrt</code>, <code>log</code>, <code>sinh</code> and <code>asinh</code> but it will be explained later in the write-up.</li>
 </ul>
 <p><!-- raw HTML omitted --><strong>Note:</strong><!-- raw HTML omitted --></p>
-<p>I hope you understood that it was <code>sscanf</code> just by looking at the input and output of the function&hellip; Otherwise I&rsquo;m sorry it might have been hard ! While developping the challenge, it kept on breaking the stack and the arguments of the resolved function when calling <code>sscanf</code>. This came from variadic arguments which were a pain in the a** to use in the context of a hook of <code>_dl_runtime_resolve</code>. Finally I decided to use a custom <code>sscanf</code> using <a href="https://musl.libc.org/">musl</a> to remove variadic arguments.</p>
+<p>I hope you understood that it was <code>sscanf</code> just by looking at the input and output of the function&hellip; Otherwise, I&rsquo;m sorry, it might have been hard! While developping the challenge, it kept on breaking the stack and the arguments of the resolved function when calling <code>sscanf</code>. This came from variadic arguments which were a pain to use in the context of a hook of <code>_dl_runtime_resolve</code>. In the end, I decided to use a custom <code>sscanf</code> using <a href="https://musl.libc.org/">musl</a> to remove variadic arguments.</p>
 <h3 id="take-a-step-back">Take a step back</h3>
 <p>The main:</p>
 <ul>
 <li>reads the context of <em>text.txt</em> into <code>argv[1]</code> with a length of <code>strlen(argv[1])</code></li>
-<li>memcpy it into a 32 bit buffer and print the key.</li>
+<li>memcpy it into a 32 bit buffer and prints the key.</li>
 <li>XOR this buffer with the result of <code>sqrt(log(1337.3615)) + sinh(asinh(3615.1337))</code>.</li>
-<li>Use the buffer to decipher a message.</li>
+<li>Uses the buffer to decipher a message.</li>
 </ul>
 <p>But if we also look at the hook (without creating a <em>chang_me.txt</em> file for the moment) we get:</p>
 <ul>
 <li>reads the context of <em>text.txt</em> into <code>argv[1]</code> with a length of <code>strlen(argv[1])</code></li>
 <li>memcpy is resolved, the hook writes &ldquo;Are your sure about the formula ?&rdquo; in <em>text.txt</em> if the file exists.</li>
-<li>memcpy <code>argv[1]</code> it into a 32 bit buffer and print the it.</li>
+<li>memcpy <code>argv[1]</code> it into a 32 bit buffer and prints the it.</li>
 <li>XOR this buffer with the result of <code>sqrt(log(1337.3615)) + sinh(asinh(3615.1337))</code>.</li>
-<li>Use the buffer to decipher a message.</li>
+<li>Uses the buffer to decipher a message.</li>
 </ul>
 <p>That is why the second time you execute the challenge a part of &ldquo;Are your sure about the formula ?&rdquo; is printed, <code>strlen(argv[1])</code> characters to be precise.</p>
 <h3 id="resolution">Resolution</h3>
-<p>Now if you create a file named <em>chang_me.txt</em> this is what happens:</p>
+<p>Now, if you create a file named <em>chang_me.txt</em> this is what happens:</p>
 <ul>
-<li>read is called but it changed to write by the hook so <code>argv[1]</code> is written to <em>text.txt</em></li>
+<li>read is called but is changed to write by the hook so <code>argv[1]</code> is written to <em>text.txt</em></li>
 <li>memcpy is resolved, the hook calls write but it is changed to read. So the file <em>text.txt</em> is read in a buffer which is then parsed by a <code>sscanf</code> using the format string <code>%x_%d-%d_%d-%d_%d-%d_%d-%d</code>. The first <code>%x</code> is a magic that is checked later and the <code>%d</code> are stored in an array.</li>
 <li>memcpy <code>argv[1]</code> into a 32 bit buffer and print it.</li>
 <li><code>sqrt(log(1337.3615)) + sinh(asinh(3615.1337))</code> is computed. This will call the hook at the resolution of <code>sqrt</code>, <code>log</code>, <code>sinh</code> and <code>asinh</code>. If the magic parsed by the <code>sscanf</code> is equal to <em>0xfacebeef</em> these four functions will be swapped using the indexes you gave. In the format string <code>%x_%d-%d_%d-%d_%d-%d_%d-%d</code> each <code>%d-%d</code> corresponds to a permutation, you must give the indexes of <code>sqrt</code> (26), <code>log</code> (12), <code>sinh</code> (19) and <code>asinh</code> (30) otherwise it will not work. In other words you can control the formula of this computation through <code>argv[1]</code>.</li>
@@ -649,9 +649,9 @@ facebeef_26-19_12-26_19-30_30-12
 The message should be deciphered correctly if you did things right ;)
 Good job ! ;) Your flag is:
 ECW{H4v3_FuN_1n_7H3_L0D3R}
-</code></pre><p>I hope you liked it and that you learned things about the loader !</p>
+</code></pre><p>I hope you liked it and that you learned things about the loader!</p>
 <h2 id="conclusion">Conclusion</h2>
-<p>We hope you had fun with these challenges and you definitely learnt something even if you did not get through it. We will be glad to meet you during the CTF final and discuss about theses challenges and uncover our jobs in more details.</p>
+<p>We hope you had fun with these challenges and you definitely learned something even if you did not get through it. We will be glad to meet you during the CTF final and discuss about theses challenges and uncover our jobs in more details.</p>
 <p>We look forward to reading your write-ups and techniques you used in order to solve these challenges.</p>
 <h2 id="interships-2022">Interships 2022</h2>
 <ul>
