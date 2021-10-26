@@ -19,12 +19,12 @@ For the [European Cyber Week](https://www.european-cyber-week.eu/) CTF 2021 Thal
 * Pipe Dream (1 solve) - reverse
   * the author posted his solution on [his personal blog](https://face.0xff.re/posts/ecw-ctf-2021-pipe-dream-writeup/)
 
-Thalium's challenges have been less resolved than others. They were not that difficult, but probably a bit more unexpected than others. A few additional challenges designed by Thalium are:
+Thalium's challenges have been less resolved than others. They were not that difficult, but probably a bit more unexpected. A few additional challenges designed by Thalium are:
 <!--more-->
 * EMU (3 solve) - reverse
 * Hospital simulator (3 solve) - exploitation
 
-As a reminder Thalium - part of THALES group - is a cybersecurity team dedicated to vulnerability research and development of Red Team-type tools. The team is located in Rennes and we are actively recruiting experienced or high potential profiles in reverse, forensics and software development. Spoiler: we also offer internships, see [below](#interships-2022).
+As a reminder, Thalium - part of THALES group - is a cybersecurity team dedicated to vulnerability research and development of Red Team-type tools. The team is located in Rennes and we are actively recruiting experienced or high potential profiles in reverse, forensics, and software development. Spoiler: we also offer internships, see [below](#interships-2022).
 
 ## Chest <!-- omit in toc -->
 
@@ -64,7 +64,7 @@ $ cat chest.hex
 :00000001FF
 ```
 
-The Intel HEX is a transitional file format for microcontrollers, (E)PROMs and other devices. The documentation states that HEXs can be converted to binary files and programmed into a configuration device.
+The Intel HEX is a transitional file format for microcontrollers, (E)PROMs, and other devices. The documentation states that HEXs can be converted to binary files and programmed into a configuration device.
 
 ```console
 $ objcopy -I ihex chest.hex -O binary chest.bin ; xxd chest.bin
@@ -101,16 +101,16 @@ $ objcopy -I ihex chest.hex -O binary chest.bin ; xxd chest.bin
 
 Note that we can also use the online tool [matrixstorm](http://matrixstorm.com/avr/hextobin/ihexconverter.html) to do this.
 
-Now that we have our binary, we need to identify for which architecture it was compiled for.
+Now that we have our binary, we need to identify which architecture it was compiled for.
 
 ``` console
 file chest.bin
 chest.bin: data
 ```
 
-Well, our beloved friend `file` didn't recognized the file format. At that point, we have several options to discover the architecture:
+Well, our beloved friend `file` didn't recognize the file format. At that point, we have several options to discover the architecture:
 
-* compile a sample project for many architectures and clustering the outputs using correlation techniques like binary diffing in the hope of identifying the correct architecture
+* compiling a sample project for many architectures and clustering the outputs using correlation techniques like binary diffing in the hope of identifying the correct architecture
 * try disassembling for many architectures in the hope of discovering the right code
 * googling the HEX
 
@@ -164,8 +164,8 @@ Here is a [list of the most common ones](https://gcc.gnu.org/onlinedocs/gcc/AVR-
 
 Again, we have multiple options to discover the correct microcontroller:
 
-* compile samples with all the different MCU types supported by `avr-gcc` and again, use some correlation techniques against our dump
-* searching more infos about what we already know, like the [interrupt vectors](https://ece-classes.usc.edu/ee459/library/documents/avr_intr_vectors/)
+* compiling samples with all the different MCU types supported by `avr-gcc` and, again, use some correlation techniques against our dump
+* searching more information about what we already know, like the [interrupt vectors](https://ece-classes.usc.edu/ee459/library/documents/avr_intr_vectors/)
 * googling the code
 
 Again, the googling technique is the fastest and the less painful. We can
@@ -252,15 +252,15 @@ $ printf "\x0e" | nc localhost 5678
 ECW{aeb1c401}
 ```
 
-I hope you enjoyed it as much as I do, see you next year!
+I hope you enjoyed it as much as I did, see you next year!
 
 ## FSB as a service
 
-The downloadable [archive](/posts/binaries/ECW_2021/fsb_as_a_service.txz) contains elements used to build the docker image you can access to online. It contains:
+The downloadable [archive](/posts/binaries/ECW_2021/fsb_as_a_service.txz) contains elements used to build the docker image you can access online. It contains:
 
-* dynamic loader
-* c library
-* challenge binary
+* a dynamic loader
+* a C library
+* a challenge binary
 
 Let's start with a basic `checksec`:
 
@@ -289,7 +289,7 @@ The binary is rather small, compiled for aarch64, and we spot three things:
  ab0:	d65f0bff 	retaa
 ```
 
-1. The binary is cool enough to give us a shell function ! `paciasp` and `retaa` are ARMv8.3 pointer-authentication instructions, they shield integrity of return addresses stored on the stack. Curious French readers can go and enjoy this [article](https://connect.ed-diamond.com/MISC/misc-113/armv8.5-un-support-materiel-contre-les-bugs-memoires).
+1. The binary is cool enough to give us a shell function! `paciasp` and `retaa` are ARMv8.3 pointer-authentication instructions, they shield integrity of return addresses stored on the stack. Curious French readers can go and enjoy this [article](https://connect.ed-diamond.com/MISC/misc-113/armv8.5-un-support-materiel-contre-les-bugs-memoires).
 
 ```console
 0000000000000ab4 <make_readonly>:
@@ -350,7 +350,7 @@ The binary is rather small, compiled for aarch64, and we spot three things:
  bac:	97ffff49 	bl	8d0 <_exit@plt>
 ```
 
-3. After having allocated a buffer from heap, the hooks'page is made readonly. This buffer is then used to read from stdin, and the buffer is directly fed to printf. We have a format string ! There is no limit on the number of calls to `printf` we can do, thus we may:
+3. After having allocated a buffer from heap, the hooks' page is made read-only. This buffer is then used to read from stdin, and the buffer is directly fed to printf. We have a format string! There is no limit on the number of calls to `printf` we can do, thus we may:
 
 * leak values in stack located below our frame: stack and code locations
 * modify values through the use of `%n` and its variants
@@ -360,10 +360,10 @@ Taking the above a bit further, we can find stack values that point to stack its
 However, to go further, we need to turn arbitrary write to code execution:
 
 * The stack does not look easily malleable: return addresses are protected through the use of `paciasp` / `retaa`;
-* Dynamic memory hooks have been turned readonly: there is no hope in overwriting them;
-* Inserting a destructor is made useless by use of `_exit`.
+* Dynamic memory hooks have been turned read-only: there is no hope in overwriting them;
+* Inserting a destructor is made useless by the use of `_exit`.
 
-How to gain code execution then ? There are a number of options, but looking at files contained in the initial archive, we spot a hidden file, `.gdb_history`.
+How to gain code execution then? There are a number of options, but looking at files contained in the initial archive, we spot a hidden file, `.gdb_history`.
 This dot file is indeed a hint: `disassemble register_printf_specifier`.
 
 ```c
@@ -413,13 +413,13 @@ int __register_printf_specifier (int spec, printf_function converter,
 	}
 ```
 
-This is a little known feature of `glibc`: users can register custom printf specifiers through the use of `register_printf_specifier`. This function makes use of an array of function pointers indexed by the char specifier. We can leverage this feature to overwrite one element of the array and later call `printf` with the associated specifier: the overwritten address will be called !
+This is a little known feature of `glibc`: users can register custom printf specifiers through the use of `register_printf_specifier`. This function makes use of an array of function pointers indexed by the char specifier. We can leverage this feature to overwrite one element of the array and later call `printf` with the associated specifier: the overwritten address will be called!
 
 ## WYSIWYG
 
 ### Hints
 
-Let's start with the hints that were there !
+Let's start with the hints that were there!
 
 Executing the challenge gives a message:
 ```
@@ -429,7 +429,7 @@ Welcome to the challenge !
 
 The thing is that when you disassemble the challenge you won't see the corresponding call to printf. This was a first line of approach.
 
-Now executing it with an input it will give you:
+Now, executing it with an input will give you:
 
 ```
 $ ./wysiwyg toto
@@ -459,33 +459,33 @@ The main function of the challenge is not very helpful and quite weird at first 
 If you give an argument it reads a file called *text.txt* into `argv[1]` with a length equal to `strlen(argv[1])`.
 It then copies `argv[1]` up to a maximum of it a 32 bytes in a buffer and prints it after *Your key is*.
 
-The first 8 bytes of the key is set to upper case and the rest of the key is *xored* with the result of `sqrt(log(1337.3615)) + sinh(asinh(3615.1337))`.
+The first 8 bytes of the key are set to upper case and the rest of the key is *xored* with the result of `sqrt(log(1337.3615)) + sinh(asinh(3615.1337))`.
 
 Using mbedTLS this key will be used to decipher a message using AES-CBC with and IV set to `"yolo pour l'iv!"`
 
 Finally a `sha1` is computed on the deciphered message and if it's the right one, it's printed and it gives you the flag.
 
-What must be seen here (and I hope you didn't reversed to much cryptography because it was some kind of trap !) is that the input you gave is not used which is weird.
+What must be seen here (and I hope you didn't reversed too much cryptography because it was some kind of trap!) is that the input you gave is not used which is weird.
 You must find where the input affects the challenge.
 
-### Back to hints !
+### Back to hints!
 
-The second time we execute the challenge we get a different key after *Your key is:* even if we did not create and write something in *text.txt*. So something is done with *text.txt* elsewhere in the binary.
+The second time we execute the challenge, we get a different key after *Your key is:* even if we did not create and write something in *text.txt*. So something is done with *text.txt* elsewhere in the binary.
 
 In the same way, *Welcome to the challenge !* is not printed in the main and there is associated call to `printf` anywhere in the binary. definitively something is executed elsewhere.
 
 ### Constructor function
 
-! SPOILER ALERT ! The binary is going to play with the loader by changing the resolved functions.
+!SPOILER ALERT! The binary is going to play with the loader by changing the resolved functions.
 
-If you look closely there is a constructor function (*`__attribute__ ((constructor))`*).
+If you look closely, there is a constructor function (*`__attribute__ ((constructor))`*).
 
-This function finds the base address of the binary by reading the beggining of the pages starting from the one that contains the current function and going up until it reads the magic `\x7fELF` (0x7f454c46).
+This function finds the base address of the binary by reading the beginning of the pages starting from the one that contains the current function and going up until it reads the magic `\x7fELF` (0x7f454c46).
 
-Then it parses the elf file header to find the `.dynamic` (PT_DYNAMIC) section
+Then it parses the ELF file header to find the `.dynamic` (PT_DYNAMIC) section
 (see [here](https://code.woboq.org/linux/include/elf.h.html) and [here](https://docs.oracle.com/cd/E19683-01/816-1386/chapter6-83432/index.html)).
 
-Once it has the .dynamic section it finds other informations it needs about the binary:
+Once it has the .dynamic section, it finds other information it needs about the binary:
 * the address of the GOT (specifically the `.got.plt`): `DT_PLTGOT`
 * the address of the symbol table: `DT_SYMTAB`
 * the address of the string table: `DT_STRTAB`
@@ -495,7 +495,7 @@ Once it has the .dynamic section it finds other informations it needs about the 
 
 If your are not familiar with how the PLT and the GOT work please go and check how it works [here](https://www.technovelty.org/linux/plt-and-got-the-key-to-code-sharing-and-dynamic-libraries.html) or [here](https://ypl.coffee/dl-resolve/). The challenge is compiled with *lazy-bindings*.
 
-The challenge then gets the offsets in the `.got.plt` of the following functions using the symbol table, the string table and the PLT relocations:
+The challenge then gets the offsets in the `.got.plt` of the following functions using the symbol table, the string table, and the PLT relocations:
 * `read`
 * `write`
 * `__memcpy_chk`
@@ -525,33 +525,33 @@ The trampoline also installs a *post-hook* to be called after the resolved funct
 The hook acts differently depending on the resolved function.
 * read: checks if a file called *change_me.txt* exists in the current folder and **swaps read with write**. read and write have the same prototypes.
 * write: checks if a file called *change_me.txt* exists in the current folder and **swaps write with read**.
-* memcpy (precisely *__memcpy_chk*): opens *text.txt* and write the content of a buffer containing "Are your sure about the formula ?" in it. It then parse the buffer with a custom `sscanf` function using the format string `%x_%d-%d_%d-%d_%d-%d_%d-%d`.
+* memcpy (precisely *__memcpy_chk*): opens *text.txt* and writes the content of a buffer containing "Are your sure about the formula ?" in it. It then parses the buffer with a custom `sscanf` function using the format string `%x_%d-%d_%d-%d_%d-%d_%d-%d`.
 * The last effects can swap `sqrt`, `log`, `sinh` and `asinh` but it will be explained later in the write-up.
 
 <u>**Note:**</u>
 
-I hope you understood that it was `sscanf` just by looking at the input and output of the function... Otherwise I'm sorry it might have been hard ! While developping the challenge, it kept on breaking the stack and the arguments of the resolved function when calling `sscanf`. This came from variadic arguments which were a pain in the a** to use in the context of a hook of `_dl_runtime_resolve`. Finally I decided to use a custom `sscanf` using [musl](https://musl.libc.org/) to remove variadic arguments.
+I hope you understood that it was `sscanf` just by looking at the input and output of the function... Otherwise, I'm sorry, it might have been hard! While developping the challenge, it kept on breaking the stack and the arguments of the resolved function when calling `sscanf`. This came from variadic arguments which were a pain in the a** to use in the context of a hook of `_dl_runtime_resolve`. In the end, I decided to use a custom `sscanf` using [musl](https://musl.libc.org/) to remove variadic arguments.
 
 ### Take a step back
 
 The main:
 * reads the context of *text.txt* into `argv[1]` with a length of `strlen(argv[1])`
-* memcpy it into a 32 bit buffer and print the key.
+* memcpy it into a 32 bit buffer and prints the key.
 * XOR this buffer with the result of `sqrt(log(1337.3615)) + sinh(asinh(3615.1337))`.
-* Use the buffer to decipher a message.
+* Uses the buffer to decipher a message.
 
 But if we also look at the hook (without creating a *chang_me.txt* file for the moment) we get:
 * reads the context of *text.txt* into `argv[1]` with a length of `strlen(argv[1])`
 * memcpy is resolved, the hook writes "Are your sure about the formula ?" in *text.txt* if the file exists.
-* memcpy `argv[1]` it into a 32 bit buffer and print the it.
+* memcpy `argv[1]` it into a 32 bit buffer and prints the it.
 * XOR this buffer with the result of `sqrt(log(1337.3615)) + sinh(asinh(3615.1337))`.
-* Use the buffer to decipher a message.
+* Uses the buffer to decipher a message.
 
 That is why the second time you execute the challenge a part of "Are your sure about the formula ?" is printed, `strlen(argv[1])` characters to be precise.
 
 ### Resolution
 
-Now if you create a file named *chang_me.txt* this is what happens:
+Now, if you create a file named *chang_me.txt* this is what happens:
 
 * read is called but it changed to write by the hook so `argv[1]` is written to *text.txt*
 * memcpy is resolved, the hook calls write but it is changed to read. So the file *text.txt* is read in a buffer which is then parsed by a `sscanf` using the format string `%x_%d-%d_%d-%d_%d-%d_%d-%d`. The first `%x` is a magic that is checked later and the `%d` are stored in an array.
@@ -574,11 +574,11 @@ Good job ! ;) Your flag is:
 ECW{H4v3_FuN_1n_7H3_L0D3R}
 ```
 
-I hope you liked it and that you learned things about the loader !
+I hope you liked it and that you learned things about the loader!
 
 ## Conclusion
 
-We hope you had fun with these challenges and you definitely learnt something even if you did not get through it. We will be glad to meet you during the CTF final and discuss about theses challenges and uncover our jobs in more details.
+We hope you had fun with these challenges and you definitely learned something even if you did not get through it. We will be glad to meet you during the CTF final and discuss about theses challenges and uncover our jobs in more details.
 
 We look forward to reading your write-ups and techniques you used in order to solve these challenges.
 
