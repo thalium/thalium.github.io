@@ -7,7 +7,7 @@
 <meta name="description" content="Thalium blog." />
 <meta name="keywords" content="blog, tech" />
 <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
-<meta name="generator" content="Hugo 0.83.1" />
+<meta name="generator" content="Hugo 0.88.1" />
 
 <link rel="canonical" href="https://thalium.github.io/blog/posts/nt_py_icebox/">
 <meta property="og:title" content="NT objects access tracing" />
@@ -16,8 +16,8 @@ The software architecture can be composed of several elements:
  processes privileges ipc etc  Usually, software architecture analysis is done with tools that give a view at a specific time (ProcessHacker, WinObjEx, etc)." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://thalium.github.io/blog/posts/nt_py_icebox/" /><meta property="article:section" content="posts" />
-<meta property="article:published_time" content="2021-06-07T12:00:00&#43;01:00" />
-<meta property="article:modified_time" content="2021-06-07T12:00:00&#43;01:00" />
+<meta property="article:published_time" content="2021-06-07T12:00:00+01:00" />
+<meta property="article:modified_time" content="2021-06-07T12:00:00+01:00" />
 
 
 <meta name="twitter:card" content="summary"/>
@@ -30,8 +30,8 @@ The software architecture can be composed of several elements:
 <meta itemprop="name" content="NT objects access tracing">
 <meta itemprop="description" content="Draw me a map As homework during the lockdown, I wanted to automate the attack surface analysis of a target on Windows. The main objective was to construct a view of a software architecture to highlight the attack surface (whether remote or local).
 The software architecture can be composed of several elements:
- processes privileges ipc etc  Usually, software architecture analysis is done with tools that give a view at a specific time (ProcessHacker, WinObjEx, etc)."><meta itemprop="datePublished" content="2021-06-07T12:00:00&#43;01:00" />
-<meta itemprop="dateModified" content="2021-06-07T12:00:00&#43;01:00" />
+ processes privileges ipc etc  Usually, software architecture analysis is done with tools that give a view at a specific time (ProcessHacker, WinObjEx, etc)."><meta itemprop="datePublished" content="2021-06-07T12:00:00+01:00" />
+<meta itemprop="dateModified" content="2021-06-07T12:00:00+01:00" />
 <meta itemprop="wordCount" content="2879">
 <meta itemprop="keywords" content="" />
 
@@ -182,20 +182,20 @@ Projects such as <a href="https://github.com/google/rekall">Rekall</a> and <a hr
 <li>observe the creation of processes</li>
 </ul>
 <p>These two methods have been documented in a <a href="https://thalium.github.io/blog/posts/getting_started/">previous blogpost</a>:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> icebox
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> icebox
 
 vm <span style="color:#f92672">=</span> icebox<span style="color:#f92672">.</span>attach(<span style="color:#e6db74">&#34;win10&#34;</span>)
 
 <span style="color:#75715e"># list current processes</span>
 <span style="color:#66d9ef">for</span> proc <span style="color:#f92672">in</span> vm<span style="color:#f92672">.</span>processes():
-    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%d</span><span style="color:#e6db74">: </span><span style="color:#e6db74">%s</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> (proc<span style="color:#f92672">.</span>pid(), proc<span style="color:#f92672">.</span>name()))
+    print(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%d</span><span style="color:#e6db74">: </span><span style="color:#e6db74">%s</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> (proc<span style="color:#f92672">.</span>pid(), proc<span style="color:#f92672">.</span>name()))
 
 <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">on_create</span>(proc):
-    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;+ </span><span style="color:#e6db74">%d</span><span style="color:#e6db74">: </span><span style="color:#e6db74">%s</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> (proc<span style="color:#f92672">.</span>pid(), proc<span style="color:#f92672">.</span>name()))
+    print(<span style="color:#e6db74">&#34;+ </span><span style="color:#e6db74">%d</span><span style="color:#e6db74">: </span><span style="color:#e6db74">%s</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> (proc<span style="color:#f92672">.</span>pid(), proc<span style="color:#f92672">.</span>name()))
 
 <span style="color:#75715e"># break on process creation</span>
 <span style="color:#66d9ef">with</span> vm<span style="color:#f92672">.</span>processes<span style="color:#f92672">.</span>break_on_create(on_create):
-    vm<span style="color:#f92672">.</span><span style="color:#66d9ef">exec</span>()
+    vm<span style="color:#f92672">.</span>exec()
 </code></pre></div><p>Obviously, all of the output of these methods won&rsquo;t necessarily be related to our software, some of these processes need to be filtered out.
 A good criterion to filter the processes is the image file name location (e.g. in the software installation folder).</p>
 <h1 id="windows-ipc">Windows IPC</h1>
@@ -204,7 +204,7 @@ A good criterion to filter the processes is the image file name location (e.g. i
 <h2 id="break-at-some-point">Break at some point</h2>
 <p>The <code>HANDLE</code> creation is done by Windows through the kernel function <code>nt!ObpCreateHandle</code>. By breaking onto this function, it is possible to monitor all accesses to the objects by the software processes.</p>
 <p>The prototype of this function is given below:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">NTSTATUS
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">NTSTATUS
 <span style="color:#a6e22e">ObpCreateHandle</span>(
   IN  OB_OPEN_REASON OpenReason,
   IN  PVOID Object,
@@ -219,7 +219,7 @@ A good criterion to filter the processes is the image file name location (e.g. i
   );
 </code></pre></div><p>The parameter of interest is <code>PVOID Object</code> which is a pointer to the body of the object.</p>
 <p>In order to break onto this function and obtain said pointer through Icebox, we can use the following snippet:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> icebox
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> icebox
 <span style="color:#f92672">from</span> nt_types <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
 
 <span style="color:#75715e"># specify the targeted VM</span>
@@ -237,10 +237,10 @@ addr <span style="color:#f92672">=</span> proc<span style="color:#f92672">.</spa
     <span style="color:#75715e"># access the argument stored in rdx</span>
     _object <span style="color:#f92672">=</span> nt_Object(p, vm<span style="color:#f92672">.</span>registers<span style="color:#f92672">.</span>rdx)
 
-<span style="color:#66d9ef">while</span> True:
+<span style="color:#66d9ef">while</span> <span style="color:#66d9ef">True</span>:
     <span style="color:#75715e"># break on the address of nt!ObpCreateHandle and execute the callback on_break</span>
     <span style="color:#66d9ef">with</span> vm<span style="color:#f92672">.</span>break_on(addr, on_break):
-        vm<span style="color:#f92672">.</span><span style="color:#66d9ef">exec</span>()
+        vm<span style="color:#f92672">.</span>exec()
 
 </code></pre></div><p>At this point, the object has an opaque structure, it might be needed to support the specificities of each object type. Indeed, the <code>PVOID</code> pointer will be used as specific type pointer by the NT Object Manager:</p>
 <ul>
@@ -258,7 +258,7 @@ addr <span style="color:#f92672">=</span> proc<span style="color:#f92672">.</spa
 </ul>
 <p>In order to access these data through the opaque nt object pointer we have, it is required to implement the object specifities through Icebox.</p>
 <p>Here is an example of the <code>nt_Object</code> class <a href="https://github.com/agatignol/NtPy/blob/master/handle_tracer/nt_types.py#L531">implementation</a>:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">nt_Object</span>():
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">nt_Object</span>():
     <span style="color:#66d9ef">def</span> __init__(self, proc, p_object):
         self<span style="color:#f92672">.</span>object <span style="color:#f92672">=</span> p_object
 
@@ -283,7 +283,7 @@ This implementation relies on two functions:</p>
 <li>an accesser to the encoded object type: <code>__get_object_type</code></li>
 <li>a decoder to retrieve the real object type: <code>__get_type_index</code></li>
 </ul>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">__get_type_index</span>(self, proc, ObHeaderCookie):
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">__get_type_index</span>(self, proc, ObHeaderCookie):
 
         offset <span style="color:#f92672">=</span> get_symbol_offset(proc, <span style="color:#e6db74">&#34;nt!_OBJECT_HEADER&#34;</span>, <span style="color:#e6db74">&#34;TypeIndex&#34;</span>)
         typeindex <span style="color:#f92672">=</span> read_byte(proc, self<span style="color:#f92672">.</span>object_header <span style="color:#f92672">+</span> offset)[<span style="color:#ae81ff">0</span>]
@@ -329,7 +329,7 @@ This implementation relies on two functions:</p>
 </ul>
 <p>Once the object type is determined, it is possible to gather object type-specific information through type-specific handlers.</p>
 <p>For instance, the <code>nt_Process</code> class, used to represent <code>nt!_EPROCESS</code>, implements the <code>__get_mitigations</code> method to gather its <code>MitigationFlagsValues</code>.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> icebox
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> icebox
 <span style="color:#f92672">import</span> argparse
 <span style="color:#f92672">from</span> utils <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
 <span style="color:#f92672">from</span> nt_types <span style="color:#f92672">import</span> nt_Process
@@ -384,15 +384,15 @@ MITIGATIONS <span style="color:#f92672">=</span> {
 
     <span style="color:#66d9ef">def</span> __str__(self):
         info <span style="color:#f92672">=</span> (
-            f<span style="color:#e6db74">&#34;Process: {self.name}&#34;</span>,
-            f<span style="color:#e6db74">&#34;ParentId: {self.parent}&#34;</span>
+            <span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Process: </span><span style="color:#e6db74">{</span>self<span style="color:#f92672">.</span>name<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>,
+            <span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;ParentId: </span><span style="color:#e6db74">{</span>self<span style="color:#f92672">.</span>parent<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>
         )
         <span style="color:#66d9ef">if</span> self<span style="color:#f92672">.</span>mitigations:
             info <span style="color:#f92672">+=</span> <span style="color:#e6db74">&#34;Mitigations:&#34;</span>,
             <span style="color:#66d9ef">for</span> mitigation <span style="color:#f92672">in</span> self<span style="color:#f92672">.</span>mitigations:
-                info <span style="color:#f92672">+=</span> f<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\t</span><span style="color:#e6db74">{mitigation}&#34;</span>
+                info <span style="color:#f92672">+=</span> <span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\t</span><span style="color:#e6db74">{</span>mitigation<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>
 
-        info <span style="color:#f92672">+=</span> f<span style="color:#e6db74">&#34;Integrity level: {self.il}&#34;</span>
+        info <span style="color:#f92672">+=</span> <span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Integrity level: </span><span style="color:#e6db74">{</span>self<span style="color:#f92672">.</span>il<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>
         <span style="color:#66d9ef">return</span> os<span style="color:#f92672">.</span>linesep<span style="color:#f92672">.</span>join(info)
 
     <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">get_name</span>(self):
@@ -489,10 +489,10 @@ MITIGATIONS <span style="color:#f92672">=</span> {
 
 vm <span style="color:#f92672">=</span> icebox<span style="color:#f92672">.</span>attach(<span style="color:#e6db74">&#34;win10&#34;</span>)
 process <span style="color:#f92672">=</span> nt_Process(vm<span style="color:#f92672">.</span>processes<span style="color:#f92672">.</span>current(), vm<span style="color:#f92672">.</span>processes<span style="color:#f92672">.</span>current()<span style="color:#f92672">.</span>native())
-<span style="color:#66d9ef">print</span>(process)
+print(process)
 
 </code></pre></div><p>An example output for this would be:</p>
-<pre><code>Process: svchost.exe (1184)
+<pre tabindex="0"><code>Process: svchost.exe (1184)
 ParentId: 566
 Mitigations:
         ControlFlowGuardEnabled
@@ -507,7 +507,7 @@ Integrity level: System
 </blockquote>
 <p>For most of the object types, the <code>security descriptor</code> in the object header is representative.</p>
 <p>To get access to it, the Windows kernel uses the <code>nt!ObGetObjectSecurity</code> function, which is reimplemented below:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">__get_object_sd</span>(self, proc):
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">__get_object_sd</span>(self, proc):
         <span style="color:#75715e"># nt!ObGetObjectSecurity</span>
 
         o_sd <span style="color:#f92672">=</span> get_symbol_offset(
@@ -522,7 +522,7 @@ Integrity level: System
 
         <span style="color:#66d9ef">return</span> nt_SecurityDescriptor(proc, sd)
 </code></pre></div><p>Here is an example of the <code>nt_SecurityDescriptor</code> class implementation:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">nt_SecurityDescriptor</span>():
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">nt_SecurityDescriptor</span>():
     <span style="color:#66d9ef">def</span> __init__(self, proc, sd):
         self<span style="color:#f92672">.</span>sd <span style="color:#f92672">=</span> sd
         self<span style="color:#f92672">.</span>revision <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>__get_revision(proc)
@@ -547,7 +547,7 @@ Integrity level: System
 An <code>ACE</code> is a pair of trustee with its access to the targeted securable object.</p>
 <p>The <a href="https://docs.microsoft.com/en-us/windows/win32/secauthz/access-control-lists">Microsoft documentation</a> describes in further details its ACL mechanisms.</p>
 <p>To obtain the <code>dacl</code> of a <code>security descriptor</code>, an implementation of the kernel function <code>nt!RtlGetDaclSecurityDescriptor</code> is required. Below, one possible implementation:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">__get_dacl</span>(self, proc):
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">__get_dacl</span>(self, proc):
         <span style="color:#75715e"># nt!RtlGetDaclSecurityDescriptor</span>
 
         <span style="color:#66d9ef">if</span> self<span style="color:#f92672">.</span>sd <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>:
@@ -566,7 +566,7 @@ An <code>ACE</code> is a pair of trustee with its access to the targeted securab
 
         <span style="color:#66d9ef">return</span> nt_Acl(proc, dacl)
 </code></pre></div><p>This <code>dacl</code> is then read through the <code>nt_Acl</code> class:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">nt_Acl</span>():
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">nt_Acl</span>():
     <span style="color:#66d9ef">def</span> __init__(self, proc, acl):
         self<span style="color:#f92672">.</span>acl <span style="color:#f92672">=</span> acl
         self<span style="color:#f92672">.</span>revision, sbz, self<span style="color:#f92672">.</span>acl_size, self<span style="color:#f92672">.</span>ace_count, sbz2 <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>__get_acl_info(
@@ -580,7 +580,7 @@ I have reused a good portion of the code given in example.</li>
 </ul>
 </blockquote>
 <p>The list of <code>ACE</code> is walked through with the following function, which is a reimplementation of <code>nt!RtlGetAce</code>:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">__get_ace_list</span>(self, proc):
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">__get_ace_list</span>(self, proc):
         <span style="color:#75715e"># nt!RtlGetAce</span>
 
         ace_list <span style="color:#f92672">=</span> []
@@ -620,13 +620,13 @@ I have reused a good portion of the code given in example.</li>
 
             offset <span style="color:#f92672">=</span> offset <span style="color:#f92672">+</span> ace_size
 
-            trustee <span style="color:#f92672">=</span> None
+            trustee <span style="color:#f92672">=</span> <span style="color:#66d9ef">None</span>
             ace <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>__get_ace(proc, ace_type,
                                  ace_flags, ace_mask, ace_sid, trustee)
             ace_list<span style="color:#f92672">.</span>append(ace)
         <span style="color:#66d9ef">return</span> ace_list
 </code></pre></div><p>Unfortunately, the types <code>_ACE_HEADER</code> and <code>_ACE</code> are not published in the Windows symbols. The definition used in the implementation of <code>nt!RtlGetAce</code> is given below:</p>
-<pre><code>    # 00000000 _ACE            struc
+<pre tabindex="0"><code>    # 00000000 _ACE            struc
     # (sizeof=0x8, align=0x4, copyof_2324)
     # 00000000 Header          ACE_HEADER ?
     # 00000004 AccessMask      dd ?
@@ -648,7 +648,7 @@ I have reused a good portion of the code given in example.</li>
 </code></pre><p>And finally, an <code>ACE</code> object is initialized in an <code>nt_Ace</code> class. This class will interpret the <code>AccessMask</code> and render the <code>Sid</code> of the trustee.</p>
 <p>As a result, we are now able to get the list of authorized accesses for every object accessed through a <code>HANDLE</code> request.</p>
 <p>An example of output for this would be:</p>
-<pre><code>Object: 0xffffd9025e00c060
+<pre tabindex="0"><code>Object: 0xffffd9025e00c060
 Object type: Token
 
 DACL:
@@ -668,7 +668,7 @@ SACL:
 <p>The attack surface is almost established. The privileges of the involved processes are not known yet.
 Indeed, from an attacker point of view, it is interesting to target processes that have more privileges (e.g. privilege escalation). As a standard user has a <code>Medium integrity level</code>, then all processes running with a lower integrity level are not interesting.</p>
 <p>To obtain this information, it is required to analyze the token of the processes.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">
 INTEGRITY_LEVEL <span style="color:#f92672">=</span> {
     <span style="color:#ae81ff">0x0000</span>: <span style="color:#e6db74">&#34;Untrusted&#34;</span>,
     <span style="color:#ae81ff">0x1000</span>: <span style="color:#e6db74">&#34;Low&#34;</span>,
@@ -707,7 +707,7 @@ INTEGRITY_LEVEL <span style="color:#f92672">=</span> {
 
         size <span style="color:#f92672">=</span> proc<span style="color:#f92672">.</span>symbols<span style="color:#f92672">.</span>struc(<span style="color:#e6db74">&#34;nt!_SID_AND_ATTRIBUTES&#34;</span>)<span style="color:#f92672">.</span>size
 
-        sid <span style="color:#f92672">=</span> None
+        sid <span style="color:#f92672">=</span> <span style="color:#66d9ef">None</span>
         ptr <span style="color:#f92672">=</span> arraysid
 
         <span style="color:#66d9ef">if</span> arraysid <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>:
@@ -741,7 +741,7 @@ INTEGRITY_LEVEL <span style="color:#f92672">=</span> {
 </ul>
 <h1 id="showtime-live-windows">Showtime: Live Windows</h1>
 <p>As a demonstration of the tool, here is a sample of the kind of information you can collect on a running Windows:</p>
-<pre><code>--------------------------------
+<pre tabindex="0"><code>--------------------------------
 Process: dwm.exe         (948)
 ParentId: 540
 Mitigations:

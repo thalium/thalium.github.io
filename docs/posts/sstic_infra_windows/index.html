@@ -7,15 +7,15 @@
 <meta name="description" content="Thalium blog." />
 <meta name="keywords" content="blog, tech" />
 <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
-<meta name="generator" content="Hugo 0.83.1" />
+<meta name="generator" content="Hugo 0.88.1" />
 
 <link rel="canonical" href="https://thalium.github.io/blog/posts/sstic_infra_windows/">
 <meta property="og:title" content="SSTIC : how to setup a ctf win10 pwn user environment" />
 <meta property="og:description" content="Introduction This post aims to present how to easily setup a lightweight secure user pwning environment for Windows. From your binary challenge communicating with stdin/stdout, this environment provides a multi-client broker listening on a socket, redirecting it to the IO of your binary, and executing it in a jail. This environment is mainly based on the project AppJaillauncher-rs from trailofbits, with some security fixes and some tips to easily setup the RW rights to the system files from the jail." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://thalium.github.io/blog/posts/sstic_infra_windows/" /><meta property="article:section" content="posts" />
-<meta property="article:published_time" content="2021-06-02T15:30:00&#43;01:00" />
-<meta property="article:modified_time" content="2021-06-02T15:30:00&#43;01:00" />
+<meta property="article:published_time" content="2021-06-02T15:30:00+01:00" />
+<meta property="article:modified_time" content="2021-06-02T15:30:00+01:00" />
 
 
 <meta name="twitter:card" content="summary"/>
@@ -24,8 +24,8 @@
 
 
 <meta itemprop="name" content="SSTIC : how to setup a ctf win10 pwn user environment">
-<meta itemprop="description" content="Introduction This post aims to present how to easily setup a lightweight secure user pwning environment for Windows. From your binary challenge communicating with stdin/stdout, this environment provides a multi-client broker listening on a socket, redirecting it to the IO of your binary, and executing it in a jail. This environment is mainly based on the project AppJaillauncher-rs from trailofbits, with some security fixes and some tips to easily setup the RW rights to the system files from the jail."><meta itemprop="datePublished" content="2021-06-02T15:30:00&#43;01:00" />
-<meta itemprop="dateModified" content="2021-06-02T15:30:00&#43;01:00" />
+<meta itemprop="description" content="Introduction This post aims to present how to easily setup a lightweight secure user pwning environment for Windows. From your binary challenge communicating with stdin/stdout, this environment provides a multi-client broker listening on a socket, redirecting it to the IO of your binary, and executing it in a jail. This environment is mainly based on the project AppJaillauncher-rs from trailofbits, with some security fixes and some tips to easily setup the RW rights to the system files from the jail."><meta itemprop="datePublished" content="2021-06-02T15:30:00+01:00" />
+<meta itemprop="dateModified" content="2021-06-02T15:30:00+01:00" />
 <meta itemprop="wordCount" content="1957">
 <meta itemprop="keywords" content="" />
 
@@ -236,12 +236,12 @@ This SID is S-1-15-2-2.
 The RX rights are needed in order to allow the players to list the folders from C:\ to the file on the Desktop.</p>
 <h2 id="commands-to-execute">Commands to execute</h2>
 <p>Command line to add the RW rights to the file on the Desktop of the user, only needed to be executed once per machine :</p>
-<pre><code>ICACLS &quot;C:\Users&quot; /grant &quot;*S-1-15-2-2:(R,RX)&quot;
+<pre tabindex="0"><code>ICACLS &quot;C:\Users&quot; /grant &quot;*S-1-15-2-2:(R,RX)&quot;
 ICACLS &quot;C:\Users\Challenge&quot; /grant &quot;*S-1-15-2-2:(R,RX)&quot;
 ICACLS &quot;C:\Users\Challenge\Desktop&quot; /grant &quot;*S-1-15-2-2:(R,RX)&quot;
 ICACLS &quot;C:\Users\Challenge\Desktop\DRM.zip&quot; /grant &quot;*S-1-15-2-2:(R,RX)&quot;
 </code></pre><p>Command line to execute AppJailLauncher :</p>
-<pre><code> C:\Tools\appjaillauncher-rs.exe run --foldermazes &quot;C:\users\challenge\\mazes&quot; &quot;C:\Tools\SSTIC.exe&quot;
+<pre tabindex="0"><code> C:\Tools\appjaillauncher-rs.exe run --foldermazes &quot;C:\users\challenge\\mazes&quot; &quot;C:\Tools\SSTIC.exe&quot;
 </code></pre><p>&ldquo;C:\Tools\SSTIC.exe&rdquo; argument is the binary that will be executed when a player connects to the port where appjaillauncher listen.</p>
 <p><code>Foldermazes</code> parameter is the folder that will contain the private folders.
 This folder needs to exist before running appjaillauncher.</p>

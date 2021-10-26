@@ -7,7 +7,7 @@
 <meta name="description" content="Thalium blog." />
 <meta name="keywords" content="blog, tech" />
 <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
-<meta name="generator" content="Hugo 0.83.1" />
+<meta name="generator" content="Hugo 0.88.1" />
 
 <link rel="canonical" href="https://thalium.github.io/blog/posts/getting_started/">
 <meta property="og:title" content="Getting Started with Icebox VMI" />
@@ -17,8 +17,8 @@ Try Icebox Icebox now comes with full Python bindings enabling fast prototyping 
 The core itself is in C&#43;&#43; and exposes most of its public functions into an icebox Python 3 module." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://thalium.github.io/blog/posts/getting_started/" /><meta property="article:section" content="posts" />
-<meta property="article:published_time" content="2020-01-24T12:00:00&#43;01:00" />
-<meta property="article:modified_time" content="2020-01-24T12:00:00&#43;01:00" />
+<meta property="article:published_time" content="2020-01-24T12:00:00+01:00" />
+<meta property="article:modified_time" content="2020-01-24T12:00:00+01:00" />
 
 
 <meta name="twitter:card" content="summary"/>
@@ -33,8 +33,8 @@ The core itself is in C&#43;&#43; and exposes most of its public functions into 
 <meta itemprop="description" content="Icebox is a VMI (Virtual Machine Introspection) framework enabling you to stealthily trace and debug any kernel or user code system-wide.
 All Icebox source code can be found on our github page.
 Try Icebox Icebox now comes with full Python bindings enabling fast prototyping on top of VMI, whether you want to trace a user process or inspect the kernel internals.
-The core itself is in C&#43;&#43; and exposes most of its public functions into an icebox Python 3 module."><meta itemprop="datePublished" content="2020-01-24T12:00:00&#43;01:00" />
-<meta itemprop="dateModified" content="2020-01-24T12:00:00&#43;01:00" />
+The core itself is in C&#43;&#43; and exposes most of its public functions into an icebox Python 3 module."><meta itemprop="datePublished" content="2020-01-24T12:00:00+01:00" />
+<meta itemprop="dateModified" content="2020-01-24T12:00:00+01:00" />
 <meta itemprop="wordCount" content="2390">
 <meta itemprop="keywords" content="" />
 
@@ -168,31 +168,31 @@ if (!doNotTrack) {
 <p>Before giving the step by step details, here is a short example showing a few features of the Icebox Python bindings.</p>
 <p>This script will attach to a live VirtualBox VM running windows and named &ldquo;win10&rdquo;.</p>
 <p>It will then find the Desktop Windows Manager process, break on every <code>ntdll!NtWaitForSingleObject</code> function call, and print the current callstack.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> icebox
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> icebox
 
 vm <span style="color:#f92672">=</span> icebox<span style="color:#f92672">.</span>attach(<span style="color:#e6db74">&#34;win10&#34;</span>)  <span style="color:#75715e"># attach to vm named &#34;win10&#34;</span>
 proc <span style="color:#f92672">=</span> vm<span style="color:#f92672">.</span>processes<span style="color:#f92672">.</span>find_name(<span style="color:#e6db74">&#34;dwm.exe&#34;</span>)  <span style="color:#75715e"># find process named &#39;dwm&#39;</span>
-<span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%s</span><span style="color:#e6db74"> pid:</span><span style="color:#e6db74">%d</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> (proc<span style="color:#f92672">.</span>name(), proc<span style="color:#f92672">.</span>pid()))
+print(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%s</span><span style="color:#e6db74"> pid:</span><span style="color:#e6db74">%d</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> (proc<span style="color:#f92672">.</span>name(), proc<span style="color:#f92672">.</span>pid()))
 <span style="color:#66d9ef">for</span> mod <span style="color:#f92672">in</span> [<span style="color:#e6db74">&#34;kernel32&#34;</span>, <span style="color:#e6db74">&#34;kernelbase&#34;</span>]:
     proc<span style="color:#f92672">.</span>symbols<span style="color:#f92672">.</span>load_module(mod)  <span style="color:#75715e"># load some symbols</span>
 
 counter <span style="color:#f92672">=</span> icebox<span style="color:#f92672">.</span>counter()  <span style="color:#75715e"># run the vm until we&#39;ve updated this counter twice</span>
 <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">dump_callstack</span>():  <span style="color:#75715e"># dump the current proc callstack</span>
-    <span style="color:#66d9ef">print</span>()  <span style="color:#75715e"># skip a line</span>
+    print()  <span style="color:#75715e"># skip a line</span>
     <span style="color:#66d9ef">for</span> addr <span style="color:#f92672">in</span> proc<span style="color:#f92672">.</span>callstack():  <span style="color:#75715e"># read current dwm.exe callstack</span>
-        <span style="color:#66d9ef">print</span>(proc<span style="color:#f92672">.</span>symbols<span style="color:#f92672">.</span>string(addr))  <span style="color:#75715e"># convert &amp; print callstack address</span>
+        print(proc<span style="color:#f92672">.</span>symbols<span style="color:#f92672">.</span>string(addr))  <span style="color:#75715e"># convert &amp; print callstack address</span>
     counter<span style="color:#f92672">.</span>add()  <span style="color:#75715e"># update counter</span>
 
 <span style="color:#75715e"># set a breakpoint on ntdll!NtWaitForSingleObject</span>
 <span style="color:#66d9ef">with</span> vm<span style="color:#f92672">.</span>break_on_process(proc, <span style="color:#e6db74">&#34;ntdll!NtWaitForSingleObject&#34;</span>, dump_callstack):
     <span style="color:#66d9ef">while</span> counter<span style="color:#f92672">.</span>read() <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">2</span>:  <span style="color:#75715e"># run until dump_callstack is called twice</span>
-        vm<span style="color:#f92672">.</span><span style="color:#66d9ef">exec</span>()
+        vm<span style="color:#f92672">.</span>exec()
 </code></pre></div><p>Full script can be found here <code>src/icebox/icebox_py/examples/modules.py</code>
 Make sure you&rsquo;ve started the &ldquo;win10&rdquo; VM first &amp; run it with the following command:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">PYTHONPATH<span style="color:#f92672">=</span>$icebox_dir/bin/x64 python3 <span style="color:#ae81ff">\
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">PYTHONPATH<span style="color:#f92672">=</span>$icebox_dir/bin/x64 python3 <span style="color:#ae81ff">\
 </span><span style="color:#ae81ff"></span>    $icebox_dir/src/icebox/icebox_py/examples/getting_started.py
 </code></pre></div><p>Output will look like this:</p>
-<pre><code>17:34:09.478 INFO| core: waiting for shm...
+<pre tabindex="0"><code>17:34:09.478 INFO| core: waiting for shm...
 17:34:09.490 INFO| core: attached
 17:34:09.505 INFO| nt: kernel: 0xfffff8003c8a4000-0xfffff8003d295000 size:0x9f1000
 17:34:09.573 INFO| sym: loaded 69247313056076BBCB3411FD964287141 nt
@@ -236,7 +236,7 @@ ntdll!RtlUserThreadStart+0x21
 </ul>
 <h3 id="build-virtualbox">Build VirtualBox</h3>
 <p>These instructions have been tested on Ubuntu 18.04.3 LTS.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#75715e"># export icebox_dir as your root icebox directory</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#75715e"># export icebox_dir as your root icebox directory</span>
 export icebox_dir<span style="color:#f92672">=</span>~/icebox
 
 <span style="color:#75715e"># clone icebox repository</span>
@@ -272,7 +272,7 @@ sudo groupadd vboxusers
 sudo usermod -a -G vboxusers $USERNAME
 </code></pre></div><h2 id="start-virtualbox">Start VirtualBox</h2>
 <p>You can now start &amp; run VirtualBox using the following instructions:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#75715e"># start vboxdrv driver</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#75715e"># start vboxdrv driver</span>
 cd $icebox_dir/third_party/virtualbox/out/linux.amd64/release/bin
 sudo ./vboxdrv.sh start
 sudo chmod g+rw /dev/vboxdrv
@@ -282,7 +282,7 @@ cd $icebox_dir/third_party/virtualbox/out/linux.amd64/release/bin
 ./VirtualBox &amp;
 </code></pre></div><p>On Windows, before using VirtualBox you will need to be able to load unsigned drivers first. Please be aware that enabling unsigned drivers is a security risk and take that into account.
 Use the following instructions to start VirtualBox on Windows using our precompiled binaries:</p>
-<pre><code># start an admin console
+<pre tabindex="0"><code># start an admin console
 # enable testsigning
 bcdedit.exe -set TESTSIGNING on
 
@@ -309,7 +309,7 @@ We advise you to create a snapshot of the VM after installation so you can quick
 <h2 id="build-icebox">Build Icebox</h2>
 <p>We can now compile Icebox itself with the following instructions.
 These instructions have been tested on Ubuntu 18.04.3 LTS.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">cd $icebox_dir/build
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">cd $icebox_dir/build
 NO_CLANG_FORMAT<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span> ./configure.sh
 cd $icebox_dir/out/x64
 make -j2
@@ -322,7 +322,7 @@ Before running the following instructions, check that:</p>
 <li>The VM is running and named &ldquo;win10&rdquo;</li>
 <li>The Wow64 Task Manager is running in the guest (found at <code>c:\windows\syswow64\Taskmgr.exe</code>).</li>
 </ul>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#75715e"># setup symbols directory</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#75715e"># setup symbols directory</span>
 cd
 mkdir symbols
 export _NT_SYMBOL_PATH<span style="color:#f92672">=</span>~/symbols
@@ -340,10 +340,10 @@ python3 $icebox_dir/src/icebox/icebox_py/symbols.py download win10
 <span style="color:#75715e"># in case of errors, you can try the following script with verbose output</span>
 python3 $icebox_dir/src/icebox/icebox_py/symbols.py check win10
 </code></pre></div><p>Note that downloading PDBs is also possible using <code>symchk.exe</code> tool from Microsoft, with a command like this:</p>
-<pre><code>symchk /r ntoskrnl.exe /od /s SRV*c:\symbols\*http://msdl.microsoft.com/download/symbols
+<pre tabindex="0"><code>symchk /r ntoskrnl.exe /od /s SRV*c:\symbols\*http://msdl.microsoft.com/download/symbols
 </code></pre><h2 id="run-tests-optional">Run tests (optional)</h2>
 <p>You can run our automated tests to ensure everything is working and Python bindings are functional.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#75715e"># run python tests</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#75715e"># run python tests</span>
 python3 $icebox_dir/src/icebox/tests/win10.py $icebox_dir/bin/x64
 </code></pre></div><h2 id="icebox-bindings">Icebox Bindings</h2>
 <p>Let&rsquo;s summarize: we now have:</p>
@@ -359,7 +359,7 @@ python3 $icebox_dir/src/icebox/tests/win10.py $icebox_dir/bin/x64
 <li>Pause, resume, step once and control the VM execution</li>
 <li>Read &amp; write common &amp; MSR registers</li>
 </ul>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> icebox
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> icebox
 
 <span style="color:#75715e"># attach to &#39;win10&#39; VM</span>
 vm <span style="color:#f92672">=</span> icebox<span style="color:#f92672">.</span>attach(<span style="color:#e6db74">&#34;win10&#34;</span>)
@@ -371,17 +371,17 @@ vm<span style="color:#f92672">.</span>step_once()
 
 <span style="color:#75715e"># read/write registers</span>
 <span style="color:#75715e"># rax, rbx, ..., rbp, rip</span>
-<span style="color:#66d9ef">print</span>(hex(vm<span style="color:#f92672">.</span>registers<span style="color:#f92672">.</span>rip))
+print(hex(vm<span style="color:#f92672">.</span>registers<span style="color:#f92672">.</span>rip))
 
 rax <span style="color:#f92672">=</span> vm<span style="color:#f92672">.</span>registers<span style="color:#f92672">.</span>rax
 vm<span style="color:#f92672">.</span>registers<span style="color:#f92672">.</span>rax <span style="color:#f92672">+=</span> <span style="color:#ae81ff">1</span>
 vm<span style="color:#f92672">.</span>registers<span style="color:#f92672">.</span>rax <span style="color:#f92672">=</span> rax
 
 <span style="color:#75715e"># read/write MSR registers</span>
-<span style="color:#66d9ef">print</span>(hex(vm<span style="color:#f92672">.</span>msr<span style="color:#f92672">.</span>lstar))
+print(hex(vm<span style="color:#f92672">.</span>msr<span style="color:#f92672">.</span>lstar))
 </code></pre></div><p>Full script can be found here <code>src/icebox/icebox_py/examples/vm.py</code>.</p>
 <p>You can run this example and all others with a command like this:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">PYTHONPATH<span style="color:#f92672">=</span>$icebox_dir/bin/x64 python3 <span style="color:#ae81ff">\
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">PYTHONPATH<span style="color:#f92672">=</span>$icebox_dir/bin/x64 python3 <span style="color:#ae81ff">\
 </span><span style="color:#ae81ff"></span>    $icebox_dir/src/icebox/icebox_py/examples/vm.py
 </code></pre></div><h3 id="process-api">Process API</h3>
 <p>All process-related API can be found in <code>vm.processes</code>. You can:</p>
@@ -393,9 +393,9 @@ vm<span style="color:#f92672">.</span>registers<span style="color:#f92672">.</sp
 <li>Join a process in kernel or user-mode</li>
 <li>Listen to create/delete process events</li>
 </ul>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># list current processes</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># list current processes</span>
 <span style="color:#66d9ef">for</span> proc <span style="color:#f92672">in</span> vm<span style="color:#f92672">.</span>processes():
-    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%d</span><span style="color:#e6db74">: </span><span style="color:#e6db74">%s</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> (proc<span style="color:#f92672">.</span>pid(), proc<span style="color:#f92672">.</span>name()))
+    print(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%d</span><span style="color:#e6db74">: </span><span style="color:#e6db74">%s</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> (proc<span style="color:#f92672">.</span>pid(), proc<span style="color:#f92672">.</span>name()))
 
 proc <span style="color:#f92672">=</span> vm<span style="color:#f92672">.</span>processes<span style="color:#f92672">.</span>current()  <span style="color:#75715e"># get current process</span>
 proc <span style="color:#f92672">=</span> vm<span style="color:#f92672">.</span>processes<span style="color:#f92672">.</span>find_name(<span style="color:#e6db74">&#34;explorer.exe&#34;</span>)  <span style="color:#75715e"># get explorer.exe</span>
@@ -410,25 +410,25 @@ proc <span style="color:#f92672">=</span> vm<span style="color:#f92672">.</span>
 <span style="color:#66d9ef">assert</span>(proc<span style="color:#f92672">.</span>parent())
 
 proc<span style="color:#f92672">.</span>join_kernel()
-<span style="color:#66d9ef">print</span>(hex(vm<span style="color:#f92672">.</span>registers<span style="color:#f92672">.</span>rip))
+print(hex(vm<span style="color:#f92672">.</span>registers<span style="color:#f92672">.</span>rip))
 
 proc<span style="color:#f92672">.</span>join_user()
-<span style="color:#66d9ef">print</span>(hex(vm<span style="color:#f92672">.</span>registers<span style="color:#f92672">.</span>rip))
+print(hex(vm<span style="color:#f92672">.</span>registers<span style="color:#f92672">.</span>rip))
 
 counter <span style="color:#f92672">=</span> icebox<span style="color:#f92672">.</span>counter()
 <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">on_create</span>(proc):
-    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;+ </span><span style="color:#e6db74">%d</span><span style="color:#e6db74">: </span><span style="color:#e6db74">%s</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> (proc<span style="color:#f92672">.</span>pid(), proc<span style="color:#f92672">.</span>name()))
+    print(<span style="color:#e6db74">&#34;+ </span><span style="color:#e6db74">%d</span><span style="color:#e6db74">: </span><span style="color:#e6db74">%s</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> (proc<span style="color:#f92672">.</span>pid(), proc<span style="color:#f92672">.</span>name()))
     counter<span style="color:#f92672">.</span>add()
 
 <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">on_delete</span>(proc):
-    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;- </span><span style="color:#e6db74">%d</span><span style="color:#e6db74">: </span><span style="color:#e6db74">%s</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> (proc<span style="color:#f92672">.</span>pid(), proc<span style="color:#f92672">.</span>name()))
+    print(<span style="color:#e6db74">&#34;- </span><span style="color:#e6db74">%d</span><span style="color:#e6db74">: </span><span style="color:#e6db74">%s</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> (proc<span style="color:#f92672">.</span>pid(), proc<span style="color:#f92672">.</span>name()))
     counter<span style="color:#f92672">.</span>add()
 
 <span style="color:#75715e"># put breakpoints on process creation &amp; deletion</span>
 <span style="color:#66d9ef">with</span> vm<span style="color:#f92672">.</span>processes<span style="color:#f92672">.</span>break_on_create(on_create):
     <span style="color:#66d9ef">with</span> vm<span style="color:#f92672">.</span>processes<span style="color:#f92672">.</span>break_on_delete(on_delete):
         <span style="color:#66d9ef">while</span> counter<span style="color:#f92672">.</span>read() <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">4</span>:
-            vm<span style="color:#f92672">.</span><span style="color:#66d9ef">exec</span>()
+            vm<span style="color:#f92672">.</span>exec()
 </code></pre></div><p>Full script can be found here <code>src/icebox/icebox_py/examples/process.py</code>.</p>
 <h3 id="threads-api">Threads API</h3>
 <p>All thread-related API can be found in <code>vm.threads</code> or by accessing threads through a process. You can:</p>
@@ -438,10 +438,10 @@ counter <span style="color:#f92672">=</span> icebox<span style="color:#f92672">.
 <li>Read thread properties, like thread process or thread TID</li>
 <li>Listen to create/delete thread events</li>
 </ul>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># list current threads</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># list current threads</span>
 proc <span style="color:#f92672">=</span> vm<span style="color:#f92672">.</span>processes<span style="color:#f92672">.</span>current()
 <span style="color:#66d9ef">for</span> thread <span style="color:#f92672">in</span> proc<span style="color:#f92672">.</span>threads():
-    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%s</span><span style="color:#e6db74">: </span><span style="color:#e6db74">%d</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> (proc<span style="color:#f92672">.</span>name(), thread<span style="color:#f92672">.</span>tid()))
+    print(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%s</span><span style="color:#e6db74">: </span><span style="color:#e6db74">%d</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> (proc<span style="color:#f92672">.</span>name(), thread<span style="color:#f92672">.</span>tid()))
 
 thread <span style="color:#f92672">=</span> vm<span style="color:#f92672">.</span>threads<span style="color:#f92672">.</span>current()  <span style="color:#75715e"># get current thread</span>
 proc_bis <span style="color:#f92672">=</span> thread<span style="color:#f92672">.</span>process()
@@ -449,18 +449,18 @@ proc_bis <span style="color:#f92672">=</span> thread<span style="color:#f92672">
 
 counter <span style="color:#f92672">=</span> icebox<span style="color:#f92672">.</span>counter()
 <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">on_create</span>(thread):
-    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;+ </span><span style="color:#e6db74">%s</span><span style="color:#e6db74">: </span><span style="color:#e6db74">%d</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> (thread<span style="color:#f92672">.</span>process()<span style="color:#f92672">.</span>name(), thread<span style="color:#f92672">.</span>tid()))
+    print(<span style="color:#e6db74">&#34;+ </span><span style="color:#e6db74">%s</span><span style="color:#e6db74">: </span><span style="color:#e6db74">%d</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> (thread<span style="color:#f92672">.</span>process()<span style="color:#f92672">.</span>name(), thread<span style="color:#f92672">.</span>tid()))
     counter<span style="color:#f92672">.</span>add()
 
 <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">on_delete</span>(p):
-    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;- </span><span style="color:#e6db74">%s</span><span style="color:#e6db74">: </span><span style="color:#e6db74">%d</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> (thread<span style="color:#f92672">.</span>process()<span style="color:#f92672">.</span>name(), thread<span style="color:#f92672">.</span>tid()))
+    print(<span style="color:#e6db74">&#34;- </span><span style="color:#e6db74">%s</span><span style="color:#e6db74">: </span><span style="color:#e6db74">%d</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> (thread<span style="color:#f92672">.</span>process()<span style="color:#f92672">.</span>name(), thread<span style="color:#f92672">.</span>tid()))
     counter<span style="color:#f92672">.</span>add()
 
 <span style="color:#75715e"># put breakpoints on thread creation &amp; deletion</span>
 <span style="color:#66d9ef">with</span> vm<span style="color:#f92672">.</span>threads<span style="color:#f92672">.</span>break_on_create(on_create):
     <span style="color:#66d9ef">with</span> vm<span style="color:#f92672">.</span>threads<span style="color:#f92672">.</span>break_on_delete(on_delete):
         <span style="color:#66d9ef">while</span> counter<span style="color:#f92672">.</span>read() <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">4</span>:
-            vm<span style="color:#f92672">.</span><span style="color:#66d9ef">exec</span>()
+            vm<span style="color:#f92672">.</span>exec()
 </code></pre></div><p>Full script can be found here <code>src/icebox/icebox_py/examples/threads.py</code>.</p>
 <h3 id="memory-api">Memory API</h3>
 <p>Both virtual &amp; physical memory can be accessed for reading &amp; writing.
@@ -470,7 +470,7 @@ You can:</p>
 <li>Convert a virtual address from one process to a physical address</li>
 <li>Read &amp; write physical memory through <code>vm.physical</code></li>
 </ul>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># find a virtual address in current process to read</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># find a virtual address in current process to read</span>
 proc <span style="color:#f92672">=</span> vm<span style="color:#f92672">.</span>processes<span style="color:#f92672">.</span>current()
 rip <span style="color:#f92672">=</span> vm<span style="color:#f92672">.</span>registers<span style="color:#f92672">.</span>rip
 
@@ -487,7 +487,7 @@ proc<span style="color:#f92672">.</span>memory<span style="color:#f92672">.</spa
 
 <span style="color:#75715e"># convert virtual address to physical memory address</span>
 phy <span style="color:#f92672">=</span> proc<span style="color:#f92672">.</span>memory<span style="color:#f92672">.</span>physical_address(rip)
-<span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;virtual 0x</span><span style="color:#e6db74">%x</span><span style="color:#e6db74"> -&gt; physical 0x</span><span style="color:#e6db74">%x</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> (rip, phy))
+print(<span style="color:#e6db74">&#34;virtual 0x</span><span style="color:#e6db74">%x</span><span style="color:#e6db74"> -&gt; physical 0x</span><span style="color:#e6db74">%x</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> (rip, phy))
 
 <span style="color:#75715e"># read &amp; write physical memory</span>
 backup <span style="color:#f92672">=</span> vm<span style="color:#f92672">.</span>physical[phy: phy<span style="color:#f92672">+</span><span style="color:#ae81ff">16</span>]  <span style="color:#75715e"># array-like reads</span>
@@ -507,7 +507,7 @@ vm<span style="color:#f92672">.</span>physical<span style="color:#f92672">.</spa
 <li>Types: reading structures &amp; members from memory</li>
 </ul>
 <p>Symbol-related API is mostly per-process and accessed through <code>proc.symbols</code>.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">vm<span style="color:#f92672">.</span>symbols<span style="color:#f92672">.</span>load_driver(<span style="color:#e6db74">&#34;hal&#34;</span>)  <span style="color:#75715e"># load driver symbols</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">vm<span style="color:#f92672">.</span>symbols<span style="color:#f92672">.</span>load_driver(<span style="color:#e6db74">&#34;hal&#34;</span>)  <span style="color:#75715e"># load driver symbols</span>
 vm<span style="color:#f92672">.</span>symbols<span style="color:#f92672">.</span>load_drivers()  <span style="color:#75715e"># load all driver symbols</span>
 
 proc <span style="color:#f92672">=</span> vm<span style="color:#f92672">.</span>processes<span style="color:#f92672">.</span>find_name(<span style="color:#e6db74">&#34;Taskmgr.exe&#34;</span>, icebox<span style="color:#f92672">.</span>flags_x86)
@@ -516,21 +516,21 @@ proc<span style="color:#f92672">.</span>symbols<span style="color:#f92672">.</sp
 
 lstar <span style="color:#f92672">=</span> vm<span style="color:#f92672">.</span>msr<span style="color:#f92672">.</span>lstar
 symbol <span style="color:#f92672">=</span> proc<span style="color:#f92672">.</span>symbols<span style="color:#f92672">.</span>string(lstar)  <span style="color:#75715e"># convert address to string</span>
-<span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%s</span><span style="color:#e6db74"> = 0x</span><span style="color:#e6db74">%x</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> (symbol, lstar))
+print(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%s</span><span style="color:#e6db74"> = 0x</span><span style="color:#e6db74">%x</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> (symbol, lstar))
 addr <span style="color:#f92672">=</span> proc<span style="color:#f92672">.</span>symbols<span style="color:#f92672">.</span>address(symbol)  <span style="color:#75715e"># convert string to address</span>
 <span style="color:#66d9ef">assert</span>(lstar <span style="color:#f92672">==</span> addr)
 
 proc<span style="color:#f92672">.</span>join_kernel()
-<span style="color:#66d9ef">print</span>(proc<span style="color:#f92672">.</span>symbols<span style="color:#f92672">.</span>string(vm<span style="color:#f92672">.</span>registers<span style="color:#f92672">.</span>rip))
+print(proc<span style="color:#f92672">.</span>symbols<span style="color:#f92672">.</span>string(vm<span style="color:#f92672">.</span>registers<span style="color:#f92672">.</span>rip))
 
 proc<span style="color:#f92672">.</span>join_user()
-<span style="color:#66d9ef">print</span>(proc<span style="color:#f92672">.</span>symbols<span style="color:#f92672">.</span>string(vm<span style="color:#f92672">.</span>registers<span style="color:#f92672">.</span>rip))
+print(proc<span style="color:#f92672">.</span>symbols<span style="color:#f92672">.</span>string(vm<span style="color:#f92672">.</span>registers<span style="color:#f92672">.</span>rip))
 
 <span style="color:#75715e"># list all known strucs for named module</span>
 count <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
 <span style="color:#66d9ef">for</span> struc_name <span style="color:#f92672">in</span> proc<span style="color:#f92672">.</span>symbols<span style="color:#f92672">.</span>strucs(<span style="color:#e6db74">&#34;nt&#34;</span>):
     count <span style="color:#f92672">+=</span> <span style="color:#ae81ff">1</span>
-<span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;nt: </span><span style="color:#e6db74">%d</span><span style="color:#e6db74"> structs&#34;</span> <span style="color:#f92672">%</span> count)
+print(<span style="color:#e6db74">&#34;nt: </span><span style="color:#e6db74">%d</span><span style="color:#e6db74"> structs&#34;</span> <span style="color:#f92672">%</span> count)
 
 <span style="color:#75715e"># access struc properties &amp; members</span>
 struc <span style="color:#f92672">=</span> proc<span style="color:#f92672">.</span>symbols<span style="color:#f92672">.</span>struc(<span style="color:#e6db74">&#34;nt!_EPROCESS&#34;</span>)  <span style="color:#75715e"># read struc</span>
@@ -555,65 +555,65 @@ On both of them, you can:</p>
 <li>Read their base address, size and name</li>
 <li>Listen to their create/delete events</li>
 </ul>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># list drivers</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># list drivers</span>
 <span style="color:#66d9ef">for</span> drv <span style="color:#f92672">in</span> vm<span style="color:#f92672">.</span>drivers():
     addr, size <span style="color:#f92672">=</span> drv<span style="color:#f92672">.</span>span()
-    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%x</span><span style="color:#e6db74">-</span><span style="color:#e6db74">%x</span><span style="color:#e6db74"> </span><span style="color:#e6db74">%s</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> (addr, addr<span style="color:#f92672">+</span>size, drv<span style="color:#f92672">.</span>name()))
+    print(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%x</span><span style="color:#e6db74">-</span><span style="color:#e6db74">%x</span><span style="color:#e6db74"> </span><span style="color:#e6db74">%s</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> (addr, addr<span style="color:#f92672">+</span>size, drv<span style="color:#f92672">.</span>name()))
 
 <span style="color:#75715e"># find driver by address</span>
 proc <span style="color:#f92672">=</span> vm<span style="color:#f92672">.</span>processes<span style="color:#f92672">.</span>current()
 vm<span style="color:#f92672">.</span>symbols<span style="color:#f92672">.</span>load_drivers()
 addr <span style="color:#f92672">=</span> proc<span style="color:#f92672">.</span>symbols<span style="color:#f92672">.</span>address(<span style="color:#e6db74">&#34;ndis!NdisSendNetBufferLists&#34;</span>)
 drv <span style="color:#f92672">=</span> vm<span style="color:#f92672">.</span>drivers<span style="color:#f92672">.</span>find(addr)
-<span style="color:#66d9ef">print</span>(drv<span style="color:#f92672">.</span>name())
+print(drv<span style="color:#f92672">.</span>name())
 <span style="color:#66d9ef">assert</span>(drv<span style="color:#f92672">.</span>name() <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">SystemRoot</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">system32</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">drivers</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">ndis.sys&#34;</span>)
 
 <span style="color:#75715e"># list modules</span>
 <span style="color:#66d9ef">for</span> mod <span style="color:#f92672">in</span> proc<span style="color:#f92672">.</span>modules():
     addr, size <span style="color:#f92672">=</span> mod<span style="color:#f92672">.</span>span()
     flags <span style="color:#f92672">=</span> mod<span style="color:#f92672">.</span>flags()
-    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%x</span><span style="color:#e6db74">-</span><span style="color:#e6db74">%x</span><span style="color:#e6db74">: </span><span style="color:#e6db74">%s</span><span style="color:#e6db74"> flags:</span><span style="color:#e6db74">%s</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> (addr, addr<span style="color:#f92672">+</span>size, mod<span style="color:#f92672">.</span>name(), flags))
+    print(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%x</span><span style="color:#e6db74">-</span><span style="color:#e6db74">%x</span><span style="color:#e6db74">: </span><span style="color:#e6db74">%s</span><span style="color:#e6db74"> flags:</span><span style="color:#e6db74">%s</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> (addr, addr<span style="color:#f92672">+</span>size, mod<span style="color:#f92672">.</span>name(), flags))
 
 <span style="color:#75715e"># call this function on every new module created</span>
 counter <span style="color:#f92672">=</span> icebox<span style="color:#f92672">.</span>counter()
 <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">on_create</span>(mod):
     addr, _ <span style="color:#f92672">=</span> mod<span style="color:#f92672">.</span>span()
-    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%x</span><span style="color:#e6db74">: </span><span style="color:#e6db74">%s</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> (addr, mod<span style="color:#f92672">.</span>name()))
+    print(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%x</span><span style="color:#e6db74">: </span><span style="color:#e6db74">%s</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> (addr, mod<span style="color:#f92672">.</span>name()))
     counter<span style="color:#f92672">.</span>add()
 
 <span style="color:#75715e"># add breakpoint on module creation</span>
 proc <span style="color:#f92672">=</span> vm<span style="color:#f92672">.</span>processes<span style="color:#f92672">.</span>wait(<span style="color:#e6db74">&#34;notepad.exe&#34;</span>)
 <span style="color:#66d9ef">with</span> proc<span style="color:#f92672">.</span>modules<span style="color:#f92672">.</span>break_on_create(on_create):
     <span style="color:#66d9ef">while</span> counter<span style="color:#f92672">.</span>read() <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">2</span>:
-        vm<span style="color:#f92672">.</span><span style="color:#66d9ef">exec</span>()
+        vm<span style="color:#f92672">.</span>exec()
 </code></pre></div><p>Full script can be found here <code>src/icebox/icebox_py/examples/modules.py</code>.</p>
 <h3 id="breakpoints-api">Breakpoints API</h3>
 <p>Icebox has various breakpoint handlers. When possible, use the right breakpoint so filtering is done in the core or better, in VirtualBox itself.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">proc <span style="color:#f92672">=</span> vm<span style="color:#f92672">.</span>processes<span style="color:#f92672">.</span>find_name(<span style="color:#e6db74">&#34;Taskmgr.exe&#34;</span>)  <span style="color:#75715e"># find Taskmgr process</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">proc <span style="color:#f92672">=</span> vm<span style="color:#f92672">.</span>processes<span style="color:#f92672">.</span>find_name(<span style="color:#e6db74">&#34;Taskmgr.exe&#34;</span>)  <span style="color:#75715e"># find Taskmgr process</span>
 proc<span style="color:#f92672">.</span>symbols<span style="color:#f92672">.</span>load_module(<span style="color:#e6db74">&#34;ntdll&#34;</span>)
 
 <span style="color:#75715e"># print current process name callback</span>
 <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">print_hit</span>():
-    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%s</span><span style="color:#e6db74"> hit!&#34;</span> <span style="color:#f92672">%</span> vm<span style="color:#f92672">.</span>processes<span style="color:#f92672">.</span>current()<span style="color:#f92672">.</span>name())
+    print(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%s</span><span style="color:#e6db74"> hit!&#34;</span> <span style="color:#f92672">%</span> vm<span style="color:#f92672">.</span>processes<span style="color:#f92672">.</span>current()<span style="color:#f92672">.</span>name())
 
 <span style="color:#75715e"># add breakpoint on ntdll!NtQuerySystemInformation</span>
 addr <span style="color:#f92672">=</span> proc<span style="color:#f92672">.</span>symbols<span style="color:#f92672">.</span>address(<span style="color:#e6db74">&#34;ntdll!NtQuerySystemInformation&#34;</span>)
 <span style="color:#66d9ef">with</span> vm<span style="color:#f92672">.</span>break_on(addr, print_hit):
-    vm<span style="color:#f92672">.</span><span style="color:#66d9ef">exec</span>()
+    vm<span style="color:#f92672">.</span>exec()
 
 <span style="color:#75715e"># filter breakpoint on process</span>
 <span style="color:#66d9ef">with</span> vm<span style="color:#f92672">.</span>break_on_process(proc, addr, print_hit):
-    vm<span style="color:#f92672">.</span><span style="color:#66d9ef">exec</span>()
+    vm<span style="color:#f92672">.</span>exec()
 
 <span style="color:#75715e"># filter breakpoint on thread</span>
 thread <span style="color:#f92672">=</span> vm<span style="color:#f92672">.</span>threads<span style="color:#f92672">.</span>current()
 <span style="color:#66d9ef">with</span> vm<span style="color:#f92672">.</span>break_on_thread(thread, addr, print_hit):
-    vm<span style="color:#f92672">.</span><span style="color:#66d9ef">exec</span>()
+    vm<span style="color:#f92672">.</span>exec()
 
 <span style="color:#75715e"># add breakpoint on physical address</span>
 phy <span style="color:#f92672">=</span> proc<span style="color:#f92672">.</span>memory<span style="color:#f92672">.</span>physical_address(addr)
 <span style="color:#66d9ef">with</span> vm<span style="color:#f92672">.</span>break_on_physical(phy, print_hit):
-    vm<span style="color:#f92672">.</span><span style="color:#66d9ef">exec</span>()
+    vm<span style="color:#f92672">.</span>exec()
 </code></pre></div><p>Full script can be found here <code>src/icebox/icebox_py/examples/breakpoints.py</code>.</p>
 <h3 id="funtions--callstacks-api">Funtions &amp; callstacks API</h3>
 <p>Icebox offers various helpers, like <code>vm.functions</code> and <code>proc.callstack</code> enabling you to:</p>
@@ -622,17 +622,17 @@ phy <span style="color:#f92672">=</span> proc<span style="color:#f92672">.</span
 <li>Set a single-use breakpoint on function return</li>
 <li>Read callstack addresses</li>
 </ul>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># load symbols from current module</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># load symbols from current module</span>
 <span style="color:#75715e"># which will allow nice callstack symbols</span>
 proc <span style="color:#f92672">=</span> vm<span style="color:#f92672">.</span>processes<span style="color:#f92672">.</span>current()
 proc<span style="color:#f92672">.</span>symbols<span style="color:#f92672">.</span>load_modules()
 
 counter <span style="color:#f92672">=</span> icebox<span style="color:#f92672">.</span>counter()
 <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">print_callstack</span>():
-    <span style="color:#66d9ef">print</span>()
+    print()
     proc <span style="color:#f92672">=</span> vm<span style="color:#f92672">.</span>processes<span style="color:#f92672">.</span>current()
     <span style="color:#66d9ef">for</span> i, addr <span style="color:#f92672">in</span> enumerate(proc<span style="color:#f92672">.</span>callstack()):
-        <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%2d</span><span style="color:#e6db74">: </span><span style="color:#e6db74">%s</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> (i, proc<span style="color:#f92672">.</span>symbols<span style="color:#f92672">.</span>string(addr)))
+        print(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%2d</span><span style="color:#e6db74">: </span><span style="color:#e6db74">%s</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> (i, proc<span style="color:#f92672">.</span>symbols<span style="color:#f92672">.</span>string(addr)))
     counter<span style="color:#f92672">.</span>add()
 
 <span style="color:#75715e"># print callstack at every ntdll!NtClose</span>
@@ -640,7 +640,7 @@ addr <span style="color:#f92672">=</span> proc<span style="color:#f92672">.</spa
 phy <span style="color:#f92672">=</span> proc<span style="color:#f92672">.</span>memory<span style="color:#f92672">.</span>physical_address(addr)
 <span style="color:#66d9ef">with</span> vm<span style="color:#f92672">.</span>break_on_physical(phy, print_callstack):
     <span style="color:#66d9ef">while</span> counter<span style="color:#f92672">.</span>read() <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">4</span>:
-        vm<span style="color:#f92672">.</span><span style="color:#66d9ef">exec</span>()
+        vm<span style="color:#f92672">.</span>exec()
 
 <span style="color:#75715e"># various function helpers</span>
 <span style="color:#75715e"># only valid on function entry-point</span>
@@ -650,8 +650,8 @@ vm<span style="color:#f92672">.</span>functions<span style="color:#f92672">.</sp
 
 <span style="color:#75715e"># add single-use breakpoint on function return</span>
 addrs <span style="color:#f92672">=</span> [x <span style="color:#66d9ef">for</span> x <span style="color:#f92672">in</span> vm<span style="color:#f92672">.</span>processes<span style="color:#f92672">.</span>current()<span style="color:#f92672">.</span>callstack()]
-vm<span style="color:#f92672">.</span>functions<span style="color:#f92672">.</span>break_on_return(<span style="color:#66d9ef">lambda</span>: None)
-vm<span style="color:#f92672">.</span><span style="color:#66d9ef">exec</span>()
+vm<span style="color:#f92672">.</span>functions<span style="color:#f92672">.</span>break_on_return(<span style="color:#66d9ef">lambda</span>: <span style="color:#66d9ef">None</span>)
+vm<span style="color:#f92672">.</span>exec()
 
 <span style="color:#75715e"># check callstack</span>
 addrs_return <span style="color:#f92672">=</span> [x <span style="color:#66d9ef">for</span> x <span style="color:#f92672">in</span> vm<span style="color:#f92672">.</span>processes<span style="color:#f92672">.</span>current()<span style="color:#f92672">.</span>callstack()]

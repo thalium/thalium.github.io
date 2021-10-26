@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>ECW 2021 on THALIUM</title>
+    <link>https://thalium.github.io/blog/tags/ecw-2021/</link>
+    <description>Recent content in ECW 2021 on THALIUM</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>Copyright (c) 2020, all rights reserved.</copyright>
+    <lastBuildDate>Mon, 25 Oct 2021 12:00:01 +0100</lastBuildDate><atom:link href="https://thalium.github.io/blog/tags/ecw-2021/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>ECW 2021 - WriteUp</title>
+      <link>https://thalium.github.io/blog/posts/ecw2021-writeup/</link>
+      <pubDate>Mon, 25 Oct 2021 12:00:01 +0100</pubDate>
+      
+      <guid>https://thalium.github.io/blog/posts/ecw2021-writeup/</guid>
+      <description>&lt;p&gt;For the &lt;a href=&#34;https://www.european-cyber-week.eu/&#34;&gt;European Cyber Week&lt;/a&gt; CTF 2021 Thalium created some challenges in our core competencies: reverse and exploitation. This blog post presents some of the write-ups:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;#chest&#34;&gt;Chest (36 solve) - reverse&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#fsb-as-a-service&#34;&gt;FSB as a service (3 solve) - exploitation&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#wysiwyg&#34;&gt;WYSIWYG (3 solve) - reverse&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Pipe Dream (1 solve) - reverse
+&lt;ul&gt;
+&lt;li&gt;the author posted his solution on &lt;a href=&#34;https://face.0xff.re/posts/ecw-ctf-2021-pipe-dream-writeup/&#34;&gt;his personal blog&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Thalium&amp;rsquo;s challenges have been less resolved than others. They were not that difficult, but probably a bit more unexpected. A few additional challenges designed by Thalium are:&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

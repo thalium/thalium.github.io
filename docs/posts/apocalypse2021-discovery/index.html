@@ -7,7 +7,7 @@
 <meta name="description" content="Thalium blog." />
 <meta name="keywords" content="blog, tech" />
 <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
-<meta name="generator" content="Hugo 0.83.1" />
+<meta name="generator" content="Hugo 0.88.1" />
 
 <link rel="canonical" href="https://thalium.github.io/blog/posts/apocalypse2021-discovery/">
 <meta property="og:title" content="Cyber Apocalypse 2021 4/5 - Discovery" />
@@ -18,8 +18,8 @@ an AMQP broker, rabbitmq
 " />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://thalium.github.io/blog/posts/apocalypse2021-discovery/" /><meta property="article:section" content="posts" />
-<meta property="article:published_time" content="2021-04-28T12:00:03&#43;01:00" />
-<meta property="article:modified_time" content="2021-04-28T12:00:03&#43;01:00" />
+<meta property="article:published_time" content="2021-04-28T12:00:03+01:00" />
+<meta property="article:modified_time" content="2021-04-28T12:00:03+01:00" />
 
 
 <meta name="twitter:card" content="summary"/>
@@ -36,8 +36,8 @@ an AMQP broker, rabbitmq
 
 an HTTP server, requesting an authentication
 an AMQP broker, rabbitmq
-"><meta itemprop="datePublished" content="2021-04-28T12:00:03&#43;01:00" />
-<meta itemprop="dateModified" content="2021-04-28T12:00:03&#43;01:00" />
+"><meta itemprop="datePublished" content="2021-04-28T12:00:03+01:00" />
+<meta itemprop="dateModified" content="2021-04-28T12:00:03+01:00" />
 <meta itemprop="wordCount" content="540">
 <meta itemprop="keywords" content="CTF,Writeup,CyberApocalypse2021," />
 
@@ -166,7 +166,7 @@ if (!doNotTrack) {
 <li>an HTTP server, requesting an authentication</li>
 <li>an AMQP broker, <code>rabbitmq</code></li>
 </ul>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">nmap -sT -p 30476,30042 -sV -sC -n -Pn 138.68.182.108
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">nmap -sT -p 30476,30042 -sV -sC -n -Pn 138.68.182.108
 PORT      STATE SERVICE VERSION
 30042/tcp open  http	?
 ...
@@ -192,7 +192,7 @@ PORT      STATE SERVICE VERSION
 |_  locales: en_US
 </code></pre></div><p>The web part is rather awkward, as it keeps returning <code>HTTP 401</code> asking for authentication credentials. The message bus part is not that friendly either, as it requires to authenticate too. Crawling has not helped a lot, and bruteforcing looks rather inefficient for a CTF. <strong>So what else to do ?</strong></p>
 <p>We picked an HTTP response and took a closer look at it:</p>
-<pre><code>...
+<pre tabindex="0"><code>...
 WWW-Authenticate: realm=&quot;appweb_control_panel&quot;,...,opaque=&quot;799d5&quot;...
 ...
 </code></pre><p>Googling <code>appweb</code> is not the safest bet, but googling <code>opaque=&quot;799d5&quot;</code> rapidly returns a <a href="https://www.programmersought.com/article/16096870398/">good candidate</a>.</p>
@@ -202,7 +202,7 @@ WWW-Authenticate: realm=&quot;appweb_control_panel&quot;,...,opaque=&quot;799d5&
 <li>a github reference to the <a href="https://github.com/embedthis/appweb-gpl/blob/master/src/http/httpLib.c#L6063">opaque=&ldquo;799d5&rdquo;</a></li>
 </ul>
 <p>Running the exploit against the target works, and allows to access to the content associated with <code>/</code>:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">Plane Control Panel
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">Plane Control Panel
 Panel which monitors the sensor readings and other controls.
 
 List of sensors
@@ -224,7 +224,7 @@ Base    Topic    leo    27BE4E31517E61D2BEF777B7293B7D8C73C14BD1B8F2839A7B8226CB
 </ol>
 <p>The associated concepts can be found in <a href="https://www.rabbitmq.com/tutorials/tutorial-five-python.html">rabbitmq documentation associated with topics</a>.</p>
 <p>The script below will yield the flag:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e">#!/usr/bin/env python3</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e">#!/usr/bin/env python3</span>
 
 <span style="color:#f92672">from</span> pika <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
 <span style="color:#f92672">import</span> time
@@ -241,22 +241,22 @@ PORT <span style="color:#f92672">=</span> <span style="color:#ae81ff">30476</spa
 
 conn <span style="color:#f92672">=</span> connect(<span style="color:#e6db74">&#39;anthony_davis&#39;</span>, <span style="color:#e6db74">&#39;winniethepooh&#39;</span>)
 <span style="color:#66d9ef">assert</span>(conn)
-<span style="color:#66d9ef">print</span>(conn)
+print(conn)
 
 channel <span style="color:#f92672">=</span> conn<span style="color:#f92672">.</span>channel()
 
-result <span style="color:#f92672">=</span> channel<span style="color:#f92672">.</span>queue_declare(<span style="color:#e6db74">&#39;&#39;</span>, exclusive<span style="color:#f92672">=</span>True)
+result <span style="color:#f92672">=</span> channel<span style="color:#f92672">.</span>queue_declare(<span style="color:#e6db74">&#39;&#39;</span>, exclusive<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
 queue_name <span style="color:#f92672">=</span> result<span style="color:#f92672">.</span>method<span style="color:#f92672">.</span>queue
 
 channel<span style="color:#f92672">.</span>queue_bind(exchange<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Base&#39;</span>, queue<span style="color:#f92672">=</span>queue_name, routing_key<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;#&#39;</span>)
 
 <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">callback</span>(ch, method, properties, body):
-    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34; [x] Received </span><span style="color:#e6db74">%r</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> body<span style="color:#f92672">.</span>decode())
+    print(<span style="color:#e6db74">&#34; [x] Received </span><span style="color:#e6db74">%r</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> body<span style="color:#f92672">.</span>decode())
     time<span style="color:#f92672">.</span>sleep(body<span style="color:#f92672">.</span>count(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;.&#39;</span>))
-    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34; [x] Done&#34;</span>)
+    print(<span style="color:#e6db74">&#34; [x] Done&#34;</span>)
     ch<span style="color:#f92672">.</span>basic_ack(delivery_tag<span style="color:#f92672">=</span>method<span style="color:#f92672">.</span>delivery_tag)
 
-channel<span style="color:#f92672">.</span>basic_consume(queue<span style="color:#f92672">=</span>queue_name, on_message_callback<span style="color:#f92672">=</span>callback, auto_ack<span style="color:#f92672">=</span>True)
+channel<span style="color:#f92672">.</span>basic_consume(queue<span style="color:#f92672">=</span>queue_name, on_message_callback<span style="color:#f92672">=</span>callback, auto_ack<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
 
 channel<span style="color:#f92672">.</span>start_consuming()
 </code></pre></div><p>The flag shows up: <code>CHTB{1_h4v3_n0n4m3@_@}</code>.</p> </div>
