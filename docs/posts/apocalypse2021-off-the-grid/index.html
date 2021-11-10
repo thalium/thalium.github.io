@@ -7,7 +7,7 @@
 <meta name="description" content="Thalium blog." />
 <meta name="keywords" content="blog, tech" />
 <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
-<meta name="generator" content="Hugo 0.88.1" />
+<meta name="generator" content="Hugo 0.89.2" />
 
 <link rel="canonical" href="https://thalium.github.io/blog/posts/apocalypse2021-off-the-grid/">
 <meta property="og:title" content="Cyber Apocalypse 2021 3/5 - Off the grid" />
@@ -31,6 +31,10 @@ We were given an Saleae trace and schematics to analyse. Thalium was one of the 
 <meta itemprop="dateModified" content="2021-04-28T12:00:02+01:00" />
 <meta itemprop="wordCount" content="816">
 <meta itemprop="keywords" content="CTF,Writeup,CyberApocalypse2021,Hardware," />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cousine&display=swap" rel="stylesheet"> 
 
 <link rel="stylesheet" href="https://thalium.github.io/blog/css/layout.css" />
 
@@ -156,12 +160,20 @@ if (!doNotTrack) {
 We were given an <a href="https://thalium.github.io/blog/posts/misc/off-the-grid/off_the_grid.sal">Saleae trace</a> and schematics to analyse. Thalium was one of the very first of 99 players to complete it.</p>
 <h2 id="analyzing-the-saleae-capture">Analyzing the Saleae capture</h2>
 <p>First thing first, what does the schematic tell us ?</p>
-<p><img src="https://thalium.github.io/blog/posts/img/off-the-grid/schematics.png" alt="OLED schematics"></p>
+<p>
+  <a href="https://thalium.github.io/blog/posts/img/off-the-grid/schematics.png" target="_blank">
+    <img src="https://thalium.github.io/blog/posts/img/off-the-grid/schematics.png" alt="OLED schematics">
+  </a>
+</p>
 <p>We have a hardware logic analyzer and one of those cheap OLED screens. In our case, it is an SH1306, with a 128x64 pixels grid (1.3&quot;).
 The schematic shows us how the logic analyzer is connected to the screen&rsquo;s command pins.
 There is still one thing missing, not given in the archive. A file you almost always need when doing hardware reverse: The Datasheet. Just google &ldquo;SH1036 datasheet&rdquo; and you end up with a link like <a href="https://cdn-shop.adafruit.com/datasheets/SSD1306.pdf">this one</a>.
 Armed with these information, let&rsquo;s take a look at the trace now.</p>
-<p><img src="https://thalium.github.io/blog/posts/img/off-the-grid/logic.png" alt="Saleae Logic capture"></p>
+<p>
+  <a href="https://thalium.github.io/blog/posts/img/off-the-grid/logic.png" target="_blank">
+    <img src="https://thalium.github.io/blog/posts/img/off-the-grid/logic.png" alt="Saleae Logic capture">
+  </a>
+</p>
 <p>As you can see on the left, I already labeled the 5 first channels using what I learned from the schematic. There are 6 group of lines, each one aproximatively 1 second appart. We could then assume that 6 different images were drawn on the screen. But what are they, and how do you draw something on the SH1306 OLED screen ? Time to dig into the datasheet.</p>
 <p>First of all, what does the different channel / pin do ?
 DIN stands for &ldquo;Data In&rdquo;, CLK for &ldquo;Clock&rdquo;, CS means &ldquo;Chip select&rdquo;, D/C &ldquo;Data / Command&rdquo; and RST &ldquo;Reset&rdquo;.
@@ -174,18 +186,34 @@ With DIN and CLK, we now know it uses some kind of synchronous communication. D/
 <li>4-wire SPI</li>
 <li>I²C</li>
 </ul>
-<p><img src="https://thalium.github.io/blog/posts/img/off-the-grid/datasheet_com_buses.png" alt="Communication buses"></p>
+<p>
+  <a href="https://thalium.github.io/blog/posts/img/off-the-grid/datasheet_com_buses.png" target="_blank">
+    <img src="https://thalium.github.io/blog/posts/img/off-the-grid/datasheet_com_buses.png" alt="Communication buses">
+  </a>
+</p>
 <p>8-bit communication needs an&hellip; 8 bit bus. In our case, we only use one bit on the DIN channel. Only the 2 types of SPI and I²C use a pin labeled &ldquo;SCLK&rdquo;. On these 3 left, I²C uses 2 pins for data.
 That leaves us with SPI. But which one ? If you look closely on the &ldquo;D/C&rdquo; column, only 4-wire SPI uses it. 3-wire SPI requires it to be on &ldquo;LOW&rdquo; at all time.</p>
 <p>We know which communication bus is in use in our case. How can we extract the data ?</p>
 <p>Saleae software comes with many analyzers. To select one, click on the &ldquo;analyzer&rdquo; icon on the left. By default, you have a quick access to the most used bus/protocols: UART, I²C and SPI. Select SPI.</p>
-<p><img src="https://thalium.github.io/blog/posts/img/off-the-grid/saleae_analyzer.png" alt="Analyzers"></p>
+<p>
+  <a href="https://thalium.github.io/blog/posts/img/off-the-grid/saleae_analyzer.png" target="_blank">
+    <img src="https://thalium.github.io/blog/posts/img/off-the-grid/saleae_analyzer.png" alt="Analyzers">
+  </a>
+</p>
 <p>It then asks you the settings to decode a SPI trace. Set them as in the screenshot below</p>
-<p><img src="https://thalium.github.io/blog/posts/img/off-the-grid/spi_settings.png" alt="SPI settings"></p>
+<p>
+  <a href="https://thalium.github.io/blog/posts/img/off-the-grid/spi_settings.png" target="_blank">
+    <img src="https://thalium.github.io/blog/posts/img/off-the-grid/spi_settings.png" alt="SPI settings">
+  </a>
+</p>
 <p>The clock setting is&hellip; well, CLK channel. We arbitrarily chose RST for the &ldquo;Enable&rdquo; setting, since it stays high all the time.
 MOSI and MISO can be inverted, it will just change the way you parse the extracted data.
 You end up with something like this:</p>
-<p><img src="https://thalium.github.io/blog/posts/img/off-the-grid/spi_command_and_data.png" alt="SPI decoded"></p>
+<p>
+  <a href="https://thalium.github.io/blog/posts/img/off-the-grid/spi_command_and_data.png" target="_blank">
+    <img src="https://thalium.github.io/blog/posts/img/off-the-grid/spi_command_and_data.png" alt="SPI decoded">
+  </a>
+</p>
 <p>And voila !</p>
 <p>The data sent on the wire is a command if the D/C channel is LOW and handled as data otherwise.
 We can use the SPI analyzer to export a <a href="https://thalium.github.io/blog/posts/misc/off-the-grid/trace.txt">trace</a> file:</p>
@@ -207,13 +235,13 @@ But remember, there are potentially 6 images drawn 1 second apart. As each line 
 <li>bursts are delimited with the <code>b0 02 10</code> control sequence</li>
 </ul>
 <p>For each burst corresponds a screen rendering. For each burst subtrace, we can extract the data sent from the master to the slave input (MOSI line):</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> sys
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#ff79c6">import</span> sys
 
-<span style="color:#66d9ef">with</span> open(sys<span style="color:#f92672">.</span>argv[<span style="color:#ae81ff">1</span>], <span style="color:#e6db74">&#34;rt&#34;</span>) <span style="color:#66d9ef">as</span> fh:
-    <span style="color:#66d9ef">for</span> line <span style="color:#f92672">in</span> fh<span style="color:#f92672">.</span>readlines():
-        time, pid, mosi, miso <span style="color:#f92672">=</span> line<span style="color:#f92672">.</span>strip()<span style="color:#f92672">.</span>split(<span style="color:#e6db74">&#34;,&#34;</span>)
-        <span style="color:#66d9ef">if</span> miso[<span style="color:#f92672">-</span><span style="color:#ae81ff">2</span>:] <span style="color:#f92672">!=</span> <span style="color:#e6db74">&#34;00&#34;</span>: <span style="color:#75715e"># filter commands</span>
-              print(mosi[<span style="color:#ae81ff">2</span>:], end<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;&#34;</span>)
+<span style="color:#ff79c6">with</span> <span style="color:#8be9fd;font-style:italic">open</span>(sys<span style="color:#ff79c6">.</span>argv[<span style="color:#bd93f9">1</span>], <span style="color:#f1fa8c">&#34;rt&#34;</span>) <span style="color:#ff79c6">as</span> fh:
+    <span style="color:#ff79c6">for</span> line <span style="color:#ff79c6">in</span> fh<span style="color:#ff79c6">.</span>readlines():
+        time, pid, mosi, miso <span style="color:#ff79c6">=</span> line<span style="color:#ff79c6">.</span>strip()<span style="color:#ff79c6">.</span>split(<span style="color:#f1fa8c">&#34;,&#34;</span>)
+        <span style="color:#ff79c6">if</span> miso[<span style="color:#ff79c6">-</span><span style="color:#bd93f9">2</span>:] <span style="color:#ff79c6">!=</span> <span style="color:#f1fa8c">&#34;00&#34;</span>: <span style="color:#6272a4"># filter commands</span>
+              <span style="color:#8be9fd;font-style:italic">print</span>(mosi[<span style="color:#bd93f9">2</span>:], end<span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;&#34;</span>)
 </code></pre></div><p>Using this script, we obtain the hexdump the screen must render.
 The SH1306 is very similar to the well-known <a href="https://cdn-shop.adafruit.com/datasheets/SSD1306.pdf">SSD1306</a>, their rendering process is equivalent.
 The screen renders a 128x64 bitmap from the top-left pixel in a vertical fashion.</p>
@@ -230,14 +258,38 @@ in our case, will allow us to decode the bursts into 128x64 images:</p>
 </thead>
 <tbody>
 <tr>
-<td><img src="https://thalium.github.io/blog/posts/img/off-the-grid/screen_1.png" alt="trace"></td>
-<td><img src="https://thalium.github.io/blog/posts/img/off-the-grid/screen_2.png" alt="trace"></td>
-<td><img src="https://thalium.github.io/blog/posts/img/off-the-grid/screen_3.png" alt="trace"></td>
+<td>
+  <a href="https://thalium.github.io/blog/posts/img/off-the-grid/screen_1.png" target="_blank">
+    <img src="https://thalium.github.io/blog/posts/img/off-the-grid/screen_1.png" alt="trace">
+  </a>
+</td>
+<td>
+  <a href="https://thalium.github.io/blog/posts/img/off-the-grid/screen_2.png" target="_blank">
+    <img src="https://thalium.github.io/blog/posts/img/off-the-grid/screen_2.png" alt="trace">
+  </a>
+</td>
+<td>
+  <a href="https://thalium.github.io/blog/posts/img/off-the-grid/screen_3.png" target="_blank">
+    <img src="https://thalium.github.io/blog/posts/img/off-the-grid/screen_3.png" alt="trace">
+  </a>
+</td>
 </tr>
 <tr>
-<td><img src="https://thalium.github.io/blog/posts/img/off-the-grid/screen_4.png" alt="trace"></td>
-<td><img src="https://thalium.github.io/blog/posts/img/off-the-grid/screen_5.png" alt="trace"></td>
-<td><img src="https://thalium.github.io/blog/posts/img/off-the-grid/screen_6.png" alt="trace"></td>
+<td>
+  <a href="https://thalium.github.io/blog/posts/img/off-the-grid/screen_4.png" target="_blank">
+    <img src="https://thalium.github.io/blog/posts/img/off-the-grid/screen_4.png" alt="trace">
+  </a>
+</td>
+<td>
+  <a href="https://thalium.github.io/blog/posts/img/off-the-grid/screen_5.png" target="_blank">
+    <img src="https://thalium.github.io/blog/posts/img/off-the-grid/screen_5.png" alt="trace">
+  </a>
+</td>
+<td>
+  <a href="https://thalium.github.io/blog/posts/img/off-the-grid/screen_6.png" target="_blank">
+    <img src="https://thalium.github.io/blog/posts/img/off-the-grid/screen_6.png" alt="trace">
+  </a>
+</td>
 </tr>
 </tbody>
 </table>

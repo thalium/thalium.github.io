@@ -7,7 +7,7 @@
 <meta name="description" content="Thalium blog." />
 <meta name="keywords" content="blog, tech" />
 <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
-<meta name="generator" content="Hugo 0.88.1" />
+<meta name="generator" content="Hugo 0.89.2" />
 
 <link rel="canonical" href="https://thalium.github.io/blog/posts/apocalypse2021-discovery/">
 <meta property="og:title" content="Cyber Apocalypse 2021 4/5 - Discovery" />
@@ -40,6 +40,10 @@ an AMQP broker, rabbitmq
 <meta itemprop="dateModified" content="2021-04-28T12:00:03+01:00" />
 <meta itemprop="wordCount" content="540">
 <meta itemprop="keywords" content="CTF,Writeup,CyberApocalypse2021," />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cousine&display=swap" rel="stylesheet"> 
 
 <link rel="stylesheet" href="https://thalium.github.io/blog/css/layout.css" />
 
@@ -166,11 +170,11 @@ if (!doNotTrack) {
 <li>an HTTP server, requesting an authentication</li>
 <li>an AMQP broker, <code>rabbitmq</code></li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">nmap -sT -p 30476,30042 -sV -sC -n -Pn 138.68.182.108
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">nmap -sT -p 30476,30042 -sV -sC -n -Pn 138.68.182.108
 PORT      STATE SERVICE VERSION
 30042/tcp open  http	?
 ...
-30476/tcp open  amqp    RabbitMQ 3.8.2 <span style="color:#f92672">(</span>0-9<span style="color:#f92672">)</span>
+30476/tcp open  amqp    RabbitMQ 3.8.2 <span style="color:#ff79c6">(</span>0-9<span style="color:#ff79c6">)</span>
 | amqp-info: 
 |   capabilities: 
 |     publisher_confirms: YES
@@ -183,7 +187,7 @@ PORT      STATE SERVICE VERSION
 |     per_consumer_qos: YES
 |     direct_reply_to: YES
 |   cluster_name: rabbit@hwcadiscovery-9130-689c6f9d5d-sbf2f
-|   copyright: Copyright <span style="color:#f92672">(</span>c<span style="color:#f92672">)</span> 2007-2019 Pivotal Software, Inc.
+|   copyright: Copyright <span style="color:#ff79c6">(</span>c<span style="color:#ff79c6">)</span> 2007-2019 Pivotal Software, Inc.
 |   information: Licensed under the MPL 1.1. Website: https://rabbitmq.com
 |   platform: Erlang/OTP 22.2.7
 |   product: RabbitMQ
@@ -202,7 +206,7 @@ WWW-Authenticate: realm=&quot;appweb_control_panel&quot;,...,opaque=&quot;799d5&
 <li>a github reference to the <a href="https://github.com/embedthis/appweb-gpl/blob/master/src/http/httpLib.c#L6063">opaque=&ldquo;799d5&rdquo;</a></li>
 </ul>
 <p>Running the exploit against the target works, and allows to access to the content associated with <code>/</code>:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">Plane Control Panel
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">Plane Control Panel
 Panel which monitors the sensor readings and other controls.
 
 List of sensors
@@ -224,41 +228,41 @@ Base    Topic    leo    27BE4E31517E61D2BEF777B7293B7D8C73C14BD1B8F2839A7B8226CB
 </ol>
 <p>The associated concepts can be found in <a href="https://www.rabbitmq.com/tutorials/tutorial-five-python.html">rabbitmq documentation associated with topics</a>.</p>
 <p>The script below will yield the flag:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e">#!/usr/bin/env python3</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#6272a4">#!/usr/bin/env python3</span>
 
-<span style="color:#f92672">from</span> pika <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
-<span style="color:#f92672">import</span> time
-<span style="color:#f92672">from</span> itertools <span style="color:#f92672">import</span> product
+<span style="color:#ff79c6">from</span> pika <span style="color:#ff79c6">import</span> <span style="color:#ff79c6">*</span>
+<span style="color:#ff79c6">import</span> time
+<span style="color:#ff79c6">from</span> itertools <span style="color:#ff79c6">import</span> product
 
-TARGET <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;138.68.182.108&#39;</span>
-PORT <span style="color:#f92672">=</span> <span style="color:#ae81ff">30476</span>
+TARGET <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#39;138.68.182.108&#39;</span>
+PORT <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">30476</span>
 
-<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">connect</span>(username, password):
-  creds <span style="color:#f92672">=</span> PlainCredentials(username, password)
-  params <span style="color:#f92672">=</span> ConnectionParameters(TARGET, PORT, <span style="color:#e6db74">&#39;/&#39;</span>, creds)
-  conn <span style="color:#f92672">=</span> BlockingConnection(params)
-  <span style="color:#66d9ef">return</span> conn
+<span style="color:#ff79c6">def</span> <span style="color:#50fa7b">connect</span>(username, password):
+  creds <span style="color:#ff79c6">=</span> PlainCredentials(username, password)
+  params <span style="color:#ff79c6">=</span> ConnectionParameters(TARGET, PORT, <span style="color:#f1fa8c">&#39;/&#39;</span>, creds)
+  conn <span style="color:#ff79c6">=</span> BlockingConnection(params)
+  <span style="color:#ff79c6">return</span> conn
 
-conn <span style="color:#f92672">=</span> connect(<span style="color:#e6db74">&#39;anthony_davis&#39;</span>, <span style="color:#e6db74">&#39;winniethepooh&#39;</span>)
-<span style="color:#66d9ef">assert</span>(conn)
-print(conn)
+conn <span style="color:#ff79c6">=</span> connect(<span style="color:#f1fa8c">&#39;anthony_davis&#39;</span>, <span style="color:#f1fa8c">&#39;winniethepooh&#39;</span>)
+<span style="color:#ff79c6">assert</span>(conn)
+<span style="color:#8be9fd;font-style:italic">print</span>(conn)
 
-channel <span style="color:#f92672">=</span> conn<span style="color:#f92672">.</span>channel()
+channel <span style="color:#ff79c6">=</span> conn<span style="color:#ff79c6">.</span>channel()
 
-result <span style="color:#f92672">=</span> channel<span style="color:#f92672">.</span>queue_declare(<span style="color:#e6db74">&#39;&#39;</span>, exclusive<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
-queue_name <span style="color:#f92672">=</span> result<span style="color:#f92672">.</span>method<span style="color:#f92672">.</span>queue
+result <span style="color:#ff79c6">=</span> channel<span style="color:#ff79c6">.</span>queue_declare(<span style="color:#f1fa8c">&#39;&#39;</span>, exclusive<span style="color:#ff79c6">=</span><span style="color:#ff79c6">True</span>)
+queue_name <span style="color:#ff79c6">=</span> result<span style="color:#ff79c6">.</span>method<span style="color:#ff79c6">.</span>queue
 
-channel<span style="color:#f92672">.</span>queue_bind(exchange<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Base&#39;</span>, queue<span style="color:#f92672">=</span>queue_name, routing_key<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;#&#39;</span>)
+channel<span style="color:#ff79c6">.</span>queue_bind(exchange<span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#39;Base&#39;</span>, queue<span style="color:#ff79c6">=</span>queue_name, routing_key<span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#39;#&#39;</span>)
 
-<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">callback</span>(ch, method, properties, body):
-    print(<span style="color:#e6db74">&#34; [x] Received </span><span style="color:#e6db74">%r</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> body<span style="color:#f92672">.</span>decode())
-    time<span style="color:#f92672">.</span>sleep(body<span style="color:#f92672">.</span>count(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;.&#39;</span>))
-    print(<span style="color:#e6db74">&#34; [x] Done&#34;</span>)
-    ch<span style="color:#f92672">.</span>basic_ack(delivery_tag<span style="color:#f92672">=</span>method<span style="color:#f92672">.</span>delivery_tag)
+<span style="color:#ff79c6">def</span> <span style="color:#50fa7b">callback</span>(ch, method, properties, body):
+    <span style="color:#8be9fd;font-style:italic">print</span>(<span style="color:#f1fa8c">&#34; [x] Received </span><span style="color:#f1fa8c">%r</span><span style="color:#f1fa8c">&#34;</span> <span style="color:#ff79c6">%</span> body<span style="color:#ff79c6">.</span>decode())
+    time<span style="color:#ff79c6">.</span>sleep(body<span style="color:#ff79c6">.</span>count(<span style="color:#f1fa8c">b</span><span style="color:#f1fa8c">&#39;.&#39;</span>))
+    <span style="color:#8be9fd;font-style:italic">print</span>(<span style="color:#f1fa8c">&#34; [x] Done&#34;</span>)
+    ch<span style="color:#ff79c6">.</span>basic_ack(delivery_tag<span style="color:#ff79c6">=</span>method<span style="color:#ff79c6">.</span>delivery_tag)
 
-channel<span style="color:#f92672">.</span>basic_consume(queue<span style="color:#f92672">=</span>queue_name, on_message_callback<span style="color:#f92672">=</span>callback, auto_ack<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+channel<span style="color:#ff79c6">.</span>basic_consume(queue<span style="color:#ff79c6">=</span>queue_name, on_message_callback<span style="color:#ff79c6">=</span>callback, auto_ack<span style="color:#ff79c6">=</span><span style="color:#ff79c6">True</span>)
 
-channel<span style="color:#f92672">.</span>start_consuming()
+channel<span style="color:#ff79c6">.</span>start_consuming()
 </code></pre></div><p>The flag shows up: <code>CHTB{1_h4v3_n0n4m3@_@}</code>.</p> </div>
     <footer class="post-footer">
 

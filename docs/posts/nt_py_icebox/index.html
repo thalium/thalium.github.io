@@ -7,7 +7,7 @@
 <meta name="description" content="Thalium blog." />
 <meta name="keywords" content="blog, tech" />
 <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
-<meta name="generator" content="Hugo 0.88.1" />
+<meta name="generator" content="Hugo 0.89.2" />
 
 <link rel="canonical" href="https://thalium.github.io/blog/posts/nt_py_icebox/">
 <meta property="og:title" content="NT objects access tracing" />
@@ -34,6 +34,10 @@ The software architecture can be composed of several elements:
 <meta itemprop="dateModified" content="2021-06-07T12:00:00+01:00" />
 <meta itemprop="wordCount" content="2879">
 <meta itemprop="keywords" content="" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cousine&display=swap" rel="stylesheet"> 
 
 <link rel="stylesheet" href="https://thalium.github.io/blog/css/layout.css" />
 
@@ -182,20 +186,20 @@ Projects such as <a href="https://github.com/google/rekall">Rekall</a> and <a hr
 <li>observe the creation of processes</li>
 </ul>
 <p>These two methods have been documented in a <a href="https://thalium.github.io/blog/posts/getting_started/">previous blogpost</a>:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> icebox
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#ff79c6">import</span> icebox
 
-vm <span style="color:#f92672">=</span> icebox<span style="color:#f92672">.</span>attach(<span style="color:#e6db74">&#34;win10&#34;</span>)
+vm <span style="color:#ff79c6">=</span> icebox<span style="color:#ff79c6">.</span>attach(<span style="color:#f1fa8c">&#34;win10&#34;</span>)
 
-<span style="color:#75715e"># list current processes</span>
-<span style="color:#66d9ef">for</span> proc <span style="color:#f92672">in</span> vm<span style="color:#f92672">.</span>processes():
-    print(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%d</span><span style="color:#e6db74">: </span><span style="color:#e6db74">%s</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> (proc<span style="color:#f92672">.</span>pid(), proc<span style="color:#f92672">.</span>name()))
+<span style="color:#6272a4"># list current processes</span>
+<span style="color:#ff79c6">for</span> proc <span style="color:#ff79c6">in</span> vm<span style="color:#ff79c6">.</span>processes():
+    <span style="color:#8be9fd;font-style:italic">print</span>(<span style="color:#f1fa8c">&#34;</span><span style="color:#f1fa8c">%d</span><span style="color:#f1fa8c">: </span><span style="color:#f1fa8c">%s</span><span style="color:#f1fa8c">&#34;</span> <span style="color:#ff79c6">%</span> (proc<span style="color:#ff79c6">.</span>pid(), proc<span style="color:#ff79c6">.</span>name()))
 
-<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">on_create</span>(proc):
-    print(<span style="color:#e6db74">&#34;+ </span><span style="color:#e6db74">%d</span><span style="color:#e6db74">: </span><span style="color:#e6db74">%s</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> (proc<span style="color:#f92672">.</span>pid(), proc<span style="color:#f92672">.</span>name()))
+<span style="color:#ff79c6">def</span> <span style="color:#50fa7b">on_create</span>(proc):
+    <span style="color:#8be9fd;font-style:italic">print</span>(<span style="color:#f1fa8c">&#34;+ </span><span style="color:#f1fa8c">%d</span><span style="color:#f1fa8c">: </span><span style="color:#f1fa8c">%s</span><span style="color:#f1fa8c">&#34;</span> <span style="color:#ff79c6">%</span> (proc<span style="color:#ff79c6">.</span>pid(), proc<span style="color:#ff79c6">.</span>name()))
 
-<span style="color:#75715e"># break on process creation</span>
-<span style="color:#66d9ef">with</span> vm<span style="color:#f92672">.</span>processes<span style="color:#f92672">.</span>break_on_create(on_create):
-    vm<span style="color:#f92672">.</span>exec()
+<span style="color:#6272a4"># break on process creation</span>
+<span style="color:#ff79c6">with</span> vm<span style="color:#ff79c6">.</span>processes<span style="color:#ff79c6">.</span>break_on_create(on_create):
+    vm<span style="color:#ff79c6">.</span>exec()
 </code></pre></div><p>Obviously, all of the output of these methods won&rsquo;t necessarily be related to our software, some of these processes need to be filtered out.
 A good criterion to filter the processes is the image file name location (e.g. in the software installation folder).</p>
 <h1 id="windows-ipc">Windows IPC</h1>
@@ -204,8 +208,8 @@ A good criterion to filter the processes is the image file name location (e.g. i
 <h2 id="break-at-some-point">Break at some point</h2>
 <p>The <code>HANDLE</code> creation is done by Windows through the kernel function <code>nt!ObpCreateHandle</code>. By breaking onto this function, it is possible to monitor all accesses to the objects by the software processes.</p>
 <p>The prototype of this function is given below:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">NTSTATUS
-<span style="color:#a6e22e">ObpCreateHandle</span>(
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">NTSTATUS
+<span style="color:#50fa7b">ObpCreateHandle</span>(
   IN  OB_OPEN_REASON OpenReason,
   IN  PVOID Object,
   IN  POBJECT_TYPE ExpectedObjectType OPTIONAL,
@@ -214,33 +218,33 @@ A good criterion to filter the processes is the image file name location (e.g. i
   IN  ULONG Attributes,
   IN  POBP_LOOKUP_CONTEXT LookupContext,
   IN  KPROCESSOR_MODE AccessMode,
-  OUT PVOID <span style="color:#f92672">*</span>ReferencedNewObject OPTIONAL,
+  OUT PVOID <span style="color:#ff79c6">*</span>ReferencedNewObject OPTIONAL,
   OUT PHANDLE Handle
   );
 </code></pre></div><p>The parameter of interest is <code>PVOID Object</code> which is a pointer to the body of the object.</p>
 <p>In order to break onto this function and obtain said pointer through Icebox, we can use the following snippet:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> icebox
-<span style="color:#f92672">from</span> nt_types <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#ff79c6">import</span> icebox
+<span style="color:#ff79c6">from</span> nt_types <span style="color:#ff79c6">import</span> <span style="color:#ff79c6">*</span>
 
-<span style="color:#75715e"># specify the targeted VM</span>
-vm <span style="color:#f92672">=</span> icebox<span style="color:#f92672">.</span>attach(<span style="color:#e6db74">&#34;win10&#34;</span>)
-proc <span style="color:#f92672">=</span> vm<span style="color:#f92672">.</span>processes<span style="color:#f92672">.</span>current()
+<span style="color:#6272a4"># specify the targeted VM</span>
+vm <span style="color:#ff79c6">=</span> icebox<span style="color:#ff79c6">.</span>attach(<span style="color:#f1fa8c">&#34;win10&#34;</span>)
+proc <span style="color:#ff79c6">=</span> vm<span style="color:#ff79c6">.</span>processes<span style="color:#ff79c6">.</span>current()
 
-<span style="color:#75715e"># get the address of the given symbol</span>
-addr <span style="color:#f92672">=</span> proc<span style="color:#f92672">.</span>symbols<span style="color:#f92672">.</span>address(<span style="color:#e6db74">&#34;nt!ObpCreateHandle&#34;</span>)
+<span style="color:#6272a4"># get the address of the given symbol</span>
+addr <span style="color:#ff79c6">=</span> proc<span style="color:#ff79c6">.</span>symbols<span style="color:#ff79c6">.</span>address(<span style="color:#f1fa8c">&#34;nt!ObpCreateHandle&#34;</span>)
 
-<span style="color:#75715e"># breakpoint callback</span>
-<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">on_break</span>():
-    p <span style="color:#f92672">=</span> vm<span style="color:#f92672">.</span>processes<span style="color:#f92672">.</span>current()
-    p<span style="color:#f92672">.</span>symbols<span style="color:#f92672">.</span>load_modules()
+<span style="color:#6272a4"># breakpoint callback</span>
+<span style="color:#ff79c6">def</span> <span style="color:#50fa7b">on_break</span>():
+    p <span style="color:#ff79c6">=</span> vm<span style="color:#ff79c6">.</span>processes<span style="color:#ff79c6">.</span>current()
+    p<span style="color:#ff79c6">.</span>symbols<span style="color:#ff79c6">.</span>load_modules()
 
-    <span style="color:#75715e"># access the argument stored in rdx</span>
-    _object <span style="color:#f92672">=</span> nt_Object(p, vm<span style="color:#f92672">.</span>registers<span style="color:#f92672">.</span>rdx)
+    <span style="color:#6272a4"># access the argument stored in rdx</span>
+    _object <span style="color:#ff79c6">=</span> nt_Object(p, vm<span style="color:#ff79c6">.</span>registers<span style="color:#ff79c6">.</span>rdx)
 
-<span style="color:#66d9ef">while</span> <span style="color:#66d9ef">True</span>:
-    <span style="color:#75715e"># break on the address of nt!ObpCreateHandle and execute the callback on_break</span>
-    <span style="color:#66d9ef">with</span> vm<span style="color:#f92672">.</span>break_on(addr, on_break):
-        vm<span style="color:#f92672">.</span>exec()
+<span style="color:#ff79c6">while</span> <span style="color:#ff79c6">True</span>:
+    <span style="color:#6272a4"># break on the address of nt!ObpCreateHandle and execute the callback on_break</span>
+    <span style="color:#ff79c6">with</span> vm<span style="color:#ff79c6">.</span>break_on(addr, on_break):
+        vm<span style="color:#ff79c6">.</span>exec()
 
 </code></pre></div><p>At this point, the object has an opaque structure, it might be needed to support the specificities of each object type. Indeed, the <code>PVOID</code> pointer will be used as specific type pointer by the NT Object Manager:</p>
 <ul>
@@ -258,24 +262,24 @@ addr <span style="color:#f92672">=</span> proc<span style="color:#f92672">.</spa
 </ul>
 <p>In order to access these data through the opaque nt object pointer we have, it is required to implement the object specifities through Icebox.</p>
 <p>Here is an example of the <code>nt_Object</code> class <a href="https://github.com/agatignol/NtPy/blob/master/handle_tracer/nt_types.py#L531">implementation</a>:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">nt_Object</span>():
-    <span style="color:#66d9ef">def</span> __init__(self, proc, p_object):
-        self<span style="color:#f92672">.</span>object <span style="color:#f92672">=</span> p_object
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#ff79c6">class</span> <span style="color:#50fa7b">nt_Object</span>():
+    <span style="color:#ff79c6">def</span> __init__(self, proc, p_object):
+        self<span style="color:#ff79c6">.</span>object <span style="color:#ff79c6">=</span> p_object
 
-        <span style="color:#75715e"># obtain a pointer to the header of the object</span>
-        self<span style="color:#f92672">.</span>object_header <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>__get_object_header(proc)
+        <span style="color:#6272a4"># obtain a pointer to the header of the object</span>
+        self<span style="color:#ff79c6">.</span>object_header <span style="color:#ff79c6">=</span> self<span style="color:#ff79c6">.</span>__get_object_header(proc)
 
-        <span style="color:#75715e"># obtain the info mask in order to obtain metadata on the object</span>
-        self<span style="color:#f92672">.</span>object_header_info_mask <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>__get_object_header_info_mask(proc)
+        <span style="color:#6272a4"># obtain the info mask in order to obtain metadata on the object</span>
+        self<span style="color:#ff79c6">.</span>object_header_info_mask <span style="color:#ff79c6">=</span> self<span style="color:#ff79c6">.</span>__get_object_header_info_mask(proc)
 
-        <span style="color:#75715e"># obtain the pointer to the security descriptor of the object</span>
-        self<span style="color:#f92672">.</span>sd <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>__get_object_sd(proc)
+        <span style="color:#6272a4"># obtain the pointer to the security descriptor of the object</span>
+        self<span style="color:#ff79c6">.</span>sd <span style="color:#ff79c6">=</span> self<span style="color:#ff79c6">.</span>__get_object_sd(proc)
 
-        <span style="color:#75715e"># obtain the object type</span>
-        self<span style="color:#f92672">.</span>object_type <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>__get_object_type(proc)
+        <span style="color:#6272a4"># obtain the object type</span>
+        self<span style="color:#ff79c6">.</span>object_type <span style="color:#ff79c6">=</span> self<span style="color:#ff79c6">.</span>__get_object_type(proc)
 
-        <span style="color:#75715e"># obtain a pointer to the body of the object</span>
-        self<span style="color:#f92672">.</span>object_body <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>__get_object_body(proc)
+        <span style="color:#6272a4"># obtain a pointer to the body of the object</span>
+        self<span style="color:#ff79c6">.</span>object_body <span style="color:#ff79c6">=</span> self<span style="color:#ff79c6">.</span>__get_object_body(proc)
 </code></pre></div><p>In order to get a better handling of the object body, it is necessary to identify the object type.</p>
 <p>To obtain the object type, the Windows kernel uses the <code>nt!ObGetObjectType</code> function. Below, one implementation of this function is given.
 This implementation relies on two functions:</p>
@@ -283,40 +287,40 @@ This implementation relies on two functions:</p>
 <li>an accesser to the encoded object type: <code>__get_object_type</code></li>
 <li>a decoder to retrieve the real object type: <code>__get_type_index</code></li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">__get_type_index</span>(self, proc, ObHeaderCookie):
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">    <span style="color:#ff79c6">def</span> <span style="color:#50fa7b">__get_type_index</span>(self, proc, ObHeaderCookie):
 
-        offset <span style="color:#f92672">=</span> get_symbol_offset(proc, <span style="color:#e6db74">&#34;nt!_OBJECT_HEADER&#34;</span>, <span style="color:#e6db74">&#34;TypeIndex&#34;</span>)
-        typeindex <span style="color:#f92672">=</span> read_byte(proc, self<span style="color:#f92672">.</span>object_header <span style="color:#f92672">+</span> offset)[<span style="color:#ae81ff">0</span>]
+        offset <span style="color:#ff79c6">=</span> get_symbol_offset(proc, <span style="color:#f1fa8c">&#34;nt!_OBJECT_HEADER&#34;</span>, <span style="color:#f1fa8c">&#34;TypeIndex&#34;</span>)
+        typeindex <span style="color:#ff79c6">=</span> read_byte(proc, self<span style="color:#ff79c6">.</span>object_header <span style="color:#ff79c6">+</span> offset)[<span style="color:#bd93f9">0</span>]
 
-        cookie <span style="color:#f92672">=</span> read_byte(proc, ObHeaderCookie)[<span style="color:#ae81ff">0</span>]
-        addr_lsb <span style="color:#f92672">=</span> get_n_byte(self<span style="color:#f92672">.</span>object_header, <span style="color:#ae81ff">1</span>)
+        cookie <span style="color:#ff79c6">=</span> read_byte(proc, ObHeaderCookie)[<span style="color:#bd93f9">0</span>]
+        addr_lsb <span style="color:#ff79c6">=</span> get_n_byte(self<span style="color:#ff79c6">.</span>object_header, <span style="color:#bd93f9">1</span>)
 
-        <span style="color:#75715e"># use the cookie to get the real index</span>
-        index <span style="color:#f92672">=</span> typeindex <span style="color:#f92672">^</span> cookie <span style="color:#f92672">^</span> int(addr_lsb, <span style="color:#ae81ff">16</span>)
+        <span style="color:#6272a4"># use the cookie to get the real index</span>
+        index <span style="color:#ff79c6">=</span> typeindex <span style="color:#ff79c6">^</span> cookie <span style="color:#ff79c6">^</span> <span style="color:#8be9fd;font-style:italic">int</span>(addr_lsb, <span style="color:#bd93f9">16</span>)
 
-        <span style="color:#66d9ef">return</span> index
+        <span style="color:#ff79c6">return</span> index
 
-   <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">__get_object_type</span>(self, proc):
-       <span style="color:#75715e"># nt!ObGetObjectType</span>
+   <span style="color:#ff79c6">def</span> <span style="color:#50fa7b">__get_object_type</span>(self, proc):
+       <span style="color:#6272a4"># nt!ObGetObjectType</span>
 
-       <span style="color:#66d9ef">if</span> self<span style="color:#f92672">.</span>object_header <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>:
-           <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>
+       <span style="color:#ff79c6">if</span> self<span style="color:#ff79c6">.</span>object_header <span style="color:#ff79c6">==</span> <span style="color:#bd93f9">0</span>:
+           <span style="color:#ff79c6">return</span> <span style="color:#bd93f9">0</span>
 
-       <span style="color:#75715e"># array of object type</span>
-       ObTypeIndexTable <span style="color:#f92672">=</span> proc<span style="color:#f92672">.</span>symbols<span style="color:#f92672">.</span>address(<span style="color:#e6db74">&#34;nt!ObTypeIndexTable&#34;</span>)
+       <span style="color:#6272a4"># array of object type</span>
+       ObTypeIndexTable <span style="color:#ff79c6">=</span> proc<span style="color:#ff79c6">.</span>symbols<span style="color:#ff79c6">.</span>address(<span style="color:#f1fa8c">&#34;nt!ObTypeIndexTable&#34;</span>)
 
-       <span style="color:#75715e"># object type protection cookie</span>
-       ObHeaderCookie <span style="color:#f92672">=</span> proc<span style="color:#f92672">.</span>symbols<span style="color:#f92672">.</span>address(<span style="color:#e6db74">&#34;nt!ObHeaderCookie&#34;</span>)
+       <span style="color:#6272a4"># object type protection cookie</span>
+       ObHeaderCookie <span style="color:#ff79c6">=</span> proc<span style="color:#ff79c6">.</span>symbols<span style="color:#ff79c6">.</span>address(<span style="color:#f1fa8c">&#34;nt!ObHeaderCookie&#34;</span>)
 
-       index <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>__get_type_index(proc, ObHeaderCookie)
-       a_object_type <span style="color:#f92672">=</span> ObTypeIndexTable <span style="color:#f92672">+</span> (index <span style="color:#f92672">*</span> <span style="color:#ae81ff">8</span>)
-       object_type <span style="color:#f92672">=</span> read_uint64(proc, a_object_type)
+       index <span style="color:#ff79c6">=</span> self<span style="color:#ff79c6">.</span>__get_type_index(proc, ObHeaderCookie)
+       a_object_type <span style="color:#ff79c6">=</span> ObTypeIndexTable <span style="color:#ff79c6">+</span> (index <span style="color:#ff79c6">*</span> <span style="color:#bd93f9">8</span>)
+       object_type <span style="color:#ff79c6">=</span> read_uint64(proc, a_object_type)
 
-       o_name <span style="color:#f92672">=</span> get_symbol_offset(proc, <span style="color:#e6db74">&#34;nt!_OBJECT_TYPE&#34;</span>, <span style="color:#e6db74">&#34;Name&#34;</span>)
-       name_string <span style="color:#f92672">=</span> object_type <span style="color:#f92672">+</span> o_name
-       object_type_name <span style="color:#f92672">=</span> get_unicode_string(proc, name_string)
+       o_name <span style="color:#ff79c6">=</span> get_symbol_offset(proc, <span style="color:#f1fa8c">&#34;nt!_OBJECT_TYPE&#34;</span>, <span style="color:#f1fa8c">&#34;Name&#34;</span>)
+       name_string <span style="color:#ff79c6">=</span> object_type <span style="color:#ff79c6">+</span> o_name
+       object_type_name <span style="color:#ff79c6">=</span> get_unicode_string(proc, name_string)
 
-       <span style="color:#66d9ef">return</span> object_type_name
+       <span style="color:#ff79c6">return</span> object_type_name
 </code></pre></div><p>Apart from the kernel itself, more details are given in the following blogpost to retrieve the object type:</p>
 <ul>
 <li><a href="https://medium.com/@ashabdalhalim/a-light-on-windows-10s-object-header-typeindex-value-e8f907e7073a">https://medium.com/@ashabdalhalim/a-light-on-windows-10s-object-header-typeindex-value-e8f907e7073a</a></li>
@@ -329,167 +333,167 @@ This implementation relies on two functions:</p>
 </ul>
 <p>Once the object type is determined, it is possible to gather object type-specific information through type-specific handlers.</p>
 <p>For instance, the <code>nt_Process</code> class, used to represent <code>nt!_EPROCESS</code>, implements the <code>__get_mitigations</code> method to gather its <code>MitigationFlagsValues</code>.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> icebox
-<span style="color:#f92672">import</span> argparse
-<span style="color:#f92672">from</span> utils <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
-<span style="color:#f92672">from</span> nt_types <span style="color:#f92672">import</span> nt_Process
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#ff79c6">import</span> icebox
+<span style="color:#ff79c6">import</span> argparse
+<span style="color:#ff79c6">from</span> utils <span style="color:#ff79c6">import</span> <span style="color:#ff79c6">*</span>
+<span style="color:#ff79c6">from</span> nt_types <span style="color:#ff79c6">import</span> nt_Process
 
 
-MITIGATIONS <span style="color:#f92672">=</span> {
-    <span style="color:#ae81ff">0x00000001</span>: <span style="color:#e6db74">&#34;ControlFlowGuardEnabled&#34;</span>,
-    <span style="color:#ae81ff">0x00000002</span>: <span style="color:#e6db74">&#34;ControlFlowGuardExportSuppressionEnabled&#34;</span>,
-    <span style="color:#ae81ff">0x00000004</span>: <span style="color:#e6db74">&#34;ControlFlowGuardStrict&#34;</span>,
-    <span style="color:#ae81ff">0x00000008</span>: <span style="color:#e6db74">&#34;DisallowStrippedImages&#34;</span>,
-    <span style="color:#ae81ff">0x00000010</span>: <span style="color:#e6db74">&#34;ForceRelocateImages&#34;</span>,
-    <span style="color:#ae81ff">0x00000020</span>: <span style="color:#e6db74">&#34;HighEntropyASLREnabled&#34;</span>,
-    <span style="color:#ae81ff">0x00000040</span>: <span style="color:#e6db74">&#34;StackRandomizationDisabled&#34;</span>,
-    <span style="color:#ae81ff">0x00000080</span>: <span style="color:#e6db74">&#34;ExtensionPointDisable&#34;</span>,
-    <span style="color:#ae81ff">0x00000100</span>: <span style="color:#e6db74">&#34;DisableDynamicCode&#34;</span>,
-    <span style="color:#ae81ff">0x00000200</span>: <span style="color:#e6db74">&#34;DisableDynamicCodeAllowOptOut&#34;</span>,
-    <span style="color:#ae81ff">0x00000400</span>: <span style="color:#e6db74">&#34;DisableDynamicCodeAllowRemoteDowngrade&#34;</span>,
-    <span style="color:#ae81ff">0x00000800</span>: <span style="color:#e6db74">&#34;AuditDisableDynamicCode&#34;</span>,
-    <span style="color:#ae81ff">0x00001000</span>: <span style="color:#e6db74">&#34;DisallowWin32kSystemCalls&#34;</span>,
-    <span style="color:#ae81ff">0x00002000</span>: <span style="color:#e6db74">&#34;AuditDisallowWin32kSystemCalls&#34;</span>,
-    <span style="color:#ae81ff">0x00004000</span>: <span style="color:#e6db74">&#34;EnableFilteredWin32kAPIs&#34;</span>,
-    <span style="color:#ae81ff">0x00008000</span>: <span style="color:#e6db74">&#34;AuditFilteredWin32kAPIs&#34;</span>,
-    <span style="color:#ae81ff">0x00010000</span>: <span style="color:#e6db74">&#34;DisableNonSystemFonts&#34;</span>,
-    <span style="color:#ae81ff">0x00020000</span>: <span style="color:#e6db74">&#34;AuditNonSystemFontLoading&#34;</span>,
-    <span style="color:#ae81ff">0x00040000</span>: <span style="color:#e6db74">&#34;PreferSystem32Images&#34;</span>,
-    <span style="color:#ae81ff">0x00080000</span>: <span style="color:#e6db74">&#34;ProhibitRemoteImageMap&#34;</span>,
-    <span style="color:#ae81ff">0x00100000</span>: <span style="color:#e6db74">&#34;AuditProhibitRemoteImageMap&#34;</span>,
-    <span style="color:#ae81ff">0x00200000</span>: <span style="color:#e6db74">&#34;ProhibitLowILImageMap&#34;</span>,
-    <span style="color:#ae81ff">0x00400000</span>: <span style="color:#e6db74">&#34;AuditProhibitLowILImageMap&#34;</span>,
-    <span style="color:#ae81ff">0x00800000</span>: <span style="color:#e6db74">&#34;SignatureMitigationOptIn&#34;</span>,
-    <span style="color:#ae81ff">0x01000000</span>: <span style="color:#e6db74">&#34;AuditBlockNonMicrosoftBinaries&#34;</span>,
-    <span style="color:#ae81ff">0x02000000</span>: <span style="color:#e6db74">&#34;AuditBlockNonMicrosoftBinariesAllowStore&#34;</span>,
-    <span style="color:#ae81ff">0x04000000</span>: <span style="color:#e6db74">&#34;LoaderIntegrityContinuityEnabled&#34;</span>,
-    <span style="color:#ae81ff">0x08000000</span>: <span style="color:#e6db74">&#34;AuditLoaderIntegrityContinuity&#34;</span>,
-    <span style="color:#ae81ff">0x10000000</span>: <span style="color:#e6db74">&#34;EnableModuleTamperingProtection&#34;</span>,
-    <span style="color:#ae81ff">0x20000000</span>: <span style="color:#e6db74">&#34;EnableModuleTamperingProtectionNoInherit&#34;</span>
+MITIGATIONS <span style="color:#ff79c6">=</span> {
+    <span style="color:#bd93f9">0x00000001</span>: <span style="color:#f1fa8c">&#34;ControlFlowGuardEnabled&#34;</span>,
+    <span style="color:#bd93f9">0x00000002</span>: <span style="color:#f1fa8c">&#34;ControlFlowGuardExportSuppressionEnabled&#34;</span>,
+    <span style="color:#bd93f9">0x00000004</span>: <span style="color:#f1fa8c">&#34;ControlFlowGuardStrict&#34;</span>,
+    <span style="color:#bd93f9">0x00000008</span>: <span style="color:#f1fa8c">&#34;DisallowStrippedImages&#34;</span>,
+    <span style="color:#bd93f9">0x00000010</span>: <span style="color:#f1fa8c">&#34;ForceRelocateImages&#34;</span>,
+    <span style="color:#bd93f9">0x00000020</span>: <span style="color:#f1fa8c">&#34;HighEntropyASLREnabled&#34;</span>,
+    <span style="color:#bd93f9">0x00000040</span>: <span style="color:#f1fa8c">&#34;StackRandomizationDisabled&#34;</span>,
+    <span style="color:#bd93f9">0x00000080</span>: <span style="color:#f1fa8c">&#34;ExtensionPointDisable&#34;</span>,
+    <span style="color:#bd93f9">0x00000100</span>: <span style="color:#f1fa8c">&#34;DisableDynamicCode&#34;</span>,
+    <span style="color:#bd93f9">0x00000200</span>: <span style="color:#f1fa8c">&#34;DisableDynamicCodeAllowOptOut&#34;</span>,
+    <span style="color:#bd93f9">0x00000400</span>: <span style="color:#f1fa8c">&#34;DisableDynamicCodeAllowRemoteDowngrade&#34;</span>,
+    <span style="color:#bd93f9">0x00000800</span>: <span style="color:#f1fa8c">&#34;AuditDisableDynamicCode&#34;</span>,
+    <span style="color:#bd93f9">0x00001000</span>: <span style="color:#f1fa8c">&#34;DisallowWin32kSystemCalls&#34;</span>,
+    <span style="color:#bd93f9">0x00002000</span>: <span style="color:#f1fa8c">&#34;AuditDisallowWin32kSystemCalls&#34;</span>,
+    <span style="color:#bd93f9">0x00004000</span>: <span style="color:#f1fa8c">&#34;EnableFilteredWin32kAPIs&#34;</span>,
+    <span style="color:#bd93f9">0x00008000</span>: <span style="color:#f1fa8c">&#34;AuditFilteredWin32kAPIs&#34;</span>,
+    <span style="color:#bd93f9">0x00010000</span>: <span style="color:#f1fa8c">&#34;DisableNonSystemFonts&#34;</span>,
+    <span style="color:#bd93f9">0x00020000</span>: <span style="color:#f1fa8c">&#34;AuditNonSystemFontLoading&#34;</span>,
+    <span style="color:#bd93f9">0x00040000</span>: <span style="color:#f1fa8c">&#34;PreferSystem32Images&#34;</span>,
+    <span style="color:#bd93f9">0x00080000</span>: <span style="color:#f1fa8c">&#34;ProhibitRemoteImageMap&#34;</span>,
+    <span style="color:#bd93f9">0x00100000</span>: <span style="color:#f1fa8c">&#34;AuditProhibitRemoteImageMap&#34;</span>,
+    <span style="color:#bd93f9">0x00200000</span>: <span style="color:#f1fa8c">&#34;ProhibitLowILImageMap&#34;</span>,
+    <span style="color:#bd93f9">0x00400000</span>: <span style="color:#f1fa8c">&#34;AuditProhibitLowILImageMap&#34;</span>,
+    <span style="color:#bd93f9">0x00800000</span>: <span style="color:#f1fa8c">&#34;SignatureMitigationOptIn&#34;</span>,
+    <span style="color:#bd93f9">0x01000000</span>: <span style="color:#f1fa8c">&#34;AuditBlockNonMicrosoftBinaries&#34;</span>,
+    <span style="color:#bd93f9">0x02000000</span>: <span style="color:#f1fa8c">&#34;AuditBlockNonMicrosoftBinariesAllowStore&#34;</span>,
+    <span style="color:#bd93f9">0x04000000</span>: <span style="color:#f1fa8c">&#34;LoaderIntegrityContinuityEnabled&#34;</span>,
+    <span style="color:#bd93f9">0x08000000</span>: <span style="color:#f1fa8c">&#34;AuditLoaderIntegrityContinuity&#34;</span>,
+    <span style="color:#bd93f9">0x10000000</span>: <span style="color:#f1fa8c">&#34;EnableModuleTamperingProtection&#34;</span>,
+    <span style="color:#bd93f9">0x20000000</span>: <span style="color:#f1fa8c">&#34;EnableModuleTamperingProtectionNoInherit&#34;</span>
 }
 
 
-<span style="color:#66d9ef">class</span> <span style="color:#a6e22e">nt_Process</span>():
-    <span style="color:#66d9ef">def</span> __init__(self, proc, body):
-        self<span style="color:#f92672">.</span>process <span style="color:#f92672">=</span> body
-        self<span style="color:#f92672">.</span>name <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>__get_process_name(proc)
-        self<span style="color:#f92672">.</span>pid <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>__get_pid(proc)
-        self<span style="color:#f92672">.</span>token <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>__get_token(proc)
-        self<span style="color:#f92672">.</span>parent <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>__get_parent(proc)
-        self<span style="color:#f92672">.</span>mitigations <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>__get_mitigations(proc)
+<span style="color:#ff79c6">class</span> <span style="color:#50fa7b">nt_Process</span>():
+    <span style="color:#ff79c6">def</span> __init__(self, proc, body):
+        self<span style="color:#ff79c6">.</span>process <span style="color:#ff79c6">=</span> body
+        self<span style="color:#ff79c6">.</span>name <span style="color:#ff79c6">=</span> self<span style="color:#ff79c6">.</span>__get_process_name(proc)
+        self<span style="color:#ff79c6">.</span>pid <span style="color:#ff79c6">=</span> self<span style="color:#ff79c6">.</span>__get_pid(proc)
+        self<span style="color:#ff79c6">.</span>token <span style="color:#ff79c6">=</span> self<span style="color:#ff79c6">.</span>__get_token(proc)
+        self<span style="color:#ff79c6">.</span>parent <span style="color:#ff79c6">=</span> self<span style="color:#ff79c6">.</span>__get_parent(proc)
+        self<span style="color:#ff79c6">.</span>mitigations <span style="color:#ff79c6">=</span> self<span style="color:#ff79c6">.</span>__get_mitigations(proc)
 
-        self<span style="color:#f92672">.</span>il <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;&#34;</span>
-        <span style="color:#66d9ef">if</span> self<span style="color:#f92672">.</span>token <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>:
-            self<span style="color:#f92672">.</span>il <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>token<span style="color:#f92672">.</span>get_il()
+        self<span style="color:#ff79c6">.</span>il <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;&#34;</span>
+        <span style="color:#ff79c6">if</span> self<span style="color:#ff79c6">.</span>token <span style="color:#ff79c6">!=</span> <span style="color:#bd93f9">0</span>:
+            self<span style="color:#ff79c6">.</span>il <span style="color:#ff79c6">=</span> self<span style="color:#ff79c6">.</span>token<span style="color:#ff79c6">.</span>get_il()
 
-    <span style="color:#66d9ef">def</span> __str__(self):
-        info <span style="color:#f92672">=</span> (
-            <span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Process: </span><span style="color:#e6db74">{</span>self<span style="color:#f92672">.</span>name<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>,
-            <span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;ParentId: </span><span style="color:#e6db74">{</span>self<span style="color:#f92672">.</span>parent<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>
+    <span style="color:#ff79c6">def</span> __str__(self):
+        info <span style="color:#ff79c6">=</span> (
+            <span style="color:#f1fa8c">f</span><span style="color:#f1fa8c">&#34;Process: </span><span style="color:#f1fa8c">{</span>self<span style="color:#ff79c6">.</span>name<span style="color:#f1fa8c">}</span><span style="color:#f1fa8c">&#34;</span>,
+            <span style="color:#f1fa8c">f</span><span style="color:#f1fa8c">&#34;ParentId: </span><span style="color:#f1fa8c">{</span>self<span style="color:#ff79c6">.</span>parent<span style="color:#f1fa8c">}</span><span style="color:#f1fa8c">&#34;</span>
         )
-        <span style="color:#66d9ef">if</span> self<span style="color:#f92672">.</span>mitigations:
-            info <span style="color:#f92672">+=</span> <span style="color:#e6db74">&#34;Mitigations:&#34;</span>,
-            <span style="color:#66d9ef">for</span> mitigation <span style="color:#f92672">in</span> self<span style="color:#f92672">.</span>mitigations:
-                info <span style="color:#f92672">+=</span> <span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\t</span><span style="color:#e6db74">{</span>mitigation<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>
+        <span style="color:#ff79c6">if</span> self<span style="color:#ff79c6">.</span>mitigations:
+            info <span style="color:#ff79c6">+=</span> <span style="color:#f1fa8c">&#34;Mitigations:&#34;</span>,
+            <span style="color:#ff79c6">for</span> mitigation <span style="color:#ff79c6">in</span> self<span style="color:#ff79c6">.</span>mitigations:
+                info <span style="color:#ff79c6">+=</span> <span style="color:#f1fa8c">f</span><span style="color:#f1fa8c">&#34;</span><span style="color:#f1fa8c">\t</span><span style="color:#f1fa8c">{</span>mitigation<span style="color:#f1fa8c">}</span><span style="color:#f1fa8c">&#34;</span>
 
-        info <span style="color:#f92672">+=</span> <span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Integrity level: </span><span style="color:#e6db74">{</span>self<span style="color:#f92672">.</span>il<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>
-        <span style="color:#66d9ef">return</span> os<span style="color:#f92672">.</span>linesep<span style="color:#f92672">.</span>join(info)
+        info <span style="color:#ff79c6">+=</span> <span style="color:#f1fa8c">f</span><span style="color:#f1fa8c">&#34;Integrity level: </span><span style="color:#f1fa8c">{</span>self<span style="color:#ff79c6">.</span>il<span style="color:#f1fa8c">}</span><span style="color:#f1fa8c">&#34;</span>
+        <span style="color:#ff79c6">return</span> os<span style="color:#ff79c6">.</span>linesep<span style="color:#ff79c6">.</span>join(info)
 
-    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">get_name</span>(self):
-        <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>name
+    <span style="color:#ff79c6">def</span> <span style="color:#50fa7b">get_name</span>(self):
+        <span style="color:#ff79c6">return</span> self<span style="color:#ff79c6">.</span>name
 
-    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">get_pid</span>(self):
-        <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>pid
+    <span style="color:#ff79c6">def</span> <span style="color:#50fa7b">get_pid</span>(self):
+        <span style="color:#ff79c6">return</span> self<span style="color:#ff79c6">.</span>pid
 
-    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">get_mitigations</span>(self):
-        <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>mitigations
+    <span style="color:#ff79c6">def</span> <span style="color:#50fa7b">get_mitigations</span>(self):
+        <span style="color:#ff79c6">return</span> self<span style="color:#ff79c6">.</span>mitigations
 
-    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">get_parent_pid</span>(self):
-        <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>parent
+    <span style="color:#ff79c6">def</span> <span style="color:#50fa7b">get_parent_pid</span>(self):
+        <span style="color:#ff79c6">return</span> self<span style="color:#ff79c6">.</span>parent
 
-    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">__get_token</span>(self, proc):
-        <span style="color:#66d9ef">if</span> self<span style="color:#f92672">.</span>process <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>:
-            <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>
+    <span style="color:#ff79c6">def</span> <span style="color:#50fa7b">__get_token</span>(self, proc):
+        <span style="color:#ff79c6">if</span> self<span style="color:#ff79c6">.</span>process <span style="color:#ff79c6">==</span> <span style="color:#bd93f9">0</span>:
+            <span style="color:#ff79c6">return</span> <span style="color:#bd93f9">0</span>
 
-        o_token <span style="color:#f92672">=</span> get_symbol_offset(
-            proc, <span style="color:#e6db74">&#34;nt!_EPROCESS&#34;</span>, <span style="color:#e6db74">&#34;Token&#34;</span>)
-        a_token <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>process <span style="color:#f92672">+</span> o_token
+        o_token <span style="color:#ff79c6">=</span> get_symbol_offset(
+            proc, <span style="color:#f1fa8c">&#34;nt!_EPROCESS&#34;</span>, <span style="color:#f1fa8c">&#34;Token&#34;</span>)
+        a_token <span style="color:#ff79c6">=</span> self<span style="color:#ff79c6">.</span>process <span style="color:#ff79c6">+</span> o_token
 
-        token <span style="color:#f92672">=</span> read_uint64(proc, a_token)
-        token <span style="color:#f92672">=</span> token <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0xfffffffffffffff0</span>
+        token <span style="color:#ff79c6">=</span> read_uint64(proc, a_token)
+        token <span style="color:#ff79c6">=</span> token <span style="color:#ff79c6">&amp;</span> <span style="color:#bd93f9">0xfffffffffffffff0</span>
 
-        <span style="color:#66d9ef">if</span> token <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>:
-            <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>
+        <span style="color:#ff79c6">if</span> token <span style="color:#ff79c6">==</span> <span style="color:#bd93f9">0</span>:
+            <span style="color:#ff79c6">return</span> <span style="color:#bd93f9">0</span>
 
-        <span style="color:#66d9ef">return</span> nt_Token(proc, token)
+        <span style="color:#ff79c6">return</span> nt_Token(proc, token)
 
-    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">__get_parent</span>(self, proc):
-        <span style="color:#66d9ef">if</span> self<span style="color:#f92672">.</span>process <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>:
-            <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>
+    <span style="color:#ff79c6">def</span> <span style="color:#50fa7b">__get_parent</span>(self, proc):
+        <span style="color:#ff79c6">if</span> self<span style="color:#ff79c6">.</span>process <span style="color:#ff79c6">==</span> <span style="color:#bd93f9">0</span>:
+            <span style="color:#ff79c6">return</span> <span style="color:#bd93f9">0</span>
 
-        o_pid <span style="color:#f92672">=</span> get_symbol_offset(
-            proc, <span style="color:#e6db74">&#34;nt!_EPROCESS&#34;</span>, <span style="color:#e6db74">&#34;OwnerProcessId&#34;</span>)
-        a_pid <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>process <span style="color:#f92672">+</span> o_pid
-        <span style="color:#66d9ef">return</span> read_uint64(proc, a_pid)
+        o_pid <span style="color:#ff79c6">=</span> get_symbol_offset(
+            proc, <span style="color:#f1fa8c">&#34;nt!_EPROCESS&#34;</span>, <span style="color:#f1fa8c">&#34;OwnerProcessId&#34;</span>)
+        a_pid <span style="color:#ff79c6">=</span> self<span style="color:#ff79c6">.</span>process <span style="color:#ff79c6">+</span> o_pid
+        <span style="color:#ff79c6">return</span> read_uint64(proc, a_pid)
 
-    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">__resolve_mitigations</span>(self, proc, mitigationflag, mitigationflag2):
-        mitigations <span style="color:#f92672">=</span> []
-        <span style="color:#66d9ef">for</span> k, v <span style="color:#f92672">in</span> MITIGATIONS<span style="color:#f92672">.</span>items():
-            <span style="color:#66d9ef">if</span> k <span style="color:#f92672">&amp;</span> mitigationflag:
-                mitigations<span style="color:#f92672">.</span>append(v)
+    <span style="color:#ff79c6">def</span> <span style="color:#50fa7b">__resolve_mitigations</span>(self, proc, mitigationflag, mitigationflag2):
+        mitigations <span style="color:#ff79c6">=</span> []
+        <span style="color:#ff79c6">for</span> k, v <span style="color:#ff79c6">in</span> MITIGATIONS<span style="color:#ff79c6">.</span>items():
+            <span style="color:#ff79c6">if</span> k <span style="color:#ff79c6">&amp;</span> mitigationflag:
+                mitigations<span style="color:#ff79c6">.</span>append(v)
 
-        <span style="color:#66d9ef">for</span> k, v <span style="color:#f92672">in</span> MITIGATIONS2<span style="color:#f92672">.</span>items():
-            <span style="color:#66d9ef">if</span> k <span style="color:#f92672">&amp;</span> mitigationflag2:
-                mitigations<span style="color:#f92672">.</span>append(v)
+        <span style="color:#ff79c6">for</span> k, v <span style="color:#ff79c6">in</span> MITIGATIONS2<span style="color:#ff79c6">.</span>items():
+            <span style="color:#ff79c6">if</span> k <span style="color:#ff79c6">&amp;</span> mitigationflag2:
+                mitigations<span style="color:#ff79c6">.</span>append(v)
 
-        <span style="color:#66d9ef">return</span> mitigations
+        <span style="color:#ff79c6">return</span> mitigations
 
-    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">__get_mitigations</span>(self, proc):
-        <span style="color:#66d9ef">if</span> self<span style="color:#f92672">.</span>process <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>:
-            <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>
+    <span style="color:#ff79c6">def</span> <span style="color:#50fa7b">__get_mitigations</span>(self, proc):
+        <span style="color:#ff79c6">if</span> self<span style="color:#ff79c6">.</span>process <span style="color:#ff79c6">==</span> <span style="color:#bd93f9">0</span>:
+            <span style="color:#ff79c6">return</span> <span style="color:#bd93f9">0</span>
 
-        o_flag <span style="color:#f92672">=</span> get_symbol_offset(
-            proc, <span style="color:#e6db74">&#34;nt!_EPROCESS&#34;</span>, <span style="color:#e6db74">&#34;MitigationFlags&#34;</span>)
-        a_flag <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>process <span style="color:#f92672">+</span> o_flag
+        o_flag <span style="color:#ff79c6">=</span> get_symbol_offset(
+            proc, <span style="color:#f1fa8c">&#34;nt!_EPROCESS&#34;</span>, <span style="color:#f1fa8c">&#34;MitigationFlags&#34;</span>)
+        a_flag <span style="color:#ff79c6">=</span> self<span style="color:#ff79c6">.</span>process <span style="color:#ff79c6">+</span> o_flag
 
-        flag_b <span style="color:#f92672">=</span> proc<span style="color:#f92672">.</span>memory[a_flag:a_flag <span style="color:#f92672">+</span> <span style="color:#ae81ff">4</span>]
-        flag <span style="color:#f92672">=</span> unpack_from(<span style="color:#e6db74">&#34;&lt;I&#34;</span>, flag_b)[<span style="color:#ae81ff">0</span>]
+        flag_b <span style="color:#ff79c6">=</span> proc<span style="color:#ff79c6">.</span>memory[a_flag:a_flag <span style="color:#ff79c6">+</span> <span style="color:#bd93f9">4</span>]
+        flag <span style="color:#ff79c6">=</span> unpack_from(<span style="color:#f1fa8c">&#34;&lt;I&#34;</span>, flag_b)[<span style="color:#bd93f9">0</span>]
 
-        o_flag2 <span style="color:#f92672">=</span> get_symbol_offset(
-            proc, <span style="color:#e6db74">&#34;nt!_EPROCESS&#34;</span>, <span style="color:#e6db74">&#34;MitigationFlags2&#34;</span>)
-        a_flag2 <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>process <span style="color:#f92672">+</span> o_flag2
-        flag2_b <span style="color:#f92672">=</span> proc<span style="color:#f92672">.</span>memory[a_flag2:a_flag2 <span style="color:#f92672">+</span> <span style="color:#ae81ff">4</span>]
-        flag2 <span style="color:#f92672">=</span> unpack_from(<span style="color:#e6db74">&#34;&lt;I&#34;</span>, flag2_b)[<span style="color:#ae81ff">0</span>]
-        mitigations <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>__resolve_mitigations(proc, flag, flag2)
-        <span style="color:#66d9ef">return</span> mitigations
+        o_flag2 <span style="color:#ff79c6">=</span> get_symbol_offset(
+            proc, <span style="color:#f1fa8c">&#34;nt!_EPROCESS&#34;</span>, <span style="color:#f1fa8c">&#34;MitigationFlags2&#34;</span>)
+        a_flag2 <span style="color:#ff79c6">=</span> self<span style="color:#ff79c6">.</span>process <span style="color:#ff79c6">+</span> o_flag2
+        flag2_b <span style="color:#ff79c6">=</span> proc<span style="color:#ff79c6">.</span>memory[a_flag2:a_flag2 <span style="color:#ff79c6">+</span> <span style="color:#bd93f9">4</span>]
+        flag2 <span style="color:#ff79c6">=</span> unpack_from(<span style="color:#f1fa8c">&#34;&lt;I&#34;</span>, flag2_b)[<span style="color:#bd93f9">0</span>]
+        mitigations <span style="color:#ff79c6">=</span> self<span style="color:#ff79c6">.</span>__resolve_mitigations(proc, flag, flag2)
+        <span style="color:#ff79c6">return</span> mitigations
 
-    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">__get_pid</span>(self, proc):
-        <span style="color:#66d9ef">if</span> self<span style="color:#f92672">.</span>process <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>:
-            <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>
+    <span style="color:#ff79c6">def</span> <span style="color:#50fa7b">__get_pid</span>(self, proc):
+        <span style="color:#ff79c6">if</span> self<span style="color:#ff79c6">.</span>process <span style="color:#ff79c6">==</span> <span style="color:#bd93f9">0</span>:
+            <span style="color:#ff79c6">return</span> <span style="color:#bd93f9">0</span>
 
-        o_pid <span style="color:#f92672">=</span> get_symbol_offset(
-            proc, <span style="color:#e6db74">&#34;nt!_EPROCESS&#34;</span>, <span style="color:#e6db74">&#34;UniqueProcessId&#34;</span>)
-        a_pid <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>process <span style="color:#f92672">+</span> o_pid
-        <span style="color:#66d9ef">return</span> read_uint64(proc, a_pid)
+        o_pid <span style="color:#ff79c6">=</span> get_symbol_offset(
+            proc, <span style="color:#f1fa8c">&#34;nt!_EPROCESS&#34;</span>, <span style="color:#f1fa8c">&#34;UniqueProcessId&#34;</span>)
+        a_pid <span style="color:#ff79c6">=</span> self<span style="color:#ff79c6">.</span>process <span style="color:#ff79c6">+</span> o_pid
+        <span style="color:#ff79c6">return</span> read_uint64(proc, a_pid)
 
-    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">__get_process_name</span>(self, proc):
-        <span style="color:#66d9ef">if</span> self<span style="color:#f92672">.</span>process <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>:
-            <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>
+    <span style="color:#ff79c6">def</span> <span style="color:#50fa7b">__get_process_name</span>(self, proc):
+        <span style="color:#ff79c6">if</span> self<span style="color:#ff79c6">.</span>process <span style="color:#ff79c6">==</span> <span style="color:#bd93f9">0</span>:
+            <span style="color:#ff79c6">return</span> <span style="color:#bd93f9">0</span>
 
-        o_name <span style="color:#f92672">=</span> get_symbol_offset(
-            proc, <span style="color:#e6db74">&#34;nt!_EPROCESS&#34;</span>, <span style="color:#e6db74">&#34;ImageFileName&#34;</span>)
-        a_name <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>process <span style="color:#f92672">+</span> o_name
-        <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>__read_process_name(proc, a_name)
+        o_name <span style="color:#ff79c6">=</span> get_symbol_offset(
+            proc, <span style="color:#f1fa8c">&#34;nt!_EPROCESS&#34;</span>, <span style="color:#f1fa8c">&#34;ImageFileName&#34;</span>)
+        a_name <span style="color:#ff79c6">=</span> self<span style="color:#ff79c6">.</span>process <span style="color:#ff79c6">+</span> o_name
+        <span style="color:#ff79c6">return</span> self<span style="color:#ff79c6">.</span>__read_process_name(proc, a_name)
 
-    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">__read_process_name</span>(self, proc, a_name):
-        name <span style="color:#f92672">=</span> bytearray()
-        <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">15</span>):
-            name <span style="color:#f92672">+=</span> read_byte(proc, a_name <span style="color:#f92672">+</span> i)
-        <span style="color:#66d9ef">return</span> name<span style="color:#f92672">.</span>decode(<span style="color:#e6db74">&#34;utf8&#34;</span>, <span style="color:#e6db74">&#34;ignore&#34;</span>)
+    <span style="color:#ff79c6">def</span> <span style="color:#50fa7b">__read_process_name</span>(self, proc, a_name):
+        name <span style="color:#ff79c6">=</span> <span style="color:#8be9fd;font-style:italic">bytearray</span>()
+        <span style="color:#ff79c6">for</span> i <span style="color:#ff79c6">in</span> <span style="color:#8be9fd;font-style:italic">range</span>(<span style="color:#bd93f9">15</span>):
+            name <span style="color:#ff79c6">+=</span> read_byte(proc, a_name <span style="color:#ff79c6">+</span> i)
+        <span style="color:#ff79c6">return</span> name<span style="color:#ff79c6">.</span>decode(<span style="color:#f1fa8c">&#34;utf8&#34;</span>, <span style="color:#f1fa8c">&#34;ignore&#34;</span>)
 
-vm <span style="color:#f92672">=</span> icebox<span style="color:#f92672">.</span>attach(<span style="color:#e6db74">&#34;win10&#34;</span>)
-process <span style="color:#f92672">=</span> nt_Process(vm<span style="color:#f92672">.</span>processes<span style="color:#f92672">.</span>current(), vm<span style="color:#f92672">.</span>processes<span style="color:#f92672">.</span>current()<span style="color:#f92672">.</span>native())
-print(process)
+vm <span style="color:#ff79c6">=</span> icebox<span style="color:#ff79c6">.</span>attach(<span style="color:#f1fa8c">&#34;win10&#34;</span>)
+process <span style="color:#ff79c6">=</span> nt_Process(vm<span style="color:#ff79c6">.</span>processes<span style="color:#ff79c6">.</span>current(), vm<span style="color:#ff79c6">.</span>processes<span style="color:#ff79c6">.</span>current()<span style="color:#ff79c6">.</span>native())
+<span style="color:#8be9fd;font-style:italic">print</span>(process)
 
 </code></pre></div><p>An example output for this would be:</p>
 <pre tabindex="0"><code>Process: svchost.exe (1184)
@@ -507,35 +511,35 @@ Integrity level: System
 </blockquote>
 <p>For most of the object types, the <code>security descriptor</code> in the object header is representative.</p>
 <p>To get access to it, the Windows kernel uses the <code>nt!ObGetObjectSecurity</code> function, which is reimplemented below:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">__get_object_sd</span>(self, proc):
-        <span style="color:#75715e"># nt!ObGetObjectSecurity</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">    <span style="color:#ff79c6">def</span> <span style="color:#50fa7b">__get_object_sd</span>(self, proc):
+        <span style="color:#6272a4"># nt!ObGetObjectSecurity</span>
 
-        o_sd <span style="color:#f92672">=</span> get_symbol_offset(
-            proc, <span style="color:#e6db74">&#34;nt!_OBJECT_HEADER&#34;</span>, <span style="color:#e6db74">&#34;SecurityDescriptor&#34;</span>)
-        a_sd <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>object_header <span style="color:#f92672">+</span> o_sd
-        sd <span style="color:#f92672">=</span> read_uint64(proc, a_sd)
+        o_sd <span style="color:#ff79c6">=</span> get_symbol_offset(
+            proc, <span style="color:#f1fa8c">&#34;nt!_OBJECT_HEADER&#34;</span>, <span style="color:#f1fa8c">&#34;SecurityDescriptor&#34;</span>)
+        a_sd <span style="color:#ff79c6">=</span> self<span style="color:#ff79c6">.</span>object_header <span style="color:#ff79c6">+</span> o_sd
+        sd <span style="color:#ff79c6">=</span> read_uint64(proc, a_sd)
 
-        <span style="color:#66d9ef">if</span> sd <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>:
-            <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>
+        <span style="color:#ff79c6">if</span> sd <span style="color:#ff79c6">==</span> <span style="color:#bd93f9">0</span>:
+            <span style="color:#ff79c6">return</span> <span style="color:#bd93f9">0</span>
 
-        sd <span style="color:#f92672">=</span> sd <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0xfffffffffffffff0</span>
+        sd <span style="color:#ff79c6">=</span> sd <span style="color:#ff79c6">&amp;</span> <span style="color:#bd93f9">0xfffffffffffffff0</span>
 
-        <span style="color:#66d9ef">return</span> nt_SecurityDescriptor(proc, sd)
+        <span style="color:#ff79c6">return</span> nt_SecurityDescriptor(proc, sd)
 </code></pre></div><p>Here is an example of the <code>nt_SecurityDescriptor</code> class implementation:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">nt_SecurityDescriptor</span>():
-    <span style="color:#66d9ef">def</span> __init__(self, proc, sd):
-        self<span style="color:#f92672">.</span>sd <span style="color:#f92672">=</span> sd
-        self<span style="color:#f92672">.</span>revision <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>__get_revision(proc)
-        self<span style="color:#f92672">.</span>control <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>__get_control_flags(proc)
-        self<span style="color:#f92672">.</span>dacl <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
-        self<span style="color:#f92672">.</span>sacl <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
-        <span style="color:#66d9ef">if</span> self<span style="color:#f92672">.</span>control <span style="color:#f92672">&amp;</span> SE_DACL_PRESENT:
-            self<span style="color:#f92672">.</span>dacl <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>__get_dacl(proc)
-        <span style="color:#66d9ef">if</span> self<span style="color:#f92672">.</span>control <span style="color:#f92672">&amp;</span> SE_SACL_PRESENT:
-            self<span style="color:#f92672">.</span>sacl <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>__get_sacl(proc)
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#ff79c6">class</span> <span style="color:#50fa7b">nt_SecurityDescriptor</span>():
+    <span style="color:#ff79c6">def</span> __init__(self, proc, sd):
+        self<span style="color:#ff79c6">.</span>sd <span style="color:#ff79c6">=</span> sd
+        self<span style="color:#ff79c6">.</span>revision <span style="color:#ff79c6">=</span> self<span style="color:#ff79c6">.</span>__get_revision(proc)
+        self<span style="color:#ff79c6">.</span>control <span style="color:#ff79c6">=</span> self<span style="color:#ff79c6">.</span>__get_control_flags(proc)
+        self<span style="color:#ff79c6">.</span>dacl <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>
+        self<span style="color:#ff79c6">.</span>sacl <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>
+        <span style="color:#ff79c6">if</span> self<span style="color:#ff79c6">.</span>control <span style="color:#ff79c6">&amp;</span> SE_DACL_PRESENT:
+            self<span style="color:#ff79c6">.</span>dacl <span style="color:#ff79c6">=</span> self<span style="color:#ff79c6">.</span>__get_dacl(proc)
+        <span style="color:#ff79c6">if</span> self<span style="color:#ff79c6">.</span>control <span style="color:#ff79c6">&amp;</span> SE_SACL_PRESENT:
+            self<span style="color:#ff79c6">.</span>sacl <span style="color:#ff79c6">=</span> self<span style="color:#ff79c6">.</span>__get_sacl(proc)
 
-        self<span style="color:#f92672">.</span>owner_sid <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>__get_owner_sid(proc)
-        self<span style="color:#f92672">.</span>group_sid <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>__get_group_sid(proc)
+        self<span style="color:#ff79c6">.</span>owner_sid <span style="color:#ff79c6">=</span> self<span style="color:#ff79c6">.</span>__get_owner_sid(proc)
+        self<span style="color:#ff79c6">.</span>group_sid <span style="color:#ff79c6">=</span> self<span style="color:#ff79c6">.</span>__get_group_sid(proc)
 </code></pre></div><p>The important member of this class is the <code>dacl</code>.</p>
 <p><code>dacl</code> identifies the trustees that are allowed or denied access to a securable object.</p>
 <p>Both <code>dacl</code> and <code>sacl</code> are access control list (<code>ACL</code>):</p>
@@ -547,31 +551,31 @@ Integrity level: System
 An <code>ACE</code> is a pair of trustee with its access to the targeted securable object.</p>
 <p>The <a href="https://docs.microsoft.com/en-us/windows/win32/secauthz/access-control-lists">Microsoft documentation</a> describes in further details its ACL mechanisms.</p>
 <p>To obtain the <code>dacl</code> of a <code>security descriptor</code>, an implementation of the kernel function <code>nt!RtlGetDaclSecurityDescriptor</code> is required. Below, one possible implementation:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">__get_dacl</span>(self, proc):
-        <span style="color:#75715e"># nt!RtlGetDaclSecurityDescriptor</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">    <span style="color:#ff79c6">def</span> <span style="color:#50fa7b">__get_dacl</span>(self, proc):
+        <span style="color:#6272a4"># nt!RtlGetDaclSecurityDescriptor</span>
 
-        <span style="color:#66d9ef">if</span> self<span style="color:#f92672">.</span>sd <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>:
-            <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>
+        <span style="color:#ff79c6">if</span> self<span style="color:#ff79c6">.</span>sd <span style="color:#ff79c6">==</span> <span style="color:#bd93f9">0</span>:
+            <span style="color:#ff79c6">return</span> <span style="color:#bd93f9">0</span>
 
-        <span style="color:#75715e"># only revision 1 is supported</span>
-        <span style="color:#66d9ef">if</span> self<span style="color:#f92672">.</span>revision <span style="color:#f92672">!=</span> <span style="color:#ae81ff">1</span>:
-            <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>
+        <span style="color:#6272a4"># only revision 1 is supported</span>
+        <span style="color:#ff79c6">if</span> self<span style="color:#ff79c6">.</span>revision <span style="color:#ff79c6">!=</span> <span style="color:#bd93f9">1</span>:
+            <span style="color:#ff79c6">return</span> <span style="color:#bd93f9">0</span>
 
-        o_group <span style="color:#f92672">=</span> get_symbol_offset(
-            proc, <span style="color:#e6db74">&#34;nt!_SECURITY_DESCRIPTOR&#34;</span>, <span style="color:#e6db74">&#34;Group&#34;</span>)
+        o_group <span style="color:#ff79c6">=</span> get_symbol_offset(
+            proc, <span style="color:#f1fa8c">&#34;nt!_SECURITY_DESCRIPTOR&#34;</span>, <span style="color:#f1fa8c">&#34;Group&#34;</span>)
 
-        group_value <span style="color:#f92672">=</span> read_uint64(proc, self<span style="color:#f92672">.</span>sd <span style="color:#f92672">+</span> o_group)
-        group_value <span style="color:#f92672">=</span> group_value <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0x00000000ffffffff</span>
-        dacl <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>sd <span style="color:#f92672">+</span> group_value
+        group_value <span style="color:#ff79c6">=</span> read_uint64(proc, self<span style="color:#ff79c6">.</span>sd <span style="color:#ff79c6">+</span> o_group)
+        group_value <span style="color:#ff79c6">=</span> group_value <span style="color:#ff79c6">&amp;</span> <span style="color:#bd93f9">0x00000000ffffffff</span>
+        dacl <span style="color:#ff79c6">=</span> self<span style="color:#ff79c6">.</span>sd <span style="color:#ff79c6">+</span> group_value
 
-        <span style="color:#66d9ef">return</span> nt_Acl(proc, dacl)
+        <span style="color:#ff79c6">return</span> nt_Acl(proc, dacl)
 </code></pre></div><p>This <code>dacl</code> is then read through the <code>nt_Acl</code> class:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">nt_Acl</span>():
-    <span style="color:#66d9ef">def</span> __init__(self, proc, acl):
-        self<span style="color:#f92672">.</span>acl <span style="color:#f92672">=</span> acl
-        self<span style="color:#f92672">.</span>revision, sbz, self<span style="color:#f92672">.</span>acl_size, self<span style="color:#f92672">.</span>ace_count, sbz2 <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>__get_acl_info(
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#ff79c6">class</span> <span style="color:#50fa7b">nt_Acl</span>():
+    <span style="color:#ff79c6">def</span> __init__(self, proc, acl):
+        self<span style="color:#ff79c6">.</span>acl <span style="color:#ff79c6">=</span> acl
+        self<span style="color:#ff79c6">.</span>revision, sbz, self<span style="color:#ff79c6">.</span>acl_size, self<span style="color:#ff79c6">.</span>ace_count, sbz2 <span style="color:#ff79c6">=</span> self<span style="color:#ff79c6">.</span>__get_acl_info(
             proc)
-        self<span style="color:#f92672">.</span>ace_list <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>__get_ace_list(proc)
+        self<span style="color:#ff79c6">.</span>ace_list <span style="color:#ff79c6">=</span> self<span style="color:#ff79c6">.</span>__get_ace_list(proc)
 </code></pre></div><blockquote>
 <p>A good reference to extract information from <code>ACL</code> has been the following stackoverflow post:</p>
 <ul>
@@ -580,51 +584,51 @@ I have reused a good portion of the code given in example.</li>
 </ul>
 </blockquote>
 <p>The list of <code>ACE</code> is walked through with the following function, which is a reimplementation of <code>nt!RtlGetAce</code>:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">__get_ace_list</span>(self, proc):
-        <span style="color:#75715e"># nt!RtlGetAce</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">    <span style="color:#ff79c6">def</span> <span style="color:#50fa7b">__get_ace_list</span>(self, proc):
+        <span style="color:#6272a4"># nt!RtlGetAce</span>
 
-        ace_list <span style="color:#f92672">=</span> []
+        ace_list <span style="color:#ff79c6">=</span> []
 
-        ace_array <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>acl <span style="color:#f92672">+</span> proc<span style="color:#f92672">.</span>symbols<span style="color:#f92672">.</span>struc(<span style="color:#e6db74">&#34;nt!_ACL&#34;</span>)<span style="color:#f92672">.</span>size
+        ace_array <span style="color:#ff79c6">=</span> self<span style="color:#ff79c6">.</span>acl <span style="color:#ff79c6">+</span> proc<span style="color:#ff79c6">.</span>symbols<span style="color:#ff79c6">.</span>struc(<span style="color:#f1fa8c">&#34;nt!_ACL&#34;</span>)<span style="color:#ff79c6">.</span>size
 
-        <span style="color:#66d9ef">if</span> self<span style="color:#f92672">.</span>ace_count <span style="color:#f92672">&lt;=</span> <span style="color:#ae81ff">0</span>:
-            <span style="color:#66d9ef">return</span> ace_list
+        <span style="color:#ff79c6">if</span> self<span style="color:#ff79c6">.</span>ace_count <span style="color:#ff79c6">&lt;=</span> <span style="color:#bd93f9">0</span>:
+            <span style="color:#ff79c6">return</span> ace_list
 
-        offset <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
-        <span style="color:#66d9ef">for</span> ace <span style="color:#f92672">in</span> range(self<span style="color:#f92672">.</span>ace_count):
-            <span style="color:#66d9ef">if</span> (ace_array <span style="color:#f92672">+</span> offset <span style="color:#f92672">&gt;=</span> self<span style="color:#f92672">.</span>acl <span style="color:#f92672">+</span> self<span style="color:#f92672">.</span>acl_size):
-                <span style="color:#66d9ef">break</span>
+        offset <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>
+        <span style="color:#ff79c6">for</span> ace <span style="color:#ff79c6">in</span> <span style="color:#8be9fd;font-style:italic">range</span>(self<span style="color:#ff79c6">.</span>ace_count):
+            <span style="color:#ff79c6">if</span> (ace_array <span style="color:#ff79c6">+</span> offset <span style="color:#ff79c6">&gt;=</span> self<span style="color:#ff79c6">.</span>acl <span style="color:#ff79c6">+</span> self<span style="color:#ff79c6">.</span>acl_size):
+                <span style="color:#ff79c6">break</span>
 
-            ace_addr <span style="color:#f92672">=</span> ace_array <span style="color:#f92672">+</span> offset
-            acestr <span style="color:#f92672">=</span> proc<span style="color:#f92672">.</span>memory[ace_addr:ace_addr <span style="color:#f92672">+</span> <span style="color:#ae81ff">4</span>]
-            ace_type, ace_flags, ace_size <span style="color:#f92672">=</span> unpack_from(<span style="color:#e6db74">&#34;&lt;BBH&#34;</span>, acestr)
+            ace_addr <span style="color:#ff79c6">=</span> ace_array <span style="color:#ff79c6">+</span> offset
+            acestr <span style="color:#ff79c6">=</span> proc<span style="color:#ff79c6">.</span>memory[ace_addr:ace_addr <span style="color:#ff79c6">+</span> <span style="color:#bd93f9">4</span>]
+            ace_type, ace_flags, ace_size <span style="color:#ff79c6">=</span> unpack_from(<span style="color:#f1fa8c">&#34;&lt;BBH&#34;</span>, acestr)
 
-            <span style="color:#66d9ef">if</span> (ace_size <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>):
-                <span style="color:#66d9ef">break</span>
+            <span style="color:#ff79c6">if</span> (ace_size <span style="color:#ff79c6">==</span> <span style="color:#bd93f9">0</span>):
+                <span style="color:#ff79c6">break</span>
 
-            <span style="color:#75715e"># documentation: windows_protocols/ms-dtyp (https://docs.microsoft.com/openspecs/windows_protocols/ms-dtyp)</span>
+            <span style="color:#6272a4"># documentation: windows_protocols/ms-dtyp (https://docs.microsoft.com/openspecs/windows_protocols/ms-dtyp)</span>
 
-            <span style="color:#66d9ef">if</span> (ace_type <span style="color:#f92672">==</span> <span style="color:#ae81ff">0x00</span>):
-                <span style="color:#75715e"># struct ACCESS_ALLOWED_ACE_TYPE</span>
-                ace_mask <span style="color:#f92672">=</span> read_uint64(proc, ace_array <span style="color:#f92672">+</span> <span style="color:#ae81ff">4</span> <span style="color:#f92672">+</span> offset)
-                ace_mask <span style="color:#f92672">=</span> ace_mask <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0x00000000ffffffff</span>
-                ace_sid <span style="color:#f92672">=</span> get_sid_string(proc, ace_array <span style="color:#f92672">+</span> <span style="color:#ae81ff">8</span> <span style="color:#f92672">+</span> offset)
-            <span style="color:#66d9ef">elif</span> (ace_type <span style="color:#f92672">==</span> <span style="color:#ae81ff">0x01</span>):
-                <span style="color:#75715e"># struct ACCESS_DENIED_ACE_TYPE</span>
-                ace_mask <span style="color:#f92672">=</span> read_uint64(proc, ace_array <span style="color:#f92672">+</span> <span style="color:#ae81ff">4</span> <span style="color:#f92672">+</span> offset)
-                ace_mask <span style="color:#f92672">=</span> ace_mask <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0x00000000ffffffff</span>
-                ace_sid <span style="color:#f92672">=</span> get_sid_string(proc, ace_array <span style="color:#f92672">+</span> <span style="color:#ae81ff">8</span> <span style="color:#f92672">+</span> offset)
-            <span style="color:#66d9ef">else</span>:
-                <span style="color:#75715e"># ACE Type not handled</span>
-                <span style="color:#66d9ef">break</span>
+            <span style="color:#ff79c6">if</span> (ace_type <span style="color:#ff79c6">==</span> <span style="color:#bd93f9">0x00</span>):
+                <span style="color:#6272a4"># struct ACCESS_ALLOWED_ACE_TYPE</span>
+                ace_mask <span style="color:#ff79c6">=</span> read_uint64(proc, ace_array <span style="color:#ff79c6">+</span> <span style="color:#bd93f9">4</span> <span style="color:#ff79c6">+</span> offset)
+                ace_mask <span style="color:#ff79c6">=</span> ace_mask <span style="color:#ff79c6">&amp;</span> <span style="color:#bd93f9">0x00000000ffffffff</span>
+                ace_sid <span style="color:#ff79c6">=</span> get_sid_string(proc, ace_array <span style="color:#ff79c6">+</span> <span style="color:#bd93f9">8</span> <span style="color:#ff79c6">+</span> offset)
+            <span style="color:#ff79c6">elif</span> (ace_type <span style="color:#ff79c6">==</span> <span style="color:#bd93f9">0x01</span>):
+                <span style="color:#6272a4"># struct ACCESS_DENIED_ACE_TYPE</span>
+                ace_mask <span style="color:#ff79c6">=</span> read_uint64(proc, ace_array <span style="color:#ff79c6">+</span> <span style="color:#bd93f9">4</span> <span style="color:#ff79c6">+</span> offset)
+                ace_mask <span style="color:#ff79c6">=</span> ace_mask <span style="color:#ff79c6">&amp;</span> <span style="color:#bd93f9">0x00000000ffffffff</span>
+                ace_sid <span style="color:#ff79c6">=</span> get_sid_string(proc, ace_array <span style="color:#ff79c6">+</span> <span style="color:#bd93f9">8</span> <span style="color:#ff79c6">+</span> offset)
+            <span style="color:#ff79c6">else</span>:
+                <span style="color:#6272a4"># ACE Type not handled</span>
+                <span style="color:#ff79c6">break</span>
 
-            offset <span style="color:#f92672">=</span> offset <span style="color:#f92672">+</span> ace_size
+            offset <span style="color:#ff79c6">=</span> offset <span style="color:#ff79c6">+</span> ace_size
 
-            trustee <span style="color:#f92672">=</span> <span style="color:#66d9ef">None</span>
-            ace <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>__get_ace(proc, ace_type,
+            trustee <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">None</span>
+            ace <span style="color:#ff79c6">=</span> self<span style="color:#ff79c6">.</span>__get_ace(proc, ace_type,
                                  ace_flags, ace_mask, ace_sid, trustee)
-            ace_list<span style="color:#f92672">.</span>append(ace)
-        <span style="color:#66d9ef">return</span> ace_list
+            ace_list<span style="color:#ff79c6">.</span>append(ace)
+        <span style="color:#ff79c6">return</span> ace_list
 </code></pre></div><p>Unfortunately, the types <code>_ACE_HEADER</code> and <code>_ACE</code> are not published in the Windows symbols. The definition used in the implementation of <code>nt!RtlGetAce</code> is given below:</p>
 <pre tabindex="0"><code>    # 00000000 _ACE            struc
     # (sizeof=0x8, align=0x4, copyof_2324)
@@ -668,70 +672,70 @@ SACL:
 <p>The attack surface is almost established. The privileges of the involved processes are not known yet.
 Indeed, from an attacker point of view, it is interesting to target processes that have more privileges (e.g. privilege escalation). As a standard user has a <code>Medium integrity level</code>, then all processes running with a lower integrity level are not interesting.</p>
 <p>To obtain this information, it is required to analyze the token of the processes.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">
-INTEGRITY_LEVEL <span style="color:#f92672">=</span> {
-    <span style="color:#ae81ff">0x0000</span>: <span style="color:#e6db74">&#34;Untrusted&#34;</span>,
-    <span style="color:#ae81ff">0x1000</span>: <span style="color:#e6db74">&#34;Low&#34;</span>,
-    <span style="color:#ae81ff">0x2000</span>: <span style="color:#e6db74">&#34;Medium&#34;</span>,
-    <span style="color:#ae81ff">0x3000</span>: <span style="color:#e6db74">&#34;High&#34;</span>,
-    <span style="color:#ae81ff">0x4000</span>: <span style="color:#e6db74">&#34;System&#34;</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">
+INTEGRITY_LEVEL <span style="color:#ff79c6">=</span> {
+    <span style="color:#bd93f9">0x0000</span>: <span style="color:#f1fa8c">&#34;Untrusted&#34;</span>,
+    <span style="color:#bd93f9">0x1000</span>: <span style="color:#f1fa8c">&#34;Low&#34;</span>,
+    <span style="color:#bd93f9">0x2000</span>: <span style="color:#f1fa8c">&#34;Medium&#34;</span>,
+    <span style="color:#bd93f9">0x3000</span>: <span style="color:#f1fa8c">&#34;High&#34;</span>,
+    <span style="color:#bd93f9">0x4000</span>: <span style="color:#f1fa8c">&#34;System&#34;</span>
 }
 
-<span style="color:#66d9ef">class</span> <span style="color:#a6e22e">nt_Token</span>():
-    <span style="color:#66d9ef">def</span> __init__(self, proc, p_token):
-        self<span style="color:#f92672">.</span>token <span style="color:#f92672">=</span> p_token
-        self<span style="color:#f92672">.</span>il <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>__get_il(proc)
+<span style="color:#ff79c6">class</span> <span style="color:#50fa7b">nt_Token</span>():
+    <span style="color:#ff79c6">def</span> __init__(self, proc, p_token):
+        self<span style="color:#ff79c6">.</span>token <span style="color:#ff79c6">=</span> p_token
+        self<span style="color:#ff79c6">.</span>il <span style="color:#ff79c6">=</span> self<span style="color:#ff79c6">.</span>__get_il(proc)
 
-    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">get_il</span>(self):
-        <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>il
+    <span style="color:#ff79c6">def</span> <span style="color:#50fa7b">get_il</span>(self):
+        <span style="color:#ff79c6">return</span> self<span style="color:#ff79c6">.</span>il
 
-    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">__get_il</span>(self, proc):
+    <span style="color:#ff79c6">def</span> <span style="color:#50fa7b">__get_il</span>(self, proc):
 
-        <span style="color:#66d9ef">if</span> self<span style="color:#f92672">.</span>token <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>:
-            <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>
+        <span style="color:#ff79c6">if</span> self<span style="color:#ff79c6">.</span>token <span style="color:#ff79c6">==</span> <span style="color:#bd93f9">0</span>:
+            <span style="color:#ff79c6">return</span> <span style="color:#bd93f9">0</span>
 
-        o_sidhash <span style="color:#f92672">=</span> get_symbol_offset(
-            proc, <span style="color:#e6db74">&#34;nt!_TOKEN&#34;</span>, <span style="color:#e6db74">&#34;SidHash&#34;</span>)
-        a_sidhash <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>token <span style="color:#f92672">+</span> o_sidhash
+        o_sidhash <span style="color:#ff79c6">=</span> get_symbol_offset(
+            proc, <span style="color:#f1fa8c">&#34;nt!_TOKEN&#34;</span>, <span style="color:#f1fa8c">&#34;SidHash&#34;</span>)
+        a_sidhash <span style="color:#ff79c6">=</span> self<span style="color:#ff79c6">.</span>token <span style="color:#ff79c6">+</span> o_sidhash
 
-        <span style="color:#66d9ef">if</span> a_sidhash <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>:
-            <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>
+        <span style="color:#ff79c6">if</span> a_sidhash <span style="color:#ff79c6">==</span> <span style="color:#bd93f9">0</span>:
+            <span style="color:#ff79c6">return</span> <span style="color:#bd93f9">0</span>
 
-        count <span style="color:#f92672">=</span> read_uint64(proc, a_sidhash)
+        count <span style="color:#ff79c6">=</span> read_uint64(proc, a_sidhash)
 
-        o_arraysid <span style="color:#f92672">=</span> get_symbol_offset(
-            proc, <span style="color:#e6db74">&#34;nt!_TOKEN&#34;</span>, <span style="color:#e6db74">&#34;UserAndGroups&#34;</span>)
-        a_arraysid <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>token <span style="color:#f92672">+</span> o_arraysid
+        o_arraysid <span style="color:#ff79c6">=</span> get_symbol_offset(
+            proc, <span style="color:#f1fa8c">&#34;nt!_TOKEN&#34;</span>, <span style="color:#f1fa8c">&#34;UserAndGroups&#34;</span>)
+        a_arraysid <span style="color:#ff79c6">=</span> self<span style="color:#ff79c6">.</span>token <span style="color:#ff79c6">+</span> o_arraysid
 
-        arraysid <span style="color:#f92672">=</span> read_uint64(proc, a_arraysid)
+        arraysid <span style="color:#ff79c6">=</span> read_uint64(proc, a_arraysid)
 
-        size <span style="color:#f92672">=</span> proc<span style="color:#f92672">.</span>symbols<span style="color:#f92672">.</span>struc(<span style="color:#e6db74">&#34;nt!_SID_AND_ATTRIBUTES&#34;</span>)<span style="color:#f92672">.</span>size
+        size <span style="color:#ff79c6">=</span> proc<span style="color:#ff79c6">.</span>symbols<span style="color:#ff79c6">.</span>struc(<span style="color:#f1fa8c">&#34;nt!_SID_AND_ATTRIBUTES&#34;</span>)<span style="color:#ff79c6">.</span>size
 
-        sid <span style="color:#f92672">=</span> <span style="color:#66d9ef">None</span>
-        ptr <span style="color:#f92672">=</span> arraysid
+        sid <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">None</span>
+        ptr <span style="color:#ff79c6">=</span> arraysid
 
-        <span style="color:#66d9ef">if</span> arraysid <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>:
-            <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>
+        <span style="color:#ff79c6">if</span> arraysid <span style="color:#ff79c6">==</span> <span style="color:#bd93f9">0</span>:
+            <span style="color:#ff79c6">return</span> <span style="color:#bd93f9">0</span>
 
-        <span style="color:#66d9ef">for</span> sid <span style="color:#f92672">in</span> range(count):
+        <span style="color:#ff79c6">for</span> sid <span style="color:#ff79c6">in</span> <span style="color:#8be9fd;font-style:italic">range</span>(count):
 
-            o_attributes <span style="color:#f92672">=</span> get_symbol_offset(
-                proc, <span style="color:#e6db74">&#34;nt!_SID_AND_ATTRIBUTES&#34;</span>, <span style="color:#e6db74">&#34;Attributes&#34;</span>)
-            a_attributes <span style="color:#f92672">=</span> ptr <span style="color:#f92672">+</span> o_attributes
-            attributes <span style="color:#f92672">=</span> read_uint64(proc, a_attributes)
-            <span style="color:#66d9ef">if</span> attributes <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0x20</span>:  <span style="color:#75715e"># SE_GROUP_INTEGRITY = 0x00000020L</span>
-                o_sid <span style="color:#f92672">=</span> get_symbol_offset(
-                    proc, <span style="color:#e6db74">&#34;nt!_SID_AND_ATTRIBUTES&#34;</span>, <span style="color:#e6db74">&#34;Sid&#34;</span>)
-                a_sid <span style="color:#f92672">=</span> ptr <span style="color:#f92672">+</span> o_sid
-                sid <span style="color:#f92672">=</span> read_uint64(proc, a_sid)
+            o_attributes <span style="color:#ff79c6">=</span> get_symbol_offset(
+                proc, <span style="color:#f1fa8c">&#34;nt!_SID_AND_ATTRIBUTES&#34;</span>, <span style="color:#f1fa8c">&#34;Attributes&#34;</span>)
+            a_attributes <span style="color:#ff79c6">=</span> ptr <span style="color:#ff79c6">+</span> o_attributes
+            attributes <span style="color:#ff79c6">=</span> read_uint64(proc, a_attributes)
+            <span style="color:#ff79c6">if</span> attributes <span style="color:#ff79c6">&amp;</span> <span style="color:#bd93f9">0x20</span>:  <span style="color:#6272a4"># SE_GROUP_INTEGRITY = 0x00000020L</span>
+                o_sid <span style="color:#ff79c6">=</span> get_symbol_offset(
+                    proc, <span style="color:#f1fa8c">&#34;nt!_SID_AND_ATTRIBUTES&#34;</span>, <span style="color:#f1fa8c">&#34;Sid&#34;</span>)
+                a_sid <span style="color:#ff79c6">=</span> ptr <span style="color:#ff79c6">+</span> o_sid
+                sid <span style="color:#ff79c6">=</span> read_uint64(proc, a_sid)
 
-                subauthority <span style="color:#f92672">=</span> get_sid_subauthority(proc, sid)
-                <span style="color:#66d9ef">for</span> k, v <span style="color:#f92672">in</span> INTEGRITY_LEVEL<span style="color:#f92672">.</span>items():
-                    <span style="color:#66d9ef">if</span> k <span style="color:#f92672">&amp;</span> subauthority:
-                        <span style="color:#66d9ef">return</span> v
-            ptr <span style="color:#f92672">+=</span> size
+                subauthority <span style="color:#ff79c6">=</span> get_sid_subauthority(proc, sid)
+                <span style="color:#ff79c6">for</span> k, v <span style="color:#ff79c6">in</span> INTEGRITY_LEVEL<span style="color:#ff79c6">.</span>items():
+                    <span style="color:#ff79c6">if</span> k <span style="color:#ff79c6">&amp;</span> subauthority:
+                        <span style="color:#ff79c6">return</span> v
+            ptr <span style="color:#ff79c6">+=</span> size
 
-        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>
+        <span style="color:#ff79c6">return</span> <span style="color:#bd93f9">0</span>
 </code></pre></div><p>The integrity level of a token can now be obtained and the attack surface is now complete.</p>
 <p>Indeed, we can choose the attack surface to analyze with the following criteria:</p>
 <ul>

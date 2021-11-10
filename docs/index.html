@@ -8,7 +8,7 @@
 <meta name="description" content="Thalium blog." />
 <meta name="keywords" content="blog, tech" />
 <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
-<meta name="generator" content="Hugo 0.88.1" />
+<meta name="generator" content="Hugo 0.89.2" />
 
 <link rel="canonical" href="https://thalium.github.io/blog/">
 <meta property="og:title" content="THALIUM" />
@@ -24,6 +24,10 @@
 
 <meta itemprop="name" content="THALIUM">
 <meta itemprop="description" content="">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cousine&display=swap" rel="stylesheet"> 
 
 <link rel="stylesheet" href="https://thalium.github.io/blog/css/layout.css" />
 
@@ -147,6 +151,60 @@ if (!doNotTrack) {
 
 
   
+    <article class="post-preview">
+
+  <header>
+    <h2 class="title"> <a href='https://thalium.github.io/blog/posts/fuzzing-microsoft-rdp-client-using-virtual-channels/'> Fuzzing Microsoft&#39;s RDP Client using Virtual Channels: Overview &amp; Methodology</a> </h2>
+    <div class="meta">
+      <div class="date">
+        10 Nov, 2021
+        by 
+          Valentino Ricotta
+        
+      </div>
+      
+<div class="tags">
+  
+    
+      <div class="tag">
+        <a href="https://thalium.github.io/blog/tags/rdp">#RDP</a>
+      </div>
+    
+      <div class="tag">
+        <a href="https://thalium.github.io/blog/tags/fuzzing">#Fuzzing</a>
+      </div>
+    
+      <div class="tag">
+        <a href="https://thalium.github.io/blog/tags/winafl">#WinAFL</a>
+      </div>
+    
+      <div class="tag">
+        <a href="https://thalium.github.io/blog/tags/vulnerability-research">#Vulnerability Research</a>
+      </div>
+    
+      <div class="tag">
+        <a href="https://thalium.github.io/blog/tags/cve">#CVE</a>
+      </div>
+    
+  
+</div>
+
+    </div>
+
+  </header>
+
+  <div class="summary">
+    <p>This article begins my three-part series on fuzzing Microsoft&rsquo;s RDP client. In this <strong>first installment</strong>, I set up a methodology for <strong>fuzzing Virtual Channels</strong> using WinAFL and share some of my findings.</p>
+  </div>
+
+  <div class="rmore">
+    <a href='https://thalium.github.io/blog/posts/fuzzing-microsoft-rdp-client-using-virtual-channels/' class="rmore">Read more</a>
+  </div>
+
+
+</article>
+
+
     <article class="post-preview">
 
   <header>
@@ -512,7 +570,11 @@ We took a different approach.</p>
     <p>Thalium participated in the <a href="https://www.hackthebox.eu/cyber-apocalypse-ctf-2021">Cyber Apocalypse 2021</a> CTF organized last week by <a href="https://www.hackthebox.eu/">HackTheBox</a>.
 It was a great success with 4,740 teams composed of around 10,000 hackers from all over the world.
 Our team finished in fifth place and solved sixty out of the sixty-two challenges:</p>
-<p><img src="https://thalium.github.io/blog/posts/img/Cyber_Apocalypse_2021-scoreboard.png" alt="fig_scoreboard"></p>
+<p>
+  <a href="https://thalium.github.io/blog/posts/img/Cyber_Apocalypse_2021-scoreboard.png" target="_blank">
+    <img src="https://thalium.github.io/blog/posts/img/Cyber_Apocalypse_2021-scoreboard.png" alt="fig_scoreboard">
+  </a>
+</p>
 <p>This article explains how we solved each pwn challenge and what tools we used, it is written to be accessible to beginners:</p>
   </div>
 
@@ -557,41 +619,6 @@ Basically, a common use case in VMI consists in (1) setting a breakpoint on an a
 </article>
 
 
-    <article class="post-preview">
-
-  <header>
-    <h2 class="title"> <a href='https://thalium.github.io/blog/posts/getting_started/'> Getting Started with Icebox VMI</a> </h2>
-    <div class="meta">
-      <div class="date">
-        24 Jan, 2020
-        by 
-          <a href='https://twitter.com/bamiaux'>Benoît Amiaux</a>
-        
-      </div>
-      
-<div class="tags">
-  
-</div>
-
-    </div>
-
-  </header>
-
-  <div class="summary">
-    Icebox is a VMI (Virtual Machine Introspection) framework enabling you to stealthily trace and debug any kernel or user code system-wide.
-All Icebox source code can be found on our github page.
-Try Icebox Icebox now comes with full Python bindings enabling fast prototyping on top of VMI, whether you want to trace a user process or inspect the kernel internals.
-The core itself is in C++ and exposes most of its public functions into an icebox Python 3 module.
-  </div>
-
-  <div class="rmore">
-    <a href='https://thalium.github.io/blog/posts/getting_started/' class="rmore">Read more</a>
-  </div>
-
-
-</article>
-
-
 
 
 <div class="page-nav">
@@ -600,10 +627,12 @@ The core itself is in C++ and exposes most of its public functions into an icebo
   </div> 
 
   <div class="page-num">
-    1/1
+    1/2
   </div> 
 
   <div class="page-next">
+    
+    <a href="https://thalium.github.io/blog/page/2/" title="Next page"> >> </a>
     
   </div> 
 </div> 

@@ -81,7 +81,11 @@ We took a different approach.&lt;/p&gt;</description>
       <description>&lt;p&gt;Thalium participated in the &lt;a href=&#34;https://www.hackthebox.eu/cyber-apocalypse-ctf-2021&#34;&gt;Cyber Apocalypse 2021&lt;/a&gt; CTF organized last week by &lt;a href=&#34;https://www.hackthebox.eu/&#34;&gt;HackTheBox&lt;/a&gt;.
 It was a great success with 4,740 teams composed of around 10,000 hackers from all over the world.
 Our team finished in fifth place and solved sixty out of the sixty-two challenges:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://thalium.github.io/blog/posts/img/Cyber_Apocalypse_2021-scoreboard.png&#34; alt=&#34;fig_scoreboard&#34;&gt;&lt;/p&gt;
+&lt;p&gt;
+  &lt;a href=&#34;https://thalium.github.io/blog/posts/img/Cyber_Apocalypse_2021-scoreboard.png&#34; target=&#34;_blank&#34;&gt;
+    &lt;img src=&#34;https://thalium.github.io/blog/posts/img/Cyber_Apocalypse_2021-scoreboard.png&#34; alt=&#34;fig_scoreboard&#34;&gt;
+  &lt;/a&gt;
+&lt;/p&gt;
 &lt;p&gt;This article explains how we solved each pwn challenge and what tools we used, it is written to be accessible to beginners:&lt;/p&gt;</description>
     </item>
     
