@@ -32,10 +32,6 @@ We were given an Saleae trace and schematics to analyse. Thalium was one of the 
 <meta itemprop="wordCount" content="816">
 <meta itemprop="keywords" content="CTF,Writeup,CyberApocalypse2021,Hardware," />
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cousine&display=swap" rel="stylesheet"> 
-
 <link rel="stylesheet" href="https://thalium.github.io/blog/css/layout.css" />
 
 
@@ -235,13 +231,13 @@ But remember, there are potentially 6 images drawn 1 second apart. As each line 
 <li>bursts are delimited with the <code>b0 02 10</code> control sequence</li>
 </ul>
 <p>For each burst corresponds a screen rendering. For each burst subtrace, we can extract the data sent from the master to the slave input (MOSI line):</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#ff79c6">import</span> sys
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> sys
 
-<span style="color:#ff79c6">with</span> <span style="color:#8be9fd;font-style:italic">open</span>(sys<span style="color:#ff79c6">.</span>argv[<span style="color:#bd93f9">1</span>], <span style="color:#f1fa8c">&#34;rt&#34;</span>) <span style="color:#ff79c6">as</span> fh:
-    <span style="color:#ff79c6">for</span> line <span style="color:#ff79c6">in</span> fh<span style="color:#ff79c6">.</span>readlines():
-        time, pid, mosi, miso <span style="color:#ff79c6">=</span> line<span style="color:#ff79c6">.</span>strip()<span style="color:#ff79c6">.</span>split(<span style="color:#f1fa8c">&#34;,&#34;</span>)
-        <span style="color:#ff79c6">if</span> miso[<span style="color:#ff79c6">-</span><span style="color:#bd93f9">2</span>:] <span style="color:#ff79c6">!=</span> <span style="color:#f1fa8c">&#34;00&#34;</span>: <span style="color:#6272a4"># filter commands</span>
-              <span style="color:#8be9fd;font-style:italic">print</span>(mosi[<span style="color:#bd93f9">2</span>:], end<span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;&#34;</span>)
+<span style="color:#66d9ef">with</span> open(sys<span style="color:#f92672">.</span>argv[<span style="color:#ae81ff">1</span>], <span style="color:#e6db74">&#34;rt&#34;</span>) <span style="color:#66d9ef">as</span> fh:
+    <span style="color:#66d9ef">for</span> line <span style="color:#f92672">in</span> fh<span style="color:#f92672">.</span>readlines():
+        time, pid, mosi, miso <span style="color:#f92672">=</span> line<span style="color:#f92672">.</span>strip()<span style="color:#f92672">.</span>split(<span style="color:#e6db74">&#34;,&#34;</span>)
+        <span style="color:#66d9ef">if</span> miso[<span style="color:#f92672">-</span><span style="color:#ae81ff">2</span>:] <span style="color:#f92672">!=</span> <span style="color:#e6db74">&#34;00&#34;</span>: <span style="color:#75715e"># filter commands</span>
+              print(mosi[<span style="color:#ae81ff">2</span>:], end<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;&#34;</span>)
 </code></pre></div><p>Using this script, we obtain the hexdump the screen must render.
 The SH1306 is very similar to the well-known <a href="https://cdn-shop.adafruit.com/datasheets/SSD1306.pdf">SSD1306</a>, their rendering process is equivalent.
 The screen renders a 128x64 bitmap from the top-left pixel in a vertical fashion.</p>

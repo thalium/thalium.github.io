@@ -38,10 +38,6 @@ We took a different approach."><meta itemprop="datePublished" content="2021-04-2
 <meta itemprop="wordCount" content="921">
 <meta itemprop="keywords" content="CTF,Writeup,CyberApocalypse2021," />
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cousine&display=swap" rel="stylesheet"> 
-
 <link rel="stylesheet" href="https://thalium.github.io/blog/css/layout.css" />
 
 
@@ -172,12 +168,12 @@ w(xz + yz - xy) == 4xyz
 ∳∳</p>
 <p>where ∳w∳ is a given 512 bits integer.</p>
 <p>More specifically, the flag is encrypted with RSA, the prime factors ∳p∳ and ∳q∳ are obviously secret, but we know that they pass the following assert:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">w <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">25965460884749769384351428855708318685345170011800821829011862918688758545847199832834284337871947234627057905530743956554688825819477516944610078633662855</span>
-x <span style="color:#ff79c6">=</span> p <span style="color:#ff79c6">+</span> <span style="color:#bd93f9">1328</span>
-y <span style="color:#ff79c6">=</span> p <span style="color:#ff79c6">+</span> <span style="color:#bd93f9">1329</span>
-z <span style="color:#ff79c6">=</span> q <span style="color:#ff79c6">-</span> <span style="color:#bd93f9">1</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">w <span style="color:#f92672">=</span> <span style="color:#ae81ff">25965460884749769384351428855708318685345170011800821829011862918688758545847199832834284337871947234627057905530743956554688825819477516944610078633662855</span>
+x <span style="color:#f92672">=</span> p <span style="color:#f92672">+</span> <span style="color:#ae81ff">1328</span>
+y <span style="color:#f92672">=</span> p <span style="color:#f92672">+</span> <span style="color:#ae81ff">1329</span>
+z <span style="color:#f92672">=</span> q <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>
 
-<span style="color:#ff79c6">assert</span> w<span style="color:#ff79c6">*</span>(x<span style="color:#ff79c6">*</span>z <span style="color:#ff79c6">+</span> y<span style="color:#ff79c6">*</span>z <span style="color:#ff79c6">-</span> x<span style="color:#ff79c6">*</span>y) <span style="color:#ff79c6">==</span> <span style="color:#bd93f9">4</span><span style="color:#ff79c6">*</span>x<span style="color:#ff79c6">*</span>y<span style="color:#ff79c6">*</span>z
+<span style="color:#66d9ef">assert</span> w<span style="color:#f92672">*</span>(x<span style="color:#f92672">*</span>z <span style="color:#f92672">+</span> y<span style="color:#f92672">*</span>z <span style="color:#f92672">-</span> x<span style="color:#f92672">*</span>y) <span style="color:#f92672">==</span> <span style="color:#ae81ff">4</span><span style="color:#f92672">*</span>x<span style="color:#f92672">*</span>y<span style="color:#f92672">*</span>z
 </code></pre></div><p>Before really starting we can observe that ∳y∳ is ∳x + 1∳ and thus ∳x∳ and ∳y∳ are coprime.
 Moreover we know a few factors of ∳w∳ thanks to <a href="http://factordb.com/index.php?query=25965460884749769384351428855708318685345170011800821829011862918688758545847199832834284337871947234627057905530743956554688825819477516944610078633662855">factordb.com</a>.</p>
 <p>If we rewrite the assert to put all the multiples of ∳z∳ on the same side we get:</p>
@@ -239,89 +235,89 @@ x &amp;= (w-1)/2
 <p>We actually did not need to know any factor of ∳w∳, we just needed it to be positive and odd.
 But knowing some factors and the fact that ∳y = x + 1∳ gently pushed us in the right direction to rediscover the decomposition mentioned in the wikipedia article on the <a href="https://en.wikipedia.org/wiki/Erd%C5%91s%E2%80%93Straus_conjecture#Negative-number_solutions">Erdős–Straus conjecture</a>.</p>
 <p>Here is (a cleaned-up version of) the code we used to find ∳p∳ and ∳q∳ and get the flag:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#ff79c6">from</span> itertools <span style="color:#ff79c6">import</span> combinations
-<span style="color:#ff79c6">from</span> math <span style="color:#ff79c6">import</span> isqrt, prod
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> itertools <span style="color:#f92672">import</span> combinations
+<span style="color:#f92672">from</span> math <span style="color:#f92672">import</span> isqrt, prod
 
 
-<span style="color:#6272a4"># Challenge Data</span>
-cipher <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0x12F47F77C4B5A72A0D14A066FEDC80BA6064058C900A798F1658DE60F13E1D8F21106654C4AAC740FD5E2D7CF62F0D3284C2686D2AAC261E35576DF989185FEE449C20EFA171FF3D168A04BCE84E51AF255383A59ED42583E93481CBFB24FDDDA16E0A767BFF622A4753E1A5DF248AF14C9AD50F842BE47EBB930604BECFD4AF04D21C0B2248A16CDEE16A04B4A12AC7E2161CB63E2D86999A1A8ED2A8FAEB4F4986C2A3FBD5916EFFB1D9F3F04E330FDD8179EA6952B14F758D385C4BC9C5AE30F516C17B23C7C6B9DBE40E16E90D8734BAEB69FED12149174B22ADD6B96750E4416CA7ADDF70BCEC9210B967991E487A4542899DDE3ABF3A91BBBAEFFAE67831C46C2238E6E5F4D8004543247FAE7FF25BBB01A1AB3196D8A9CFD693096AABEC46C2095F2A82A408F688BBEDDDC407B328D4EA5394348285F48AFEAAFACC333CFF3822E791B9940121B73F4E31C93C6B72BA3EDE7BBA87419B154DC6099EC95F56ED74FB5C55D9D8B3B8C0FC7DE99F344BEB118AC3D4333EB692710EAA7FD22</span>
-exponent <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0x10001</span>
-w <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">25965460884749769384351428855708318685345170011800821829011862918688758545847199832834284337871947234627057905530743956554688825819477516944610078633662855</span>
+<span style="color:#75715e"># Challenge Data</span>
+cipher <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x12F47F77C4B5A72A0D14A066FEDC80BA6064058C900A798F1658DE60F13E1D8F21106654C4AAC740FD5E2D7CF62F0D3284C2686D2AAC261E35576DF989185FEE449C20EFA171FF3D168A04BCE84E51AF255383A59ED42583E93481CBFB24FDDDA16E0A767BFF622A4753E1A5DF248AF14C9AD50F842BE47EBB930604BECFD4AF04D21C0B2248A16CDEE16A04B4A12AC7E2161CB63E2D86999A1A8ED2A8FAEB4F4986C2A3FBD5916EFFB1D9F3F04E330FDD8179EA6952B14F758D385C4BC9C5AE30F516C17B23C7C6B9DBE40E16E90D8734BAEB69FED12149174B22ADD6B96750E4416CA7ADDF70BCEC9210B967991E487A4542899DDE3ABF3A91BBBAEFFAE67831C46C2238E6E5F4D8004543247FAE7FF25BBB01A1AB3196D8A9CFD693096AABEC46C2095F2A82A408F688BBEDDDC407B328D4EA5394348285F48AFEAAFACC333CFF3822E791B9940121B73F4E31C93C6B72BA3EDE7BBA87419B154DC6099EC95F56ED74FB5C55D9D8B3B8C0FC7DE99F344BEB118AC3D4333EB692710EAA7FD22</span>
+exponent <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x10001</span>
+w <span style="color:#f92672">=</span> <span style="color:#ae81ff">25965460884749769384351428855708318685345170011800821829011862918688758545847199832834284337871947234627057905530743956554688825819477516944610078633662855</span>
 
-<span style="color:#6272a4"># known factors of w*w</span>
-FACTORS <span style="color:#ff79c6">=</span> [
-    <span style="color:#bd93f9">3</span>,
-    <span style="color:#bd93f9">3</span>,
-    <span style="color:#bd93f9">5</span>,
-    <span style="color:#bd93f9">7</span>,
-    <span style="color:#bd93f9">13</span>,
-    <span style="color:#bd93f9">29</span>,
-    <span style="color:#bd93f9">434042467</span>,
-    <span style="color:#bd93f9">2653449587</span>,
-    <span style="color:#bd93f9">829389339613</span>,
-    <span style="color:#bd93f9">83650191286538267</span>,
-    <span style="color:#bd93f9">2736375417317167558343187941866480708142084464122192435130859730622053555029655238941106280888782037819</span>,
+<span style="color:#75715e"># known factors of w*w</span>
+FACTORS <span style="color:#f92672">=</span> [
+    <span style="color:#ae81ff">3</span>,
+    <span style="color:#ae81ff">3</span>,
+    <span style="color:#ae81ff">5</span>,
+    <span style="color:#ae81ff">7</span>,
+    <span style="color:#ae81ff">13</span>,
+    <span style="color:#ae81ff">29</span>,
+    <span style="color:#ae81ff">434042467</span>,
+    <span style="color:#ae81ff">2653449587</span>,
+    <span style="color:#ae81ff">829389339613</span>,
+    <span style="color:#ae81ff">83650191286538267</span>,
+    <span style="color:#ae81ff">2736375417317167558343187941866480708142084464122192435130859730622053555029655238941106280888782037819</span>,
 ]
-FACTORS <span style="color:#ff79c6">+=</span> FACTORS
+FACTORS <span style="color:#f92672">+=</span> FACTORS
 
 
-<span style="color:#ff79c6">def</span> <span style="color:#50fa7b">decrypt_flag</span>(p, q):
-    N <span style="color:#ff79c6">=</span> p <span style="color:#ff79c6">**</span> <span style="color:#bd93f9">3</span> <span style="color:#ff79c6">*</span> q
-    phi <span style="color:#ff79c6">=</span> p <span style="color:#ff79c6">**</span> <span style="color:#bd93f9">2</span> <span style="color:#ff79c6">*</span> (p <span style="color:#ff79c6">-</span> <span style="color:#bd93f9">1</span>) <span style="color:#ff79c6">*</span> (q <span style="color:#ff79c6">-</span> <span style="color:#bd93f9">1</span>)
-    d <span style="color:#ff79c6">=</span> <span style="color:#8be9fd;font-style:italic">pow</span>(exponent, <span style="color:#ff79c6">-</span><span style="color:#bd93f9">1</span>, phi)
-    m <span style="color:#ff79c6">=</span> <span style="color:#8be9fd;font-style:italic">pow</span>(cipher, d, N)
-    flag <span style="color:#ff79c6">=</span> m<span style="color:#ff79c6">.</span>to_bytes((m<span style="color:#ff79c6">.</span>bit_length() <span style="color:#ff79c6">+</span> <span style="color:#bd93f9">7</span>) <span style="color:#ff79c6">//</span> <span style="color:#bd93f9">8</span>, <span style="color:#f1fa8c">&#34;big&#34;</span>)
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">decrypt_flag</span>(p, q):
+    N <span style="color:#f92672">=</span> p <span style="color:#f92672">**</span> <span style="color:#ae81ff">3</span> <span style="color:#f92672">*</span> q
+    phi <span style="color:#f92672">=</span> p <span style="color:#f92672">**</span> <span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> (p <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>) <span style="color:#f92672">*</span> (q <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>)
+    d <span style="color:#f92672">=</span> pow(exponent, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, phi)
+    m <span style="color:#f92672">=</span> pow(cipher, d, N)
+    flag <span style="color:#f92672">=</span> m<span style="color:#f92672">.</span>to_bytes((m<span style="color:#f92672">.</span>bit_length() <span style="color:#f92672">+</span> <span style="color:#ae81ff">7</span>) <span style="color:#f92672">//</span> <span style="color:#ae81ff">8</span>, <span style="color:#e6db74">&#34;big&#34;</span>)
 
-    <span style="color:#8be9fd;font-style:italic">print</span>(<span style="color:#f1fa8c">f</span><span style="color:#f1fa8c">&#34;</span><span style="color:#f1fa8c">{</span>flag<span style="color:#f1fa8c">=}</span><span style="color:#f1fa8c">&#34;</span>)
+    print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">{</span>flag<span style="color:#e6db74">=}</span><span style="color:#e6db74">&#34;</span>)
 
 
-<span style="color:#ff79c6">def</span> <span style="color:#50fa7b">check_candidate</span>(alpha):
-    <span style="color:#6272a4"># we are trying to solve: 4*x² + (4 - 2*w)*x + alpha - w = 0</span>
-    a <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">4</span>
-    b <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">4</span> <span style="color:#ff79c6">-</span> <span style="color:#bd93f9">2</span> <span style="color:#ff79c6">*</span> w
-    c <span style="color:#ff79c6">=</span> alpha <span style="color:#ff79c6">-</span> w
-    delta <span style="color:#ff79c6">=</span> b <span style="color:#ff79c6">**</span> <span style="color:#bd93f9">2</span> <span style="color:#ff79c6">-</span> <span style="color:#bd93f9">4</span> <span style="color:#ff79c6">*</span> a <span style="color:#ff79c6">*</span> c
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">check_candidate</span>(alpha):
+    <span style="color:#75715e"># we are trying to solve: 4*x² + (4 - 2*w)*x + alpha - w = 0</span>
+    a <span style="color:#f92672">=</span> <span style="color:#ae81ff">4</span>
+    b <span style="color:#f92672">=</span> <span style="color:#ae81ff">4</span> <span style="color:#f92672">-</span> <span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> w
+    c <span style="color:#f92672">=</span> alpha <span style="color:#f92672">-</span> w
+    delta <span style="color:#f92672">=</span> b <span style="color:#f92672">**</span> <span style="color:#ae81ff">2</span> <span style="color:#f92672">-</span> <span style="color:#ae81ff">4</span> <span style="color:#f92672">*</span> a <span style="color:#f92672">*</span> c
 
-    <span style="color:#ff79c6">if</span> delta <span style="color:#ff79c6">&lt;</span> <span style="color:#bd93f9">0</span>:
-        <span style="color:#ff79c6">return</span>
+    <span style="color:#66d9ef">if</span> delta <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>:
+        <span style="color:#66d9ef">return</span>
 
-    <span style="color:#6272a4"># sqrt may fail if delta is too big, we use isqrt instead</span>
-    <span style="color:#6272a4"># but we have to check if we got the actual square root</span>
-    sqrt_delta <span style="color:#ff79c6">=</span> isqrt(delta)
-    <span style="color:#ff79c6">if</span> sqrt_delta <span style="color:#ff79c6">**</span> <span style="color:#bd93f9">2</span> <span style="color:#ff79c6">!=</span> delta:
-        <span style="color:#ff79c6">return</span>
+    <span style="color:#75715e"># sqrt may fail if delta is too big, we use isqrt instead</span>
+    <span style="color:#75715e"># but we have to check if we got the actual square root</span>
+    sqrt_delta <span style="color:#f92672">=</span> isqrt(delta)
+    <span style="color:#66d9ef">if</span> sqrt_delta <span style="color:#f92672">**</span> <span style="color:#ae81ff">2</span> <span style="color:#f92672">!=</span> delta:
+        <span style="color:#66d9ef">return</span>
 
-    <span style="color:#6272a4"># solutions are (-b +/- sqrt_delta) / (2*a)</span>
-    <span style="color:#6272a4"># division may fail if operands are too big</span>
-    <span style="color:#ff79c6">for</span> x <span style="color:#ff79c6">in</span> [<span style="color:#ff79c6">-</span>b <span style="color:#ff79c6">-</span> sqrt_delta, <span style="color:#ff79c6">-</span>b <span style="color:#ff79c6">+</span> sqrt_delta]:
-        <span style="color:#ff79c6">if</span> x <span style="color:#ff79c6">&lt;=</span> <span style="color:#bd93f9">0</span> <span style="color:#ff79c6">or</span> x <span style="color:#ff79c6">%</span> (<span style="color:#bd93f9">2</span> <span style="color:#ff79c6">*</span> a) <span style="color:#ff79c6">!=</span> <span style="color:#bd93f9">0</span>:
-            <span style="color:#6272a4"># x is not a positive integer</span>
-            <span style="color:#ff79c6">continue</span>
+    <span style="color:#75715e"># solutions are (-b +/- sqrt_delta) / (2*a)</span>
+    <span style="color:#75715e"># division may fail if operands are too big</span>
+    <span style="color:#66d9ef">for</span> x <span style="color:#f92672">in</span> [<span style="color:#f92672">-</span>b <span style="color:#f92672">-</span> sqrt_delta, <span style="color:#f92672">-</span>b <span style="color:#f92672">+</span> sqrt_delta]:
+        <span style="color:#66d9ef">if</span> x <span style="color:#f92672">&lt;=</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">or</span> x <span style="color:#f92672">%</span> (<span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> a) <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>:
+            <span style="color:#75715e"># x is not a positive integer</span>
+            <span style="color:#66d9ef">continue</span>
 
-        x <span style="color:#ff79c6">=</span> x <span style="color:#ff79c6">//</span> (<span style="color:#bd93f9">2</span> <span style="color:#ff79c6">*</span> a)
-        y <span style="color:#ff79c6">=</span> x <span style="color:#ff79c6">+</span> <span style="color:#bd93f9">1</span>
-        <span style="color:#ff79c6">if</span> w <span style="color:#ff79c6">*</span> x <span style="color:#ff79c6">*</span> y <span style="color:#ff79c6">%</span> alpha <span style="color:#ff79c6">!=</span> <span style="color:#bd93f9">0</span>:
-            <span style="color:#6272a4"># z = (w * x * y) / alpha is not an integer</span>
-            <span style="color:#ff79c6">continue</span>
+        x <span style="color:#f92672">=</span> x <span style="color:#f92672">//</span> (<span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> a)
+        y <span style="color:#f92672">=</span> x <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>
+        <span style="color:#66d9ef">if</span> w <span style="color:#f92672">*</span> x <span style="color:#f92672">*</span> y <span style="color:#f92672">%</span> alpha <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>:
+            <span style="color:#75715e"># z = (w * x * y) / alpha is not an integer</span>
+            <span style="color:#66d9ef">continue</span>
 
-        z <span style="color:#ff79c6">=</span> (w <span style="color:#ff79c6">*</span> x <span style="color:#ff79c6">*</span> y) <span style="color:#ff79c6">//</span> alpha
+        z <span style="color:#f92672">=</span> (w <span style="color:#f92672">*</span> x <span style="color:#f92672">*</span> y) <span style="color:#f92672">//</span> alpha
 
-        p <span style="color:#ff79c6">=</span> x <span style="color:#ff79c6">-</span> <span style="color:#bd93f9">1328</span>
-        q <span style="color:#ff79c6">=</span> z <span style="color:#ff79c6">+</span> <span style="color:#bd93f9">1</span>
+        p <span style="color:#f92672">=</span> x <span style="color:#f92672">-</span> <span style="color:#ae81ff">1328</span>
+        q <span style="color:#f92672">=</span> z <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>
 
         decrypt_flag(p, q)
 
 
-<span style="color:#6272a4"># number of factors considered to build alpha</span>
-nbr_factors <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">0</span>
+<span style="color:#75715e"># number of factors considered to build alpha</span>
+nbr_factors <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
 
-<span style="color:#ff79c6">while</span> nbr_factors <span style="color:#ff79c6">&lt;=</span> <span style="color:#8be9fd;font-style:italic">len</span>(FACTORS):
-    worklist <span style="color:#ff79c6">=</span> combinations(FACTORS, nbr_factors)
+<span style="color:#66d9ef">while</span> nbr_factors <span style="color:#f92672">&lt;=</span> len(FACTORS):
+    worklist <span style="color:#f92672">=</span> combinations(FACTORS, nbr_factors)
 
-    <span style="color:#ff79c6">for</span> alpha_factors <span style="color:#ff79c6">in</span> worklist:
+    <span style="color:#66d9ef">for</span> alpha_factors <span style="color:#f92672">in</span> worklist:
         check_candidate(prod(alpha_factors))
 
-    nbr_factors <span style="color:#ff79c6">+=</span> <span style="color:#bd93f9">1</span>
+    nbr_factors <span style="color:#f92672">+=</span> <span style="color:#ae81ff">1</span>
 </code></pre></div> </div>
     <footer class="post-footer">
 
