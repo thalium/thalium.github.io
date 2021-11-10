@@ -23,17 +23,3 @@ googleAnalytics = "UA-141692648-1"
     github = "thalium"
     twitter = "thalium_team"
     email = "thalium.team@gmail.com"
-
-[markup]
-  [markup.highlight]
-    anchorLineNos = false
-    codeFences = true
-    guessSyntax = false
-    hl_Lines = ""
-    lineAnchors = ""
-    lineNoStart = 1
-    lineNos = false
-    lineNumbersInTable = true
-    noClasses = true
-    style = "dracula"
-    tabWidth = 4
