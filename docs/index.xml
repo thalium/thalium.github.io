@@ -9,6 +9,17 @@
     <copyright>Copyright (c) 2020, all rights reserved.</copyright>
     <lastBuildDate>Wed, 10 Nov 2021 12:00:00 +0000</lastBuildDate><atom:link href="https://thalium.github.io/blog/index.xml" rel="self" type="application/rss+xml" />
     <item>
+      <title>Join Us</title>
+      <link>https://thalium.github.io/blog/joinus/</link>
+      <pubDate>Mon, 01 Nov 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://thalium.github.io/blog/joinus/</guid>
+      <description>Offres Thalium Dans le cadre de nos travaux R&amp;amp;D ou pour nos besoins clients, l&amp;rsquo;équipe Thalium développe son expertise autour des domaines suivants :
+ Recherche et exploitation de vulnérabilités Fuzzing Développements kernel / userland Connaissance de la menace et investigation numérique  Et ce sur de multiples plateformes :
+ Windows, Linux, macOS Android, iOS, IOT Intel, ARM  Pour répondre aux challenges de plus en plus nombreux, nous recherchons continuellement de nouveaux experts pour nos équipes Reverse, Développements ou encore Forensics.</description>
+    </item>
+    
+    <item>
       <title>Fuzzing Microsoft&#39;s RDP Client using Virtual Channels: Overview &amp; Methodology</title>
       <link>https://thalium.github.io/blog/posts/fuzzing-microsoft-rdp-client-using-virtual-channels/</link>
       <pubDate>Wed, 10 Nov 2021 12:00:00 +0000</pubDate>
