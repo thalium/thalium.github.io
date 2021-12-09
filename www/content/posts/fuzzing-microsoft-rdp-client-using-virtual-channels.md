@@ -16,13 +16,16 @@ This article begins my three-part series on fuzzing Microsoft's RDP client. In t
 
 <!--more-->
 
+Other articles in this series:
 
 * [Fuzzing Microsoft's RDP Client using Virtual Channels: Overview & Methodology](/posts/fuzzing-microsoft-rdp-client-using-virtual-channels/)
-* Articles dedicated to [CVE-2021-38665](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2021-38665) and [CVE-2021-38666](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2021-38666): come back later!
+* [Remote ASLR Leak in Microsoft's RDP Client through Printer Cache Registry (CVE-2021-38665)](/posts/leaking-aslr-through-rdp-printer-cache-registry/)
+* [Remote Deserialization Bug in Microsoft's RDP Client through Smart Card Extension (CVE-2021-38666)](/posts/deserialization-bug-through-rdp-smart-card-extension/)
 
 ## Table of Contents
 
 - [Introduction](#introduction)
+  - [Recent related works](#recent-related-works)
   - [Why search for vulnerabilities in the RDP *client*?](#why-search-for-vulnerabilities-in-the-rdp-client)
 - [The Remote Desktop Protocol](#the-remote-desktop-protocol)
   - [Virtual Channels](#virtual-channels)
@@ -49,8 +52,8 @@ This article begins my three-part series on fuzzing Microsoft's RDP client. In t
   - [DRDYNVC](#drdynvc)
   - [RDPDR](#rdpdr)
     - [Arbitrary Malloc DoS in RDPDR](#arbitrary-malloc-dos-in-rdpdr)
-  - [Remote Memory Leak in &lt;redacted&gt;](#remote-memory-leak-in-redacted)
-  - [Remote Code Execution in &lt;redacted&gt;](#remote-code-execution-in-redacted)
+    - [Remote Heap Leak / ASLR Leak in RDPDR](#remote-heap-leak--aslr-leak-in-rdpdr)
+    - [Deserialization Bug / Heap Corruption in RDPDR](#deserialization-bug--heap-corruption-in-rdpdr)
 - [Conclusion](#conclusion)
   - [Timeline](#timeline)
 
@@ -69,6 +72,14 @@ We thought they achieved encouraging results that deserved to be prolonged and i
 This article aims at retracing my journey and giving out many details, hence why it is quite lengthy.
 
 I will first explain the basics of the *Remote Desktop Protocol*. Then, I will talk about my setup with WinAFL and fuzzing methodology. Finally, I will present some results I achieved, including bugs and vulnerabilities.
+
+
+## Recent related works
+
+While I was working on this subject, other security researchers have also been looking for vulnerabilities in the RDP client. Some CVEs that came out during this period are CVE-2021-34535, CVE-2021-38631 and CVE-2021-41371.
+
+In parallel, in August 2021, researchers from CyberArk have published some work they have conducted on fuzzing RDP ([Fuzzing RDP: Holding the Stick at Both Ends](https://www.cyberark.com/resources/threat-research-blog/fuzzing-rdp-holding-the-stick-at-both-ends)). Even though they also used WinAFL and faced similar challenges, their fuzzing approach is interesting and somewhat differs from the one I will present in this article. They found a few small bugs, including one I found as well (detailled in the [RDPSND section](#rdpsnd)).
+
 
 
 ## Why search for vulnerabilities in the RDP *client*?
@@ -504,7 +515,19 @@ Skimming through the functions, we can try to assess whether we're satisfied or 
 
 # Results
 
-In this section, I will present *some* of my results in a few channels that I tried to fuzz. Results related to CVE-2021-38665 and CVE-2021-38666 will be published in the future, according to Microsoft's Coordinated Vulnerability Disclosure policy.
+In this section, I will present *some* of my results in a few channels that I tried to fuzz.
+
+| Channel | Description | Fuzzing level | Bugs found |
+|:---:|:---|:---:|:---:|
+| **RDPSND** | Audio redirection | 2 | 1 |
+| **CLIPRDR** | Clipboard | 1 | 1 |
+| **DRDYNVC** | Dynamic channels support | 0 |   |
+| **RDPDR** | Filesystem redirection, printers, smart cards... | 2 | 3 |
+
+*Fuzzing level* is a **subjective scale** to assess how much I fuzzed each channel:
+* 0 = Could not fuzz
+* 1 = Could fuzz more or better
+* 2 = Quite satisfied with my fuzzing campaigns (but there might be more to fuzz...)
 
 ## RDPSND
 
@@ -759,7 +782,7 @@ So it seems that it is indeed used, rightfully, for security purposes. This mean
 
 I **patched** `mstscax.dll` to get rid of this measure, by nopping out the dynamic call to `VirtualChannelCloseEx` and bypassing the error handler. We have to be extra careful with patches though, because they can modify the client's behavior. As a result, real bugs in the RDP client will only constitute a *subset* of the bugs we will find with the patched DLL.
 
-With this new gear, I fuzzed the whole channel, including, how Microsoft calls them, its *sub-protocols* (Printer, Smart Cards...).
+With this new gear, I fuzzed the whole channel, including, how Microsoft calls them, its *sub-protocols* (Printer, Smart Cards...). **I eventually identified three bugs**.
 
 ### Arbitrary Malloc DoS in RDPDR
 
@@ -796,12 +819,19 @@ This bug is less powerful than the CLIPRDR one because it only goes up to a **4 
 
 However, it still accounts for a **remote system-wide denial of service** for target clients with around 4 GB of RAM on their system.
 
-## Remote Memory Leak in &lt;redacted&gt;
+### Remote Heap Leak / ASLR Leak in RDPDR
 
-This vulnerability was assigned [**CVE-2021-38665**](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2021-38665) and will be covered in depth in a dedicated article to be published soon. Please stay around to read it!
-## Remote Code Execution in &lt;redacted&gt;
+This vulnerability resides in RDPDR's *Printer* sub-protocol. It was assigned [**CVE-2021-38665**](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2021-38665).
 
-This vulnerability was assigned [**CVE-2021-38666**](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2021-38665). Likewise, it will be covered in depth in a dedicated article to be published soon.
+I covered it in depth in a dedicated article: [**Remote ASLR Leak in Microsoft's RDP Client through Printer Cache Registry**](/posts/leaking-aslr-through-rdp-printer-cache-registry/).
+
+If you haven't already, check it out now (or after having finished reading this article)!
+
+### Deserialization Bug / Heap Corruption in RDPDR
+
+This vulnerability resides in RDPDR's *Smart Card* sub-protocol. It was assigned [**CVE-2021-38666**](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2021-38666).
+
+Likewise, I covered it in depth in a dedicated article: [**Remote Deserialization Bug in Microsoft's RDP Client through Smart Card Extension**](/posts/deserialization-bug-through-rdp-smart-card-extension/).
 
 # Conclusion
 
@@ -811,8 +841,8 @@ Even though I couldn't find any "ground-breaking" vulnerability such as an RCE w
 
 To recap, my findings led to:
 
-* [**CVE-2021-38665**](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2021-38665) (details coming soon)
-* [**CVE-2021-38666**](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2021-38666) (details coming soon)
+* [**CVE-2021-38665**](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2021-38665) (Remote ASLR Leak in Microsoft's RDP Client through RDPDR)
+* [**CVE-2021-38666**](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2021-38666) (Remote Deserialization Bug in Microsoft's RDP Client through RDPDR)
 
 I also got two CVEs in **FreeRDP**. I didn't talk about these because they're not about the Microsoft client, they're not the most interesting and the article is getting really long either way, but feel free to look them up:
 
@@ -827,7 +857,10 @@ I also got two CVEs in **FreeRDP**. I didn't talk about these because they're no
 * **2021-07-27 --- MITRE assigned `CVE-2021-37594` and `CVE-2021-37595` to my FreeRDP findings.**
 * 2021-07-28 --- FreeRDP released version 2.4.0 of the client and published [security advisories](https://github.com/FreeRDP/FreeRDP/security/advisories/GHSA-qg62-jcfp-46fw).
 * 2021-07-30 --- Microsoft assessed the CLIPRDR malloc DoS bug as low-severity and closed the case.
-* **2021-08-04 --- Microsoft assessed the more critical vulnerabilities as *Information Disclosure* and *Remote Code Execution* with *Important* and *Critical* severity. Bounty award: $1,000 + $5,000.**
+* 2021-07-31 --- Microsoft acknowledged the RDPDR deserialization bug and started developing a fix. They also started reviewing this case for a potential bounty award.
+* 2021-08-03 --- Microsoft acknowledged the RDPDR heap leak bug and started developing a fix. They also started reviewing this case for a potential bounty award.
+* **2021-08-04 --- Microsoft assessed the RDPDR deserialization bug as *Remote Code Execution* with *Important* severity. Bounty award: $5,000.**
+* **2021-08-04 --- Microsoft assessed the RDPDR heap leak bug as *Information Disclosure* with *Important* severity. Bounty award: $1,000.**
 * **2021-08-13 --- The vulnerabilities were assigned CVE-2021-38665 and CVE-2021-38666.**
 * 2021-08-26 --- Microsoft assessed the RDPDR malloc DoS bug as low-severity and closed the case.
-* **2021-11-09 --- Microsoft released the security patch.**
+* **2021-11-09 --- Microsoft released the security patch.** For some reason, the severity of CVE-2021-38666 was revised to *Critical* when it was published.
