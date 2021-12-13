@@ -7,13 +7,58 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>Copyright (c) 2020, all rights reserved.</copyright>
-    <lastBuildDate>Wed, 10 Nov 2021 12:00:00 +0000</lastBuildDate><atom:link href="https://thalium.github.io/blog/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 10 Dec 2021 06:00:01 +0100</lastBuildDate><atom:link href="https://thalium.github.io/blog/tags/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>CVE</title>
       <link>https://thalium.github.io/blog/tags/cve/</link>
-      <pubDate>Wed, 10 Nov 2021 12:00:00 +0000</pubDate>
+      <pubDate>Fri, 10 Dec 2021 06:00:01 +0100</pubDate>
       
       <guid>https://thalium.github.io/blog/tags/cve/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Exploit</title>
+      <link>https://thalium.github.io/blog/tags/exploit/</link>
+      <pubDate>Fri, 10 Dec 2021 06:00:01 +0100</pubDate>
+      
+      <guid>https://thalium.github.io/blog/tags/exploit/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>RCE</title>
+      <link>https://thalium.github.io/blog/tags/rce/</link>
+      <pubDate>Fri, 10 Dec 2021 06:00:01 +0100</pubDate>
+      
+      <guid>https://thalium.github.io/blog/tags/rce/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>RDP</title>
+      <link>https://thalium.github.io/blog/tags/rdp/</link>
+      <pubDate>Fri, 10 Dec 2021 06:00:01 +0100</pubDate>
+      
+      <guid>https://thalium.github.io/blog/tags/rdp/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Vulnerability Research</title>
+      <link>https://thalium.github.io/blog/tags/vulnerability-research/</link>
+      <pubDate>Fri, 10 Dec 2021 06:00:01 +0100</pubDate>
+      
+      <guid>https://thalium.github.io/blog/tags/vulnerability-research/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>ASLR</title>
+      <link>https://thalium.github.io/blog/tags/aslr/</link>
+      <pubDate>Fri, 10 Dec 2021 06:00:00 +0100</pubDate>
+      
+      <guid>https://thalium.github.io/blog/tags/aslr/</guid>
       <description></description>
     </item>
     
@@ -23,24 +68,6 @@
       <pubDate>Wed, 10 Nov 2021 12:00:00 +0000</pubDate>
       
       <guid>https://thalium.github.io/blog/tags/fuzzing/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>RDP</title>
-      <link>https://thalium.github.io/blog/tags/rdp/</link>
-      <pubDate>Wed, 10 Nov 2021 12:00:00 +0000</pubDate>
-      
-      <guid>https://thalium.github.io/blog/tags/rdp/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Vulnerability Research</title>
-      <link>https://thalium.github.io/blog/tags/vulnerability-research/</link>
-      <pubDate>Wed, 10 Nov 2021 12:00:00 +0000</pubDate>
-      
-      <guid>https://thalium.github.io/blog/tags/vulnerability-research/</guid>
       <description></description>
     </item>
     

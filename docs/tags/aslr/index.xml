@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>ASLR on THALIUM</title>
+    <link>https://thalium.github.io/blog/tags/aslr/</link>
+    <description>Recent content in ASLR on THALIUM</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>Copyright (c) 2020, all rights reserved.</copyright>
+    <lastBuildDate>Fri, 10 Dec 2021 06:00:00 +0100</lastBuildDate><atom:link href="https://thalium.github.io/blog/tags/aslr/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Remote ASLR Leak in Microsoft&#39;s RDP Client through Printer Cache Registry (CVE-2021-38665)</title>
+      <link>https://thalium.github.io/blog/posts/leaking-aslr-through-rdp-printer-cache-registry/</link>
+      <pubDate>Fri, 10 Dec 2021 06:00:00 +0100</pubDate>
+      
+      <guid>https://thalium.github.io/blog/posts/leaking-aslr-through-rdp-printer-cache-registry/</guid>
+      <description>&lt;p&gt;This is the &lt;strong&gt;second installment&lt;/strong&gt; in my three-part series of articles on fuzzing Microsoft&amp;rsquo;s RDP client. I will explain a bug I found by fuzzing the &lt;strong&gt;printer sub-protocol&lt;/strong&gt;, and how I exploited it.&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>
