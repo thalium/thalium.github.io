@@ -21,6 +21,6 @@ Et ce sur de multiples plateformes :
 
 Pour répondre aux challenges de plus en plus nombreux, nous recherchons continuellement de nouveaux experts pour nos équipes Reverse, Développements ou encore Forensics.
 
-L'ensemble de nos offres d'emploi et de stages sont disponibles à l'adresse [suivante](https://jobs.thalesgroup.com/search-jobs/thalium).
+L'ensemble de nos offres d'emploi et de stages sont disponibles à l'adresse [suivante](https://thales.wd3.myworkdayjobs.com/en-US/Careers/jobs?q=thalium).
 
 Si vous pensez que votre profil ne rentre pas dans les offres proposées mais que vous souhaitez relever nos challenges et contribuer à l'expertise de nos équipes, n'hésitez pas à nous contacter par mail : [contact@thalium.re](mailto:contact@thalium.re).
