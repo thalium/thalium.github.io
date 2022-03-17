@@ -7,7 +7,7 @@
 <meta name="description" content="Thalium blog." />
 <meta name="keywords" content="blog, tech" />
 <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
-<meta name="generator" content="Hugo 0.89.4" />
+<meta name="generator" content="Hugo 0.95.0" />
 
 <link rel="canonical" href="https://thalium.github.io/blog/posts/deserialization-bug-through-rdp-smart-card-extension/">
 <meta property="og:title" content="Remote Deserialization Bug in Microsoft&#39;s RDP Client through Smart Card Extension (CVE-2021-38666)" />
@@ -220,10 +220,10 @@ if (!doNotTrack) {
 <p>Although, one crash seemed to reoccur more frequently inside <strong>RPCRT4.DLL</strong>. We&rsquo;ve gotten a tiny glimpse of RPC while investigating <code>DRDYNVC</code> in the first article, but it&rsquo;s gonna get more serious now.</p>
 <h2 id="smart-cards-and-rpc">Smart Cards and RPC</h2>
 <p>The crashes in <code>RPCRT4.DLL</code> arise in <code>NdrSimpleTypeConvert+0x307</code>:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-asm" data-lang="asm"><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">eax</span>, [<span style="color:#66d9ef">rdx</span>] <span style="color:#75715e">; crash
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">bswap</span>   <span style="color:#66d9ef">eax</span>
-<span style="color:#a6e22e">mov</span>     [<span style="color:#66d9ef">rdx</span>], <span style="color:#66d9ef">eax</span>
-</code></pre></div><p>It&rsquo;s a classic <strong>out-of-bounds read</strong> on what seems to be the byteswap of a DWORD in the heap.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">eax</span>, [<span style="color:#66d9ef">rdx</span>] <span style="color:#75715e">; crash
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">bswap</span>   <span style="color:#66d9ef">eax</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     [<span style="color:#66d9ef">rdx</span>], <span style="color:#66d9ef">eax</span>
+</span></span></code></pre></div><p>It&rsquo;s a classic <strong>out-of-bounds read</strong> on what seems to be the byteswap of a DWORD in the heap.</p>
 <p>Fortunately, we are able to find the associated payload and instantly reproduce the bug. Here&rsquo;s what the call stack looks like when the crash occurs:</p>
 <p>
   <figure style="margin-top: 1em; margin-bottom: 1em">
@@ -243,21 +243,21 @@ if (!doNotTrack) {
 <li>&hellip;</li>
 </ul>
 <p>What&rsquo;s with all of these? Here&rsquo;s one thing <strong>all these functions have in common</strong>: the following snippet of code.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">v6 <span style="color:#f92672">=</span> MesDecodeBufferHandleCreate(
-  <span style="color:#f92672">&amp;</span>PDU<span style="color:#f92672">-&gt;</span>InputBuffer,
-  PDU<span style="color:#f92672">-&gt;</span>InputBufferLength,
-  <span style="color:#f92672">&amp;</span>pHandle
-);
-<span style="color:#75715e">// ...
-</span><span style="color:#75715e"></span>NdrMesTypeDecode3(
-  pHandle,
-  <span style="color:#f92672">&amp;</span>pPicklingInfo,
-  <span style="color:#f92672">&amp;</span>pProxyInfo,
-  (<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> <span style="color:#f92672">**</span>)<span style="color:#f92672">&amp;</span>ArrTypeOffset,
-  <span style="color:#ae81ff">0xEu</span>,
-  <span style="color:#f92672">&amp;</span>pObject
-); <span style="color:#75715e">// Crash here
-</span></code></pre></div><p>The only thing that varies across these functions is the <strong>fifth parameter</strong> of <code>NdrMesTypeDecode3</code> (the <code>0xE</code>). We also immediately notice that <code>PDU-&gt;InputBufferLength</code> (DWORD) can be arbitrarily large&hellip;</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>v6 <span style="color:#f92672">=</span> MesDecodeBufferHandleCreate(
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&amp;</span>PDU<span style="color:#f92672">-&gt;</span>InputBuffer,
+</span></span><span style="display:flex;"><span>  PDU<span style="color:#f92672">-&gt;</span>InputBufferLength,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&amp;</span>pHandle
+</span></span><span style="display:flex;"><span>);
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// ...
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>NdrMesTypeDecode3(
+</span></span><span style="display:flex;"><span>  pHandle,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&amp;</span>pPicklingInfo,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&amp;</span>pProxyInfo,
+</span></span><span style="display:flex;"><span>  (<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> <span style="color:#f92672">**</span>)<span style="color:#f92672">&amp;</span>ArrTypeOffset,
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">0xEu</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&amp;</span>pObject
+</span></span><span style="display:flex;"><span>); <span style="color:#75715e">// Crash here
+</span></span></span></code></pre></div><p>The only thing that varies across these functions is the <strong>fifth parameter</strong> of <code>NdrMesTypeDecode3</code> (the <code>0xE</code>). We also immediately notice that <code>PDU-&gt;InputBufferLength</code> (DWORD) can be arbitrarily large&hellip;</p>
 <p>Before going any further, let&rsquo;s dissect two of the guilty payloads as well.</p>
 <pre tabindex="0"><code>rpc-crash-1
 
@@ -298,37 +298,37 @@ InputBuffer
 </p>
 <p>Therefore, there are around <strong>60 functions</strong> that contain the same pattern of code using <code>MesDecodeBufferHandleCreate</code> followed by <code>NdrMesTypeDecode3</code>. They are all called the same way with our <code>InputBuffer</code> and <code>InputBufferLength</code> &mdash; only a certain offset parameter varies each time.</p>
 <p>According to the specification, for <code>IoControlCode</code> set to <code>0x000900E8</code>, we get the following <code>LocateCardsByATRA_Call</code> structure:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> _LocateCardsByATRA_Call {
-  REDIR_SCARDCONTEXT Context;
-  [range(<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">1000</span>)] <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> cAtrs;
-  [size_is(cAtrs)] LocateCards_ATRMask<span style="color:#f92672">*</span> rgAtrMasks;
-  [range(<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">10</span>)] <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> cReaders;
-  [size_is(cReaders)] ReaderStateA<span style="color:#f92672">*</span> rgReaderStates;
-} LocateCardsByATRA_Call;
-</code></pre></div><p>It seems then that based on <code>IoControlCode</code>, <strong>our input buffer will be decoded according to a certain structure</strong>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> _LocateCardsByATRA_Call {
+</span></span><span style="display:flex;"><span>  REDIR_SCARDCONTEXT Context;
+</span></span><span style="display:flex;"><span>  [range(<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">1000</span>)] <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> cAtrs;
+</span></span><span style="display:flex;"><span>  [size_is(cAtrs)] LocateCards_ATRMask<span style="color:#f92672">*</span> rgAtrMasks;
+</span></span><span style="display:flex;"><span>  [range(<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">10</span>)] <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> cReaders;
+</span></span><span style="display:flex;"><span>  [size_is(cReaders)] ReaderStateA<span style="color:#f92672">*</span> rgReaderStates;
+</span></span><span style="display:flex;"><span>} LocateCardsByATRA_Call;
+</span></span></code></pre></div><p>It seems then that based on <code>IoControlCode</code>, <strong>our input buffer will be decoded according to a certain structure</strong>.</p>
 <h2 id="the-rpc-ndr-marshaling-engine">The RPC NDR marshaling engine</h2>
 <p>Let&rsquo;s come back on the decoding piece of code:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">v6 <span style="color:#f92672">=</span> MesDecodeBufferHandleCreate(
-  <span style="color:#f92672">&amp;</span>PDU<span style="color:#f92672">-&gt;</span>InputBuffer,
-  PDU<span style="color:#f92672">-&gt;</span>InputBufferLength,
-  <span style="color:#f92672">&amp;</span>pHandle
-);
-</code></pre></div><p>This function from RPCRT4 is documented by Microsoft:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>v6 <span style="color:#f92672">=</span> MesDecodeBufferHandleCreate(
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&amp;</span>PDU<span style="color:#f92672">-&gt;</span>InputBuffer,
+</span></span><span style="display:flex;"><span>  PDU<span style="color:#f92672">-&gt;</span>InputBufferLength,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&amp;</span>pHandle
+</span></span><span style="display:flex;"><span>);
+</span></span></code></pre></div><p>This function from RPCRT4 is documented by Microsoft:</p>
 <blockquote>
 <p><em>The <strong>MesDecodeBufferHandleCreate</strong> function creates a decoding handle and initializes it for a (fixed) buffer style of serialization</em>.</p>
 </blockquote>
 <p>So this is what it is all about&hellip; RPC has its own <strong>serialization engine</strong>, called the <a href="https://docs.microsoft.com/en-us/windows/win32/rpc/rpc-ndr-engine"><strong>NDR marshaling engine</strong></a> (Network Data Representation). In particular, there is documentation on how data serialization works: header, format strings, types, etc.</p>
 <p>The RDP client makes &ldquo;manual&rdquo; use of the RPC NDR serialization engine to decode structures from the PDUs.</p>
 <p>After having initialized the <em>decoding handle</em> with the input buffer and length, the data is effectively deserialized:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">NdrMesTypeDecode3(
-  pHandle,
-  <span style="color:#f92672">&amp;</span>pPicklingInfo,
-  <span style="color:#f92672">&amp;</span>pProxyInfo,
-  (<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> <span style="color:#f92672">**</span>)<span style="color:#f92672">&amp;</span>ArrTypeOffset,
-  <span style="color:#ae81ff">0xEu</span>,
-  <span style="color:#f92672">&amp;</span>pObject
-); 
-</code></pre></div><p>And to our surprise&hellip; the function <code>NdrMesTypeDecode3</code> is nowhere to be documented! The reason is because developers are not supposed to use this function directly.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>NdrMesTypeDecode3(
+</span></span><span style="display:flex;"><span>  pHandle,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&amp;</span>pPicklingInfo,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&amp;</span>pProxyInfo,
+</span></span><span style="display:flex;"><span>  (<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> <span style="color:#f92672">**</span>)<span style="color:#f92672">&amp;</span>ArrTypeOffset,
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">0xEu</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&amp;</span>pObject
+</span></span><span style="display:flex;"><span>); 
+</span></span></code></pre></div><p>And to our surprise&hellip; the function <code>NdrMesTypeDecode3</code> is nowhere to be documented! The reason is because developers are not supposed to use this function directly.</p>
 <p>Instead, one should describe structures using Microsoft&rsquo;s <strong>IDL (Interface Description Language)</strong>. Next, the <a href="https://docs.microsoft.com/en-us/windows/win32/com/midl-compiler">MIDL compiler</a> should be used to generate stubs that can encode and decode data (using the <code>NdrMes</code> functions underneath).</p>
 <p>Nonetheless, header files contain information about the parameters and their types that can help us understand a bit more.</p>
 <p>
@@ -344,14 +344,14 @@ InputBuffer
 <p>In particular, the <code>pProxyInfo</code> argument eventually leads to a <em>Format</em> field. It seems to contain a compiled description of all the types that exist and are used within the Smart Card extension.</p>
 <p>Then, the <code>ArrTypeOffset</code> array, which starts like this: <code>0x02, 0x1e, 0x1e, 0x54, ...</code>, lists the offsets of all the structures of interest inside the compiled format string. The next argument (<code>0xE</code>) is the offset, in the <code>ArrTypeOffset</code> array, of the structure we want to consider.</p>
 <p>For <code>LocateCardsByATRA</code>, <code>0xE</code> gives an offset of <code>0x220</code> in the <code>ArrTypeOffset</code> array, which points to the compiled format associated to the structure we found earlier in the specification:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> _LocateCardsByATRA_Call {
-  REDIR_SCARDCONTEXT Context;
-  [range(<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">1000</span>)] <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> cAtrs;
-  [size_is(cAtrs)] LocateCards_ATRMask<span style="color:#f92672">*</span> rgAtrMasks;
-  [range(<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">10</span>)] <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> cReaders;
-  [size_is(cReaders)] ReaderStateA<span style="color:#f92672">*</span> rgReaderStates;
-} LocateCardsByATRA_Call;
-</code></pre></div><p>We are lucky the specification tells us everything about the type structures, and even releases the full IDL in appendix. If we didn&rsquo;t have these, we would have had to decompile the format ourselves, and not only the format pointed by the offset we found. Indeed, there are also many references to other previously defined structures, such as <code>LocateCards_ATRMask</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> _LocateCardsByATRA_Call {
+</span></span><span style="display:flex;"><span>  REDIR_SCARDCONTEXT Context;
+</span></span><span style="display:flex;"><span>  [range(<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">1000</span>)] <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> cAtrs;
+</span></span><span style="display:flex;"><span>  [size_is(cAtrs)] LocateCards_ATRMask<span style="color:#f92672">*</span> rgAtrMasks;
+</span></span><span style="display:flex;"><span>  [range(<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">10</span>)] <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> cReaders;
+</span></span><span style="display:flex;"><span>  [size_is(cReaders)] ReaderStateA<span style="color:#f92672">*</span> rgReaderStates;
+</span></span><span style="display:flex;"><span>} LocateCardsByATRA_Call;
+</span></span></code></pre></div><p>We are lucky the specification tells us everything about the type structures, and even releases the full IDL in appendix. If we didn&rsquo;t have these, we would have had to decompile the format ourselves, and not only the format pointed by the offset we found. Indeed, there are also many references to other previously defined structures, such as <code>LocateCards_ATRMask</code>.</p>
 <h2 id="root-cause">Root cause</h2>
 <p>This may be getting a bit hard to follow, so <strong>let&rsquo;s summarize</strong> what we understand for now:</p>
 <ul>
@@ -363,23 +363,23 @@ InputBuffer
 </ul>
 <p>Now as I was reversing and debugging, it seemed to me that these &ldquo;convert&rdquo; operations actually took place before any real decoding per se. It was as if before deserializing, there was a first pass on the whole buffer to <em>convert</em> stuff.</p>
 <p>I eventually found a Windows XP source leak that helped shed light on all of this:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">NdrSimpleTypeConvert</span>(PMIDL_STUB_MESSAGE pStubMsg, uchar FormatChar) {
-  <span style="color:#66d9ef">switch</span> (FormatChar) {
-    <span style="color:#75715e">// ...
-</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">case</span> FC_ULONG:
-      ALIGN(pStubMsg<span style="color:#f92672">-&gt;</span>Buffer,<span style="color:#ae81ff">3</span>);
-      CHECK_EOB_RAISE_BSD( pStubMsg<span style="color:#f92672">-&gt;</span>Buffer <span style="color:#f92672">+</span> <span style="color:#ae81ff">4</span> );
-
-      <span style="color:#66d9ef">if</span> ((pStubMsg<span style="color:#f92672">-&gt;</span>RpcMsg<span style="color:#f92672">-&gt;</span>DataRepresentation <span style="color:#f92672">&amp;</span> NDR_INT_REP_MASK) <span style="color:#f92672">!=</span> NDR_LOCAL_ENDIAN) {
-        <span style="color:#f92672">*</span>((ulong <span style="color:#f92672">*</span>)pStubMsg<span style="color:#f92672">-&gt;</span>Buffer) <span style="color:#f92672">=</span> RtlUlongByteSwap(<span style="color:#f92672">*</span>(ulong <span style="color:#f92672">*</span>)pStubMsg<span style="color:#f92672">-&gt;</span>Buffer);  
-      }
-
-      pStubMsg<span style="color:#f92672">-&gt;</span>Buffer <span style="color:#f92672">+=</span> <span style="color:#ae81ff">4</span>;
-      <span style="color:#66d9ef">break</span>;
-    <span style="color:#75715e">// ...
-</span><span style="color:#75715e"></span>  }
-}
-</code></pre></div><p>The magic happens when the <strong>endianness of the serialized data</strong> does not match with the <em>local endianness</em>. A pass on the buffer is performed to switch the endianness of (in particular) all the <code>FC_ULONG</code> type fields (the <code>unsigned long</code> fields in our structure).</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">NdrSimpleTypeConvert</span>(PMIDL_STUB_MESSAGE pStubMsg, uchar FormatChar) {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">switch</span> (FormatChar) {
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// ...
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">case</span> FC_ULONG:
+</span></span><span style="display:flex;"><span>      ALIGN(pStubMsg<span style="color:#f92672">-&gt;</span>Buffer,<span style="color:#ae81ff">3</span>);
+</span></span><span style="display:flex;"><span>      CHECK_EOB_RAISE_BSD( pStubMsg<span style="color:#f92672">-&gt;</span>Buffer <span style="color:#f92672">+</span> <span style="color:#ae81ff">4</span> );
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">if</span> ((pStubMsg<span style="color:#f92672">-&gt;</span>RpcMsg<span style="color:#f92672">-&gt;</span>DataRepresentation <span style="color:#f92672">&amp;</span> NDR_INT_REP_MASK) <span style="color:#f92672">!=</span> NDR_LOCAL_ENDIAN) {
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">*</span>((ulong <span style="color:#f92672">*</span>)pStubMsg<span style="color:#f92672">-&gt;</span>Buffer) <span style="color:#f92672">=</span> RtlUlongByteSwap(<span style="color:#f92672">*</span>(ulong <span style="color:#f92672">*</span>)pStubMsg<span style="color:#f92672">-&gt;</span>Buffer);  
+</span></span><span style="display:flex;"><span>      }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>      pStubMsg<span style="color:#f92672">-&gt;</span>Buffer <span style="color:#f92672">+=</span> <span style="color:#ae81ff">4</span>;
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// ...
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>The magic happens when the <strong>endianness of the serialized data</strong> does not match with the <em>local endianness</em>. A pass on the buffer is performed to switch the endianness of (in particular) all the <code>FC_ULONG</code> type fields (the <code>unsigned long</code> fields in our structure).</p>
 <p>Therefore, in the <code>_LocateCardsByATRA_Call</code> structure, the fields <code>cAtrs</code> and <code>cReaders</code> are byteswapped. But also and more importantly, any <code>unsigned long</code> that lies inside the <strong>nested</strong> <code>rgAtrMasks</code> or <code>rgReaderStates</code> fields will be byteswapped. And these fields are <strong>arrays of structs which size we control</strong>!</p>
 <p>So there are actually <strong>two kinds of overruns</strong> here:</p>
 <ul>
@@ -390,12 +390,12 @@ InputBuffer
 <h1 id="heap-corruption">Heap corruption</h1>
 <p>We managed to clear up why we got crashes in RPCRT4.DLL, and which payloads triggered them. However, we haven&rsquo;t found yet an explanation to the tons of other nonsensical crashes we&rsquo;ve had.</p>
 <p>Let&rsquo;s check the <code>LocateCards_ATRMask</code> structure, that is nested inside <code>LocateCardsByATRA_Call</code>:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> _LocateCards_ATRMask {
-  [range(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">36</span>)] <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> cbAtr;
-  byte rgbAtr[<span style="color:#ae81ff">36</span>];
-  byte rgbMask[<span style="color:#ae81ff">36</span>];
-} LocateCards_ATRMask;
-</code></pre></div><p>There&rsquo;s an <code>unsigned long</code> field (<code>cbAtr</code>) at the beginning of this struct of total size 76 bytes. Therefore, we may be able to perform <strong>byteswaps of DWORDs in the heap every 76 bytes</strong>!</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> _LocateCards_ATRMask {
+</span></span><span style="display:flex;"><span>  [range(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">36</span>)] <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> cbAtr;
+</span></span><span style="display:flex;"><span>  byte rgbAtr[<span style="color:#ae81ff">36</span>];
+</span></span><span style="display:flex;"><span>  byte rgbMask[<span style="color:#ae81ff">36</span>];
+</span></span><span style="display:flex;"><span>} LocateCards_ATRMask;
+</span></span></code></pre></div><p>There&rsquo;s an <code>unsigned long</code> field (<code>cbAtr</code>) at the beginning of this struct of total size 76 bytes. Therefore, we may be able to perform <strong>byteswaps of DWORDs in the heap every 76 bytes</strong>!</p>
 <p>We can confirm this by setting a breakpoint where the byteswap occurs and watching the heap progressively getting disfigured.</p>
 <p>Since the <code>PDU-&gt;InputBufferLength</code> variable is arbitrarily large, we can, as we said, eventually reach the end of the heap segment to cause an OOB read crash. But this is not the interesting thing here.</p>
 <p>By byteswapping DWORDs in the heap, we are corrupting a lot of objects. If the input buffer length is large enough to allow out-of-bounds operations, but small enough not to exceed the heap segment, <strong>the deserialization process will return with a damaged heap</strong>. This leads to numerous types of crashes; all the odd unexplained crashes that I encountered earlier.</p>
