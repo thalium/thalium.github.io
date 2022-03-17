@@ -20,6 +20,17 @@
     </item>
     
     <item>
+      <title>About</title>
+      <link>https://thalium.github.io/blog/about/</link>
+      <pubDate>Thu, 17 Mar 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://thalium.github.io/blog/about/</guid>
+      <description>Au sein du groupe THALES, l&amp;rsquo;équipe THALIUM - basée à Rennes - est dédiée aux activités de Lutte Informatique, de connaissance de la menace, de recherche de vulnérabilités et de développement d’outils de type Red Team.
+Nous recrutons !!
+Thalium, part of THALES group, is focused on threat intelligence, vulnerability research and red team development.</description>
+    </item>
+    
+    <item>
       <title>Remote Deserialization Bug in Microsoft&#39;s RDP Client through Smart Card Extension (CVE-2021-38666)</title>
       <link>https://thalium.github.io/blog/posts/deserialization-bug-through-rdp-smart-card-extension/</link>
       <pubDate>Fri, 10 Dec 2021 06:00:01 +0100</pubDate>
