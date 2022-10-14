@@ -499,7 +499,7 @@ We chose four configuration that we ran 15 times each over a 24h period; they al
 
 - 7 KVM backends with a naïve harness (blue);
 - 7 KVM backends with our improved harness (green);
-- 2 KVM backends with basic blocks coverage and 5 bochscpu backends with contest sensitive edge coverage, all using the improved harness (orange);
+- 2 KVM backends with basic blocks coverage and 5 bochscpu backends with context sensitive edge coverage, all using the improved harness (orange);
 - 1 KVM backend with basic blocks coverage and 6 KVM backends with basic blocks and dirty pages coverage, all using the improved harness (orange).
 
 In order to perform comparisons we need a common coverage measurement, that is why the last two configurations include a KVM backend with basic blocks coverage.
@@ -544,7 +544,7 @@ The orange campaign was not so bad in the end. These results should be taken wit
 First, for basic block and edge coverage we only considered the ones in the module involved in the crash we already found in our initial campaigns. We kind of helped the fuzzer explore in the right direction.
 Second, and more importantly we did not properly monitor which campaign reported which crash.
 We only monitored the crashes properly after observing suspiciously good results for the orange curve.
-The three campaign that reported crashes after we started monitoring them properly did find the bug we'll explain in the next section, we are not sure about the other four but most of them are probably that same bug. Anyway, even if they are not, the orange campaign were better at finding our bug than the other ones despite being much slower.
+The three campaigns that reported crashes after we started monitoring them properly did find the bug we'll explain in the next section, we are not sure about the other four but most of them are probably that same bug. Anyway, even if they are not, the orange campaign were better at finding our bug than the other ones despite being much slower.
 
 
 # Crash Analysis
