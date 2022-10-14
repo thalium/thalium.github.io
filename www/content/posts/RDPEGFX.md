@@ -1,7 +1,7 @@
 ---
 title: 'Fuzzing RDPEGFX with "what the fuzz"'
 date: 2022-10-14T00:00:00+00:00
-draft: true
+draft: false
 author: "Colas Le Guernic, Jérémy Rubert, and Anonymous from Thalium team"
 tags:
   - RDP

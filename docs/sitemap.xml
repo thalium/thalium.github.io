@@ -9,30 +9,36 @@
     <lastmod>2022-03-17T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://thalium.github.io/blog/tags/cve/</loc>
-    <lastmod>2021-12-10T06:00:01+01:00</lastmod>
+    <lastmod>2022-10-14T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://thalium.github.io/blog/tags/exploit/</loc>
-    <lastmod>2021-12-10T06:00:01+01:00</lastmod>
+    <loc>https://thalium.github.io/blog/tags/fuzzing/</loc>
+    <lastmod>2022-10-14T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://thalium.github.io/blog/posts/rdpegfx/</loc>
+    <lastmod>2022-10-14T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://thalium.github.io/blog/posts/</loc>
+    <lastmod>2022-10-14T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://thalium.github.io/blog/tags/rdp/</loc>
+    <lastmod>2022-10-14T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://thalium.github.io/blog/tags/</loc>
+    <lastmod>2022-10-14T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://thalium.github.io/blog/</loc>
+    <lastmod>2022-10-14T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://thalium.github.io/blog/tags/vulnerability-research/</loc>
+    <lastmod>2022-10-14T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://thalium.github.io/blog/tags/exploit/</loc>
     <lastmod>2021-12-10T06:00:01+01:00</lastmod>
   </url><url>
     <loc>https://thalium.github.io/blog/tags/rce/</loc>
     <lastmod>2021-12-10T06:00:01+01:00</lastmod>
   </url><url>
-    <loc>https://thalium.github.io/blog/tags/rdp/</loc>
-    <lastmod>2021-12-10T06:00:01+01:00</lastmod>
-  </url><url>
     <loc>https://thalium.github.io/blog/posts/deserialization-bug-through-rdp-smart-card-extension/</loc>
-    <lastmod>2021-12-10T06:00:01+01:00</lastmod>
-  </url><url>
-    <loc>https://thalium.github.io/blog/tags/</loc>
-    <lastmod>2021-12-10T06:00:01+01:00</lastmod>
-  </url><url>
-    <loc>https://thalium.github.io/blog/</loc>
-    <lastmod>2021-12-10T06:00:01+01:00</lastmod>
-  </url><url>
-    <loc>https://thalium.github.io/blog/tags/vulnerability-research/</loc>
     <lastmod>2021-12-10T06:00:01+01:00</lastmod>
   </url><url>
     <loc>https://thalium.github.io/blog/tags/aslr/</loc>
@@ -40,9 +46,6 @@
   </url><url>
     <loc>https://thalium.github.io/blog/posts/leaking-aslr-through-rdp-printer-cache-registry/</loc>
     <lastmod>2021-12-10T06:00:00+01:00</lastmod>
-  </url><url>
-    <loc>https://thalium.github.io/blog/tags/fuzzing/</loc>
-    <lastmod>2021-11-10T12:00:00+00:00</lastmod>
   </url><url>
     <loc>https://thalium.github.io/blog/posts/fuzzing-microsoft-rdp-client-using-virtual-channels/</loc>
     <lastmod>2021-11-10T12:00:00+00:00</lastmod>

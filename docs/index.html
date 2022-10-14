@@ -154,6 +154,56 @@ if (!doNotTrack) {
     <article class="post-preview">
 
   <header>
+    <h2 class="title"> <a href='https://thalium.github.io/blog/posts/rdpegfx/'> Fuzzing RDPEGFX with &#34;what the fuzz&#34;</a> </h2>
+    <div class="meta">
+      <div class="date">
+        14 Oct, 2022
+        by 
+          Colas Le Guernic, Jérémy Rubert, and Anonymous from Thalium team
+        
+      </div>
+      
+<div class="tags">
+  
+    
+      <div class="tag">
+        <a href="https://thalium.github.io/blog/tags/rdp">#RDP</a>
+      </div>
+    
+      <div class="tag">
+        <a href="https://thalium.github.io/blog/tags/fuzzing">#Fuzzing</a>
+      </div>
+    
+      <div class="tag">
+        <a href="https://thalium.github.io/blog/tags/cve">#CVE</a>
+      </div>
+    
+      <div class="tag">
+        <a href="https://thalium.github.io/blog/tags/vulnerability-research">#Vulnerability Research</a>
+      </div>
+    
+  
+</div>
+
+    </div>
+
+  </header>
+
+  <div class="summary">
+    Microsoft’s Remote Desktop Protocol (RDP) client was fuzzed by various teams in the past few years, it thus seemed like a good target to try a recent snapshot fuzzer: <a href="https://github.com/0vercl0k/wtf">what the fuzz (wtf)</a> (of which we are only users). In this companion post to our <a href="https://www.hexacon.fr/conference/speakers/#fuzzing_rdpegfx">Hexacon 2022 talk</a> we’ll show how we took advantage of wtf flexibility in order to efficiently fuzz the RDPEGFX channel of Microsoft RDP client and uncover <a href="https://msrc.microsoft.com/update-guide/en-US/vulnerability/CVE-2022-30221">CVE-2022-30221</a>.
+  </div>
+
+  <div class="rmore">
+    <a href='https://thalium.github.io/blog/posts/rdpegfx/' class="rmore">Read more</a>
+  </div>
+
+
+</article>
+
+
+    <article class="post-preview">
+
+  <header>
     <h2 class="title"> <a href='https://thalium.github.io/blog/posts/deserialization-bug-through-rdp-smart-card-extension/'> Remote Deserialization Bug in Microsoft&#39;s RDP Client through Smart Card Extension (CVE-2021-38666)</a> </h2>
     <div class="meta">
       <div class="date">
@@ -585,55 +635,6 @@ We were given an <a href="https://thalium.github.io/blog/posts/misc/off-the-grid
 
   <div class="rmore">
     <a href='https://thalium.github.io/blog/posts/apocalypse2021-off-the-grid/' class="rmore">Read more</a>
-  </div>
-
-
-</article>
-
-
-    <article class="post-preview">
-
-  <header>
-    <h2 class="title"> <a href='https://thalium.github.io/blog/posts/apocalypse2021-wii-phit/'> Cyber Apocalypse 2021 2/5 - Wii-Phit</a> </h2>
-    <div class="meta">
-      <div class="date">
-        28 Apr, 2021
-        by 
-          Colas Le Guernic
-        
-      </div>
-      
-<div class="tags">
-  
-    
-      <div class="tag">
-        <a href="https://thalium.github.io/blog/tags/ctf">#CTF</a>
-      </div>
-    
-      <div class="tag">
-        <a href="https://thalium.github.io/blog/tags/writeup">#Writeup</a>
-      </div>
-    
-      <div class="tag">
-        <a href="https://thalium.github.io/blog/tags/cyberapocalypse2021">#CyberApocalypse2021</a>
-      </div>
-    
-  
-</div>
-
-    </div>
-
-  </header>
-
-  <div class="summary">
-    <p><strong>Wii-Phit</strong> was the only <em>Hard</em> crypto challenge designed by <a href="https://cryptohack.org/">CryptoHack</a> for the <a href="https://www.hackthebox.eu/cyber-apocalypse-ctf-2021">Cyber Apocalypse 2021</a> CTF (there were also 4 challenges categorized as <em>Insane</em> though).</p>
-<p>There is already an excellent <a href="https://blog.cryptohack.org/cyber-apocalypse-2021#wii-phit">writeup</a> by the challenge organizers:
-one could recognize a well known equation related to the <a href="https://en.wikipedia.org/wiki/Erd%C5%91s%E2%80%93Straus_conjecture">Erdős–Straus conjecture</a>, some participants used <a href="https://github.com/Z3Prover/z3">Z3</a>.
-We took a different approach.</p>
-  </div>
-
-  <div class="rmore">
-    <a href='https://thalium.github.io/blog/posts/apocalypse2021-wii-phit/' class="rmore">Read more</a>
   </div>
 
 
