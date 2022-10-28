@@ -153,11 +153,11 @@ Similarly our initial harness needed a few iterations.
 First, we got issues with logging: with no I/O available our fuzzer would crash. We decided to stop fuzzing whenever an error was logged:
 
 ```cpp
-  !g_Backend->SetBreakpoint("mstscax!RdpGfxProtocolClientDecoder::LogError",
-                            [](Backend_t* Backend) {
-                              DebugPrint("LogError!\n");
-                              Backend->Stop(Ok_t());
-                            });
+  g_Backend->SetBreakpoint("mstscax!RdpGfxProtocolClientDecoder::LogError",
+                           [](Backend_t* Backend) {
+                             DebugPrint("LogError!\n");
+                             Backend->Stop(Ok_t());
+                           });
 ```
 
 Similarly we deactivated [event tracing](https://learn.microsoft.com/en-us/windows-hardware/drivers/devtest/wpp-software-tracing):
@@ -168,8 +168,8 @@ Similarly we deactivated [event tracing](https://learn.microsoft.com/en-us/windo
   //
   const uint64_t pWPP_GLOBAL_Control =
       g_Dbg.GetSymbol("mstscax!WPP_GLOBAL_Control");
-  !g_Backend->VirtWriteStruct(Gva_t(pWPP_GLOBAL_Control),
-                              &pWPP_GLOBAL_Control);
+  g_Backend->VirtWriteStruct(Gva_t(pWPP_GLOBAL_Control),
+                             &pWPP_GLOBAL_Control);
 ```
 
 We also had to hook `__imp_QueryPerformanceCounter`:
@@ -178,7 +178,7 @@ We also had to hook `__imp_QueryPerformanceCounter`:
   //
   // Emulate __imp_QueryPerformanceCounter
   //
-  !g_Backend->SetBreakpoint(
+  g_Backend->SetBreakpoint(
       "KERNEL32!QueryPerformanceCounterStub",
       [](Backend_t* Backend) {
         //
@@ -355,7 +355,7 @@ Then we ensure in the same callback fixing `cmdId` that `pduLength` will pass th
   );
   const uint8_t NOP[6] = {0x90, 0x90, 0x90, 0x90, 0x90, 0x90};
 
-  !g_Backend->VirtWriteStruct(Gva_t(pJNZ), &NOP);
+  g_Backend->VirtWriteStruct(Gva_t(pJNZ), &NOP);
 ```
 
 We could already observe a significant improvement in terms of basic blocks covered, but wanted to go further without analyzing individual handlers.
