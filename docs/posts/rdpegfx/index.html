@@ -7,11 +7,11 @@
 <meta name="description" content="Thalium blog." />
 <meta name="keywords" content="blog, tech" />
 <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
-<meta name="generator" content="Hugo 0.104.3" />
+<meta name="generator" content="Hugo 0.95.0" />
 
 <link rel="canonical" href="https://thalium.github.io/blog/posts/rdpegfx/">
 <meta property="og:title" content="Fuzzing RDPEGFX with &#34;what the fuzz&#34;" />
-<meta property="og:description" content="Microsoft’s Remote Desktop Protocol (RDP) client was fuzzed by various teams in the past few years, it thus seemed like a good target to try a recent snapshot fuzzer: what the fuzz (wtf) (of which we are only users). In this companion post to our Hexacon 2022 talk we’ll show how we took advantage of wtf flexibility in order to efficiently fuzz the RDPEGFX channel of Microsoft RDP client and uncover CVE-2022-30221." />
+<meta property="og:description" content="Microsoft’s Remote Desktop Protocol (RDP) client was fuzzed by various teams in the past few years, it thus seemed like a good target to try a recent snapshot fuzzer: what the fuzz (wtf) (of which we are only users). In this companion post to our Hexacon 2022 talk (slides, video) we’ll show how we took advantage of wtf flexibility in order to efficiently fuzz the RDPEGFX channel of Microsoft RDP client and uncover CVE-2022-30221." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://thalium.github.io/blog/posts/rdpegfx/" /><meta property="article:section" content="posts" />
 <meta property="article:published_time" content="2022-10-14T00:00:00+00:00" />
@@ -20,13 +20,13 @@
 
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Fuzzing RDPEGFX with &#34;what the fuzz&#34;"/>
-<meta name="twitter:description" content="Microsoft’s Remote Desktop Protocol (RDP) client was fuzzed by various teams in the past few years, it thus seemed like a good target to try a recent snapshot fuzzer: what the fuzz (wtf) (of which we are only users). In this companion post to our Hexacon 2022 talk we’ll show how we took advantage of wtf flexibility in order to efficiently fuzz the RDPEGFX channel of Microsoft RDP client and uncover CVE-2022-30221."/>
+<meta name="twitter:description" content="Microsoft’s Remote Desktop Protocol (RDP) client was fuzzed by various teams in the past few years, it thus seemed like a good target to try a recent snapshot fuzzer: what the fuzz (wtf) (of which we are only users). In this companion post to our Hexacon 2022 talk (slides, video) we’ll show how we took advantage of wtf flexibility in order to efficiently fuzz the RDPEGFX channel of Microsoft RDP client and uncover CVE-2022-30221."/>
 
 
 <meta itemprop="name" content="Fuzzing RDPEGFX with &#34;what the fuzz&#34;">
-<meta itemprop="description" content="Microsoft’s Remote Desktop Protocol (RDP) client was fuzzed by various teams in the past few years, it thus seemed like a good target to try a recent snapshot fuzzer: what the fuzz (wtf) (of which we are only users). In this companion post to our Hexacon 2022 talk we’ll show how we took advantage of wtf flexibility in order to efficiently fuzz the RDPEGFX channel of Microsoft RDP client and uncover CVE-2022-30221."><meta itemprop="datePublished" content="2022-10-14T00:00:00+00:00" />
+<meta itemprop="description" content="Microsoft’s Remote Desktop Protocol (RDP) client was fuzzed by various teams in the past few years, it thus seemed like a good target to try a recent snapshot fuzzer: what the fuzz (wtf) (of which we are only users). In this companion post to our Hexacon 2022 talk (slides, video) we’ll show how we took advantage of wtf flexibility in order to efficiently fuzz the RDPEGFX channel of Microsoft RDP client and uncover CVE-2022-30221."><meta itemprop="datePublished" content="2022-10-14T00:00:00+00:00" />
 <meta itemprop="dateModified" content="2022-10-14T00:00:00+00:00" />
-<meta itemprop="wordCount" content="7590">
+<meta itemprop="wordCount" content="7596">
 <meta itemprop="keywords" content="RDP,Fuzzing,CVE,Vulnerability Research," />
 
 <link rel="stylesheet" href="https://thalium.github.io/blog/css/layout.css" />
@@ -165,7 +165,7 @@ Valentino&rsquo;s setup was built around WinAFL and, despite his successes, had 
 <p>Conveniently, that summer, <a href="https://twitter.com/0vercl0k">@0vercl0k</a> released <a href="https://github.com/0vercl0k/wtf">what the fuzz (wtf)</a>, described by the author as &ldquo;a distributed, code-coverage guided, customizable, cross-platform snapshot-based fuzzer designed for attacking user and or kernel-mode targets running on Microsoft Windows&rdquo;. Unfortunately, Valentino had finished his internship and would not return before the following spring to work on another subject.</p>
 <p>With some time off a few months later, we decided to give <em>wtf</em> a chance and revisit Valentino&rsquo;s work to try to circumvent some of its limitations.
 In this blog post, we describe that endeavour and show how we took advantage of wtf&rsquo;s flexibility in order to efficiently fuzz the RDPEGFX channel of Microsoft RDP client and uncover <a href="https://msrc.microsoft.com/update-guide/en-US/vulnerability/CVE-2022-30221">CVE-2022-30221</a>.</p>
-<p>This work was presented at <a href="https://www.hexacon.fr/conference/speakers/#fuzzing_rdpegfx">Hexacon 2022</a>.</p>
+<p>This work was presented at <a href="https://www.hexacon.fr/conference/speakers/#fuzzing_rdpegfx">Hexacon 2022</a> (<a href="https://thalium.github.io/blog/posts/misc/rdpegfx/Hexacon2022-Fuzzing_RDPEGFX_with_wtf.pdf">slides</a>, <a href="https://youtu.be/4pftjmKqeoM">video</a>).</p>
 <h1 id="rdp-and-the-graphics-pipeline-extension">RDP and the Graphics Pipeline Extension</h1>
 <p>We will not present Microsoft&rsquo;s Remote Desktop Protocol (RDP) as it has already been discussed <a href="https://thalium.github.io/blog/posts/fuzzing-microsoft-rdp-client-using-virtual-channels/#the-remote-desktop-protocol">here</a>.
 The only thing to know is that RDP is not limited to forwarding keyboard and screen between a client and a server, but can also forward various devices through specific channels as well as define extension to those channels.</p>
@@ -200,7 +200,7 @@ As the name suggests, snapshot fuzzers start from a snapshot (memory and CPU sta
 Instead of sending inputs to the target, they are directly injected in the snapshot memory.
 Then execution is resumed from the modified snapshot until a user defined condition is reached, marking all modified memory pages as <code>dirty</code>.
 Finally all dirty pages are restored and the target is ready to receive a new input.</p>
-<p>All of this could be used to overcome the difficulties encountered by Valentino. First, we could fuzz any channel open in a live RDP session by taking a snapshot of the target system at the reception of a message on a channel of interest. Second, we did not have to worry about unknown internal state or random resets since we could restore the system at a known state between each execution.</p>
+<p>All of this could be used to overcome the difficulties encountered by Valentino. First, we could fuzz any channel opened in a live RDP session by taking a snapshot of the target system at the reception of a message on a channel of interest. Second, we did not have to worry about unknown internal states or random resets since we could restore the system at a known state between each execution.</p>
 <p>Wtf is also a code-coverage guided fuzzer. During execution, the code executed by the target is collected and used to identify new code and decide if the corresponding input should be added to the corpus or not.</p>
 <p>In wtf, executions can be performed by one of three different backends: Bochscpu, Windows Hypervisor Platform (whv), or KVM.
 The main difference between them is that Bochscpu is based on emulation and uses all executed <code>rip</code> as coverage while KVM and whv rely on virtualization and only report not previously triggered breakpoints placed at the beginning of basic blocks, which should be more or less equivalent.</p>
@@ -235,7 +235,7 @@ As a side note, we found the <code>bdump_full</code> command of bdump.js more re
 <p>Indeed the KVM and whv backends of wtf need to set breakpoints in the memory dump to record coverage before any execution.
 To do that, wtf needs to translate virtual addresses into physical ones.
 We won&rsquo;t enter into the details here, but wtf implements the generic VAT case and we added the ability to access in-transition pages in <a href="https://github.com/0vercl0k/wtf/pull/136">pull request #136</a>. Interested readers can take a look at <a href="https://thalium.github.io/blog/posts/windows-full-memory-introspection-with-icebox/#windows-virtual-address-translation">Windows full memory introspection with IceBox</a> to know more about Windows VAT and WinPE mode.</p>
-<p>The second reason why getting a good snapshot for fuzzing purposes can be hard is more target specific. One has to ensure that the target is in the right state when memory and CPU are dump.
+<p>The second reason why getting a good snapshot for fuzzing purposes can be hard is more target specific. One has to ensure that the target is in the right state when memory and CPU are dumped.
 As an example, our first snapshot was at the reception of the first message by the client on the RDPGFX channel, but this message must be of type <code>RDPGFX_CAPS_CONFIRM_PDU</code>.
 Taking another snapshot at the reception of the second message greatly improved our fuzzing campaign.</p>
 <h1 id="first-fuzzing-campaign">First Fuzzing Campaign</h1>
@@ -277,24 +277,24 @@ Abstracting away most of the code we get this much simpler high level view:</p>
 <p>As already explained in the previous section we needed several attempts before getting a satisfactory snapshot.
 Similarly our initial harness needed a few iterations.</p>
 <p>First, we got issues with logging: with no I/O available our fuzzer would crash. We decided to stop fuzzing whenever an error was logged:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span>  <span style="color:#f92672">!</span>g_Backend<span style="color:#f92672">-&gt;</span>SetBreakpoint(<span style="color:#e6db74">&#34;mstscax!RdpGfxProtocolClientDecoder::LogError&#34;</span>,
-</span></span><span style="display:flex;"><span>                            [](Backend_t<span style="color:#f92672">*</span> Backend) {
-</span></span><span style="display:flex;"><span>                              DebugPrint(<span style="color:#e6db74">&#34;LogError!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
-</span></span><span style="display:flex;"><span>                              Backend<span style="color:#f92672">-&gt;</span>Stop(Ok_t());
-</span></span><span style="display:flex;"><span>                            });
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span>  g_Backend<span style="color:#f92672">-&gt;</span>SetBreakpoint(<span style="color:#e6db74">&#34;mstscax!RdpGfxProtocolClientDecoder::LogError&#34;</span>,
+</span></span><span style="display:flex;"><span>                           [](Backend_t<span style="color:#f92672">*</span> Backend) {
+</span></span><span style="display:flex;"><span>                             DebugPrint(<span style="color:#e6db74">&#34;LogError!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>                             Backend<span style="color:#f92672">-&gt;</span>Stop(Ok_t());
+</span></span><span style="display:flex;"><span>                           });
 </span></span></code></pre></div><p>Similarly we deactivated <a href="https://learn.microsoft.com/en-us/windows-hardware/drivers/devtest/wpp-software-tracing">event tracing</a>:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span>  <span style="color:#75715e">//
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#75715e">// Overwrite mstscax!WPP_GLOBAL_Control to deactivate event tracing
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#75715e">//
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">uint64_t</span> pWPP_GLOBAL_Control <span style="color:#f92672">=</span>
 </span></span><span style="display:flex;"><span>      g_Dbg.GetSymbol(<span style="color:#e6db74">&#34;mstscax!WPP_GLOBAL_Control&#34;</span>);
-</span></span><span style="display:flex;"><span>  <span style="color:#f92672">!</span>g_Backend<span style="color:#f92672">-&gt;</span>VirtWriteStruct(Gva_t(pWPP_GLOBAL_Control),
-</span></span><span style="display:flex;"><span>                              <span style="color:#f92672">&amp;</span>pWPP_GLOBAL_Control);
+</span></span><span style="display:flex;"><span>  g_Backend<span style="color:#f92672">-&gt;</span>VirtWriteStruct(Gva_t(pWPP_GLOBAL_Control),
+</span></span><span style="display:flex;"><span>                             <span style="color:#f92672">&amp;</span>pWPP_GLOBAL_Control);
 </span></span></code></pre></div><p>We also had to hook <code>__imp_QueryPerformanceCounter</code>:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span>  <span style="color:#75715e">//
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#75715e">// Emulate __imp_QueryPerformanceCounter
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#75715e">//
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#f92672">!</span>g_Backend<span style="color:#f92672">-&gt;</span>SetBreakpoint(
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  g_Backend<span style="color:#f92672">-&gt;</span>SetBreakpoint(
 </span></span><span style="display:flex;"><span>      <span style="color:#e6db74">&#34;KERNEL32!QueryPerformanceCounterStub&#34;</span>,
 </span></span><span style="display:flex;"><span>      [](Backend_t<span style="color:#f92672">*</span> Backend) {
 </span></span><span style="display:flex;"><span>        <span style="color:#75715e">//
@@ -322,7 +322,7 @@ Just restarting the campaign from the initial corpus, or re-using the output cor
 We also varied the <code>max_len</code> and <code>limit</code> parameters of wtf.</p>
 <p><code>max_len</code> is a required parameter that limits the size of the generated samples.
 Setting it too small will make some parts of the target unreachable, setting it too big will make it difficult for the mutator to mutate the <em>right</em> bytes. We ran several campaigns with various values for <code>max_len</code>, mixing the resulting corpora together.</p>
-<p><code>limit</code> is an optional parameter that limits the length of executions. Again, setting it too small will make some parts of the target unreachable. Not setting it, or setting it too big, might result in a drop in the number of executions per seconds. Indeed, execution time for samples generated by mutation of a testcase from the corpus are often similar; it is thus sometimes preferable to prevent a long running sample from reaching the corpus.
+<p><code>limit</code> is an optional parameter that limits the length of executions. Again, setting it too small will make some parts of the target unreachable. Not setting it, or setting it too big, might result in a drop in the number of executions per seconds. Indeed, execution time for samples generated by mutation of a test case from the corpus are often similar; it is thus sometimes preferable to prevent a long running sample from reaching the corpus.
 The worst case would be to lock a fuzzer in an infinite loop.
 We usually ran campaign with either no limit or one that would result in roughly 5% of timeouts.</p>
 <p>While waiting for our fuzzers, we also implemented some more RDPEGFX specific ideas:</p>
@@ -440,9 +440,9 @@ Instead of looking at the specification we determined the valid values directly 
 </span></span><span style="display:flex;"><span>  );
 </span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">uint8_t</span> NOP[<span style="color:#ae81ff">6</span>] <span style="color:#f92672">=</span> {<span style="color:#ae81ff">0x90</span>, <span style="color:#ae81ff">0x90</span>, <span style="color:#ae81ff">0x90</span>, <span style="color:#ae81ff">0x90</span>, <span style="color:#ae81ff">0x90</span>, <span style="color:#ae81ff">0x90</span>};
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  <span style="color:#f92672">!</span>g_Backend<span style="color:#f92672">-&gt;</span>VirtWriteStruct(Gva_t(pJNZ), <span style="color:#f92672">&amp;</span>NOP);
+</span></span><span style="display:flex;"><span>  g_Backend<span style="color:#f92672">-&gt;</span>VirtWriteStruct(Gva_t(pJNZ), <span style="color:#f92672">&amp;</span>NOP);
 </span></span></code></pre></div><p>We could already observe a significant improvement in terms of basic blocks covered, but wanted to go further without analyzing individual handlers.
-Instead of fixing samples we decided to limit the number of PDU executed.
+Instead of fixing samples even further we decided to limit the number of PDUs executed.
 The reason is the same as for <code>max_len</code> and <code>limit</code>: keeping samples small and executions shorts, but in a way more suitable to our target.
 As we already had a callback triggering at the start of each loop iteration we just had to add:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span>    <span style="color:#75715e">// Stop if MAX_MSG_COUNT_ALLOWED PDUs were processed
@@ -452,7 +452,7 @@ As we already had a callback triggering at the start of each loop iteration we j
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>    g_msg_count<span style="color:#f92672">++</span>;
 </span></span></code></pre></div><p>The global <code>g_msg_count</code> needs of course to be reset after every execution, we could have done it in the <code>InsertTestcase</code> function of our harness, instead we did it in the <code>Restore</code> function called at the end of each execution.
-We also used that function to dump fixed samples as our output corpus was composed of testcases passed to our harness, not the ones our harness passed to the target.</p>
+We also used that function to dump fixed samples as our output corpus was composed of test cases passed to our harness, not the ones our harness passed to the target.</p>
 <h2 id="tweaking-coverage">Tweaking Coverage</h2>
 <p>wtf uses basic blocks coverage, which is fine, but the industry standard seems to be edge coverage.
 We implemented it in the Bochscpu backend in <a href="https://github.com/0vercl0k/wtf/pull/137/files">PR#136</a>.
@@ -484,7 +484,7 @@ The set of samples covered by the white cells (which we cannot construct but is 
 <p>If instead the kind of behaviors considered is very coarse (like a one bit crash/no-crash distinction), some cells will be very large and almost no sample will define a new cell. Again, fuzzing will not really be guided, but rather random in the neighborhood of the corpus&rsquo; samples.</p>
 <p>What we are really interested in is actually the crash/no-crash distinction, but as a coverage it is way too coarse to ensure progression from a non-crashing sample to a crashing one.</p>
 <p>Going back to basic block coverage and context sensitive edge coverage, the former is coarser than the latter and thus results in larger <em>cells</em>.
-Being more precise context sensitive edge coverage will result in a bigger corpus.
+Being more precise, context sensitive edge coverage will result in a bigger corpus.
 Deriving new test cases from every sample of the corpus will thus take more and more time.
 Making the slowness of the bochscpu backend even more critical.</p>
 <p>By combining a coarse but fast KVM backend with precise but slow bochscpu backends we may partly overcome this issue. Intuitively the bochscpu backends will add to the corpus some samples that do not visit new basic blocks but are sufficiently different from existing ones.
@@ -494,10 +494,10 @@ As already discussed we chose not to implement it.
 Instead, we thought about what other kind of behavior we could monitor efficiently.
 As most snapshot fuzzers, wtf records the set of dirty pages in order to be able to restore the original snapshot.
 We used this available behavioral data as a feedback for some of our fuzzing campaigns.</p>
-<p>It drastically changed the kind of samples the fuzzer was optimizing for and had the side effect to favor numerous and large allocations which usually results in longer execution time.</p>
-<p>That the only weird experiment we did with KVM, but the flexibility of bochscpu allowed us to explore other kinds of exotic coverage. We&rsquo;ll present two of them: <code>imul</code> coverage and time sensitive coverage.</p>
+<p>It drastically changed the kind of samples the fuzzer was optimizing for and had the side effect of favoring numerous and large allocations which usually results in longer execution time.</p>
+<p>That&rsquo;s the only weird experiment we did with KVM, but the flexibility of bochscpu allowed us to explore other kinds of exotic coverage. We&rsquo;ll present two of them: <code>imul</code> coverage and time sensitive coverage.</p>
 <p>The intent behind <code>imul</code> coverage is to look for (spoiler alert) integer overflows.
-When encountering an integer multiplication we evaluate the number of significant bits of the results and add to the coverage a value built by combining the current <code>imul</code> address with that number of bits.
+When encountering an integer multiplication we evaluate the number of significant bits of the result and add to the coverage a value built by combining the current <code>imul</code> address with that number of bits.
 Since we do not want the fuzzer to look for multiplications with a smaller result (we are interested in bigger results) we also add all values corresponding to a smaller number of bits:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span><span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> nbr_bits; i<span style="color:#f92672">++</span>) {
 </span></span><span style="display:flex;"><span>  imul_cover <span style="color:#f92672">=</span> imul_rip <span style="color:#f92672">^</span> hash(i);
@@ -509,7 +509,7 @@ Since we do not want the fuzzer to look for multiplications with a smaller resul
 </span></span></code></pre></div><p>We have to admit, it did not help us discover any integer overflow.</p>
 <p>Time sensitive coverage is a kind of context sensitive coverage where the context is, well, time, or more precisely <code>RunStats_.NumberInstructionsExecuted</code>.
 Using this value directly would be way too precise, resulting in an almost random exploration as already discussed.
-Instead we defined for ranges: earlier, early, late, later; represented by four different values and used those values as a context.
+Instead we defined four ranges: earlier, early, late, later; represented by four different values and used those values as a context.
 The intent was to pull the discovered behaviors toward the start of the execution in order to favor, with other techniques, fast executions.
 Similarly to <code>imul</code> coverage, once we encounter a behavior early, we are not interested in later occurrences; we thus add to the coverage all values corresponding to later encounters.</p>
 <p>Honestly, we have no idea how much our coverage tricks improved our fuzzing campaign, or even if they did, in terms of basic blocks covered or if they helped discover the crash we&rsquo;ll discuss later. At least, we are pretty sure it helped us increase the diversity of our corpus.
@@ -539,7 +539,8 @@ Knowing which modifications in our code or process were decisive is very hard, a
     <img src="https://thalium.github.io/blog/posts/img/rdpegfx/sample_sizes_hist.png" alt="">
   </a>
 </p>
-<p>Most of the samples are smaller than 22KB (or 0X5600), so that the value we chose for the <code>max_len</code> parameter. Moreover since we did not encounter any infinite loops, we did not set the <code>limit</code> parameter.</p>
+<p>Most of the samples are smaller than 22KB (or 0X5600), so that&rsquo;s the value we chose for the <code>max_len</code> parameter.
+Moreover since we did not encounter any infinite loops, we did not set the <code>limit</code> parameter.</p>
 <p>We chose four configuration that we ran 15 times each over a 24h period; they all used one manager and seven worker processes:</p>
 <ul>
 <li>7 KVM backends with a naïve harness (blue);</li>
@@ -562,17 +563,23 @@ containing 60% of the curves. The tube is built by removing, at each time point,
 <p>The median numbers of basic blocks covered after 24h for the different configurations lie between 14400 and 14800. The difference might not seem like a lot, especially considering that the aggregated corpus of these campaigns and all the previous ones covers slightly more than 17000 basic blocks.</p>
 <p>The difference is more notable when considering the time it takes to reach the number of basic blocks covered by the blue curve (naïve harness).
 It takes between 20h and 22h our for the white curve (dirty coverage), roughly 12 hours for the orange curve (context sensitive edge coverage), and less than four hours for the green one (improved harness).</p>
-<p>Some improvement was expected for the green curve as any invalid PDU is fixed and may contribute to new coverage instead of being skipped or discarded. Looking at the number of execution per seconds we can observe that the fuzzer is slower than with a naïve harness. Again this is expected, as the fuzzer execute more code for each sample. The same observation can be made by looking at the size of the corpus: it is bigger in KB but slightly smaller if we count the number of samples in the corpus (not shown in the graph); this is probably because big samples have more chance to cover new basic blocks if all PDUs have a valid header.</p>
+<p>Some improvement was expected for the green curve as any invalid PDU is fixed and may contribute to new coverage instead of being skipped or discarded.
+Looking at the number of executions per seconds we can observe that the fuzzer is slower than with a naïve harness.
+Again this is expected, as the fuzzer executes more code for each sample.
+The same observation can be made by looking at the size of the corpus: it is bigger in KB but slightly smaller if we count the number of samples in the corpus (not shown in the graph); this is probably because big samples have more chance to cover new basic blocks if all PDUs have a valid header.</p>
 <p>The results of the orange campaign are a bit disappointing, all the more considering that it also used the improved harness.
 In terms of basic blocks covered this is <em>not</em> an improvement to say the least.
 This can be partly explained by our unusual setup, mixing fuzzers with different kinds of coverage,
-and the slowness of bochscpu. Looking at the number of execution per seconds, it is almost three times slower than the green campaign and actually most of the executions are performed by the two KVM backends which do <em>not</em> use context sensitive edge coverage.</p>
-<p>As for the white campaign&hellip; we did not really know what to expect. Still we are a bit disappointed as it also uses the improved harness. Interestingly enough, after four hours, the seven KVM backends become as slow as the 2 KVM + 5 bochscpu backends of the orange campaign.
-Since we are optimizing for dirty pages coverage, we can infer that the fuzzer just builds message with more and more PDUs doing more and more allocations, resulting in very long executions.</p>
+and the slowness of bochscpu.
+Looking at the number of executions per seconds, it is almost three times slower than the green campaign and actually most of the executions are performed by the two KVM backends which do <em>not</em> use context sensitive edge coverage.</p>
+<p>As for the white campaign&hellip; we did not really know what to expect.
+Still, we are a bit disappointed as it also uses the improved harness.
+Interestingly enough, after four hours, the seven KVM backends become as slow as the 2 KVM + 5 bochscpu backends of the orange campaign.
+Since we are optimizing for dirty pages coverage, we can infer that the fuzzer just builds messages with more and more PDUs doing more and more allocations, resulting in very long executions.</p>
 <p>We could argue that looking at basic block coverage is arbitrary and actually favor the green and white campaigns.
 If we looked at the number of edges covered or pages written to, the orange and white campaign would probably come out on top.
 In fact what we are really interested in is the number of bugs found.
-We only found one, so it is hard to do stats on that, but here is the curve of the number of campaigns reporting crashes:</p>
+We only found one, so it is hard to do stats on that, but here are the curves of the number of campaigns reporting crashes:</p>
 <p>
   <a href="https://thalium.github.io/blog/posts/img/rdpegfx/crashes.png" target="_blank">
     <img src="https://thalium.github.io/blog/posts/img/rdpegfx/crashes.png" alt="">
@@ -583,9 +590,10 @@ Only one of the 15 blue runs and two of the 15 green and 15 white runs report fi
 But almost half of the orange runs found some crashes.</p>
 <p>The orange campaign was not so bad in the end. These results should be taken with a grain of salt.
 First, for basic block and edge coverage we only considered the ones in the module involved in the crash we already found in our initial campaigns. We kind of helped the fuzzer explore in the right direction.
-Second, and more importantly we did not properly monitor which campaign reported which crash.
+Second, and more importantly, we did not properly monitor which campaign reported which crash.
 We only monitored the crashes properly after observing suspiciously good results for the orange curve.
-The three campaigns that reported crashes after we started monitoring them properly did find the bug we&rsquo;ll explain in the next section, we are not sure about the other four but most of them are probably that same bug. Anyway, even if they are not, the orange campaign were better at finding our bug than the other ones despite being much slower.</p>
+The three campaigns that reported crashes after we started monitoring them properly did find the bug we&rsquo;ll explain in the next section, we are not sure about the other four but most of them are probably that same bug.
+Anyway, even if they are not, the orange campaigns were better at finding our bug than the other ones despite being much slower.</p>
 <h1 id="crash-analysis">Crash Analysis</h1>
 <p>During our initial campaigns, we got a dozen of crashes (not counting duplicates) but most of them where either linked to an incomplete snapshot or a bug in our modifications to wtf or our aggressively optimized harness.
 We were eventually able to get rid of all of them but one: <code>crash-ACCESS_VIOLATION_WRITE-0x7df491561122</code>.</p>
@@ -633,7 +641,7 @@ Instead we&rsquo;ll recount here how we analyzed it (or rather, how we should ha
 <p>We had a better understanding of the crash but still could not analyze it properly, as the resulting trace was still huge.
 Indeed, as we realized later, the full surface (<code>CREATE_SURFACE_PDU</code>) and rectangle (<code>SOLIDFILL_PDU</code>) are allocated and filled, for a combined size of more than 727MB.
 The rectangle is then copied onto the surface, combining values according to color transparency. All of that represents quite a few operations.</p>
-<p>In a more general case we would have put in place a fuzzing campaign keeping only crashing samples and minimizing the number of instruction executed.
+<p>In a more general case we would have put in place a fuzzing campaign keeping only crashing samples and minimizing the number of instructions executed.
 Here a simple dichotomic search was enough to get a more reasonable trace resulting in a symbolized trace of 218MB, overcoming one of our initial difficulties that would unlock the other two:</p>
 <ul>
 <li><code>CREATE_SURFACE_PDU</code>
@@ -658,7 +666,8 @@ Here a simple dichotomic search was enough to get a more reasonable trace result
 We got the explanation why the faulting code was not in the initial dump: it was jitted code.</p>
 <p>In order to retrieve the jitted code we used a tenet trace generated with:</p>
 <pre tabindex="0"><code>./wtf run --name rdpegfx --state state --backend=bochscpu --input crashes\crash-ACCESS_VIOLATION_WRITE-0x7df491561122 --trace-type=tenet
-</code></pre><p>Going to the last execution of <code>JITCopyContext::ExecuteResourceCopy+0x6f</code> we identified the address of the jitted code. As tenet records memory writes (and reads), we were able to retrieve the hexadecimal code, copy it in a new segment in IDA, and get the assembly code, with tenet support as a bonus.</p>
+</code></pre><p>Going to the last execution of <code>JITCopyContext::ExecuteResourceCopy+0x6f</code> we identified the address of the jitted code.
+As tenet records memory writes (and reads), we were able to retrieve the binary code, copy it in a new segment in IDA, and get the assembly code, with tenet support as a bonus.</p>
 <p>
   <a href="https://thalium.github.io/blog/posts/img/rdpegfx/jitcode.png" target="_blank">
     <img src="https://thalium.github.io/blog/posts/img/rdpegfx/jitcode.png" alt="">
@@ -667,16 +676,18 @@ We got the explanation why the faulting code was not in the initial dump: it was
 <h2 id="reproduction-on-a-live-system">Reproduction on a live system</h2>
 <p>So we got the jitted code where the access violation write occurred,
 but we still do not know why this code was generated and executed.
-Before answering this question let&rsquo;s take a look at <code>d3d10warp</code>.</p>
-<p>According to <a href="https://learn.microsoft.com/en-us/windows/win32/direct3darticles/directx-warp">Microsoft&rsquo;s documentation</a> warp stand for <em>Windows Advanced Rasterization Platform</em>. It&rsquo;s a software rasterizer delivered as part of Direct3D 11 and up and available since windows 7.</p>
+Before answering this question, let&rsquo;s take a look at <code>d3d10warp</code>.</p>
+<p>According to <a href="https://learn.microsoft.com/en-us/windows/win32/direct3darticles/directx-warp">Microsoft&rsquo;s documentation</a> warp stands for <em>Windows Advanced Rasterization Platform</em>.
+It&rsquo;s a software rasterizer delivered as part of Direct3D 11 and up and available since windows 7.</p>
 <p>It enables Direct3D rendering when Direct3D hardware is not available.
-That why we were not able to reproduce the crash on a live system.
+That&rsquo;s why we were not able to reproduce the crash on a live system.
 Our live system had a graphic card and used it, instead of warp, for rendering.</p>
 <p>After deactivating our graphic card by downgrading our video driver to <em>Microsoft Basic Display Adapter</em> we were finally able to reproduce the crash.
 Another way to deactivate hardware acceleration specific to virtual machines is to ensure that &ldquo;Enable 3D Acceleration&rdquo; or &ldquo;Accelerate 3D graphics&rdquo; is unchecked in the virtual machine settings.</p>
 <h2 id="root-cause-analysis">Root cause analysis</h2>
 <p>Thanks to our trace length minimization process by dichotomic search we had two almost identical samples, one resulting in an out of bound write and another one terminating gracefully. The only difference was the <code>bottom</code> coordinate of the <code>SOLIDFILL_PDU</code>: 0x7f02 for the crashing sample and 0x7f01 for the other one.</p>
-<p>By comparing their respective symbolized traces we were able to identify the point where they diverged: <code>d3d10warp!UMContext::CopyImmediateData+0x2f4</code>. The crashing trace goes one with <code>UMContext::CopyImmediateData</code> and the non-crashing one soon switches to <code>WarpPlatform::RecordError</code>.</p>
+<p>By comparing their respective symbolized traces we were able to identify the point where they diverged: <code>d3d10warp!UMContext::CopyImmediateData+0x2f4</code>.
+The crashing trace goes on with <code>UMContext::CopyImmediateData</code> and the non-crashing one soon switches to <code>WarpPlatform::RecordError</code>.</p>
 <p>Loading both tenet traces in two instances of IDA and jumping to the last execution of <code>d3d10warp!UMContext::CopyImmediateData+0x2f4</code> we can observe various checks:</p>
 <p>
   <a href="https://thalium.github.io/blog/posts/img/rdpegfx/tenet-diff.png" target="_blank">
@@ -951,11 +962,14 @@ At the start of the block, before the multiplication:</p>
 <ul>
 <li>we only control 3 of the 4 bytes written, the transparency byte of the <code>fillPixel</code> ARGB value is replaced with 0xFF;</li>
 <li><code>width*bottom*4</code> must be over <code>2^32</code> (otherwise there won&rsquo;t be an integer overflow), thus the last write is 4GB after the start of the surface;</li>
-<li><code>bottom</code>, like other dimensions, is a 16 bits integer. For the overflow to occur <code>width</code> must be bigger than <code>2^14</code>. Since we are writing out value line by line, those write operations occurs periodically at least once every 65KB to 256KB.</li>
+<li><code>bottom</code>, like other dimensions, is a 16 bits integer.
+For the overflow to occur <code>width</code> must be bigger than <code>2^14</code>.
+Since we are writing our value line by line, those write operations occur periodically at least once every 65KB to 256KB.</li>
 </ul>
 <p>We can limit the number of writes to a single one if the surface buffer is almost 4GB. In our limited experiments, we could only overflow to other surfaces.</p>
-<p>The impact is further limited by the fact that the bug only occurs if <code>d3d10warp.dll</code> is used, when there are no 3d hardware acceleration as an example.</p>
-<p>On the other hand, as <code>d3d10warp.dll</code> is loaded by almost all processes when there is no hardware acceleration, browsers, editors, viewers; the bug might be triggerable in other contexts.</p>
+<p>The impact is further limited by the fact that the bug only occurs if <code>d3d10warp.dll</code> is used, when there are no 3D hardware acceleration as an example.</p>
+<p>On the other hand, as <code>d3d10warp.dll</code> is loaded by almost all processes when there is no hardware acceleration: browsers, editors, viewers&hellip;
+the bug might be triggerable in other contexts.</p>
 <h2 id="hunting-for-similar-bugs">Hunting for similar bugs</h2>
 <p>As can be seen in the previous tenet figure all parameters of <code>SOLIDFILL_PDU</code>, <code>left</code>, <code>right</code>, <code>top</code>, and <code>bottom</code> are treated similarly. We cannot get an integer overflow for <code>left</code> and <code>right</code> in our RDP context as we can only pass 16 bits, but we can get one for <code>top</code> and bypass its bound check.</p>
 <p>By bypassing bound checks for both <code>top</code> and <code>bottom</code> we can hope to get rid of the periodic writes and enforce a single out of bound write. But this is not how it works. The jitted code performs the same integer overflow when calculating the first address to write and then iterate <code>bottom - top</code> times.</p>
@@ -964,8 +978,9 @@ At the start of the block, before the multiplication:</p>
 <p>We sent the <a href="https://thalium.github.io/blog/posts/misc/rdpegfx/CVE-2022-30221_Report.txt">report already mentioned earlier</a> to MSRC mid-march together with a PoC and a few tenet traces.</p>
 <p>To be clear our PoC is just a trigger, not an exploit.
 Our PoC is composed of a FreeRDP patch, a Dockerfile, and a Makefile to build and invoke the container with the right parameters.</p>
-<p>The Dockerfile builds and expose a patched FreeRDP server. The patch is rather simple
-and just append our payload to every messages sent through the GFX channel in the function
+<p>The Dockerfile builds and exposes a patched FreeRDP server.
+The patch is rather simple
+and just appends our payload to every messages sent through the GFX channel in the function
 <code>rdpgfx_server_packet_send</code>:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-diff" data-lang="diff"><span style="display:flex;"><span><span style="color:#f92672">--- a/channels/rdpgfx/server/rdpgfx_main.c
 </span></span></span><span style="display:flex;"><span><span style="color:#f92672"></span><span style="color:#a6e22e">+++ b/channels/rdpgfx/server/rdpgfx_main.c
@@ -1032,7 +1047,7 @@ and just append our payload to every messages sent through the GFX channel in th
 <!-- raw HTML omitted -->
 <h1 id="conclusion">Conclusion</h1>
 <p>Thanks to <a href="https://github.com/0vercl0k/wtf">whatthefuzz</a> we were able to get up and fuzzing relatively easily on Microsoft RDP client.
-The hardest part was to get a suitable initial snaphot.
+The hardest part was to get a suitable initial snapshot.
 The flexibility of wtf allowed us to try several modifications on our fuzzing campaigns.
 The most successful one was the classical approach of skipping some checks and fixing some values in the test buffer. The structure of our target, looping over every PDUs, never looking back, allowed us to apply those fixes on the fly on all PDUs headers.</p>
 <p>Alternating between campaigns using different coverage and restarting from various subsets of our aggregated corpus, we were able to find an out-of-bound write caused by an integer overflow in d3d10warp.
