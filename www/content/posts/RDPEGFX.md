@@ -9,7 +9,7 @@ tags:
   - CVE
   - Vulnerability Research
 summary: >
-  Microsoft’s Remote Desktop Protocol (RDP) client was fuzzed by various teams in the past few years, it thus seemed like a good target to try a recent snapshot fuzzer: [what the fuzz (wtf)](https://github.com/0vercl0k/wtf) (of which we are only users). In this companion post to our [Hexacon 2022 talk](https://www.hexacon.fr/conference/speakers/#fuzzing_rdpegfx) we’ll show how we took advantage of wtf flexibility in order to efficiently fuzz the RDPEGFX channel of Microsoft RDP client and uncover [CVE-2022-30221](https://msrc.microsoft.com/update-guide/en-US/vulnerability/CVE-2022-30221).
+  Microsoft’s Remote Desktop Protocol (RDP) client was fuzzed by various teams in the past few years, it thus seemed like a good target to try a recent snapshot fuzzer: [what the fuzz (wtf)](https://github.com/0vercl0k/wtf) (of which we are only users). In this companion post to our [Hexacon 2022 talk](https://www.hexacon.fr/conference/speakers/#fuzzing_rdpegfx) ([slides](/posts/misc/rdpegfx/Hexacon2022-Fuzzing_RDPEGFX_with_wtf.pdf), [video](https://youtu.be/4pftjmKqeoM)) we’ll show how we took advantage of wtf flexibility in order to efficiently fuzz the RDPEGFX channel of Microsoft RDP client and uncover [CVE-2022-30221](https://msrc.microsoft.com/update-guide/en-US/vulnerability/CVE-2022-30221).
 # Control figure attributes with:
 # https://gohugo.io/content-management/shortcodes/#example-figure-input
 ---
@@ -28,7 +28,7 @@ Conveniently, that summer, [@0vercl0k](https://twitter.com/0vercl0k) released [w
 With some time off a few months later, we decided to give _wtf_ a chance and revisit Valentino's work to try to circumvent some of its limitations.
 In this blog post, we describe that endeavour and show how we took advantage of wtf's flexibility in order to efficiently fuzz the RDPEGFX channel of Microsoft RDP client and uncover [CVE-2022-30221](https://msrc.microsoft.com/update-guide/en-US/vulnerability/CVE-2022-30221).
 
-This work was presented at [Hexacon 2022](https://www.hexacon.fr/conference/speakers/#fuzzing_rdpegfx).
+This work was presented at [Hexacon 2022](https://www.hexacon.fr/conference/speakers/#fuzzing_rdpegfx) ([slides](/posts/misc/rdpegfx/Hexacon2022-Fuzzing_RDPEGFX_with_wtf.pdf), [video](https://youtu.be/4pftjmKqeoM)).
 
 # RDP and the Graphics Pipeline Extension
 
