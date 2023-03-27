@@ -7,7 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>Copyright (c) 2020, all rights reserved.</copyright>
-    <lastBuildDate>Fri, 14 Oct 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://thalium.github.io/blog/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 03 Nov 2022 13:37:00 +0000</lastBuildDate><atom:link href="https://thalium.github.io/blog/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Join Us</title>
       <link>https://thalium.github.io/blog/joinus/</link>
@@ -28,6 +28,20 @@
       <description>Au sein du groupe THALES, l&amp;rsquo;équipe THALIUM - basée à Rennes - est dédiée aux activités de Lutte Informatique, de connaissance de la menace, de recherche de vulnérabilités et de développement d’outils de type Red Team.
 Nous recrutons !!
 Thalium, part of THALES group, is focused on threat intelligence, vulnerability research and red team development.</description>
+    </item>
+    
+    <item>
+      <title>ARM TrustZone: pivoting to the secure world</title>
+      <link>https://thalium.github.io/blog/posts/pivoting_to_the_secure_world/</link>
+      <pubDate>Thu, 03 Nov 2022 13:37:00 +0000</pubDate>
+      
+      <guid>https://thalium.github.io/blog/posts/pivoting_to_the_secure_world/</guid>
+      <description>&lt;ol&gt;
+&lt;li&gt;We discover two vulnerabilities in secure world components&lt;/li&gt;
+&lt;li&gt;We exploit them to get code execution in a trusted driver, while not having a debugger for this obscure environment&lt;/li&gt;
+&lt;li&gt;We leverage aarch32 T32 instruction set to find nice stack pivots&lt;/li&gt;
+&lt;li&gt;We turn arbitrary write to arbitrary code execution&lt;/li&gt;
+&lt;/ol&gt;</description>
     </item>
     
     <item>
