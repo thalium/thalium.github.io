@@ -37,10 +37,10 @@ Thalium, part of THALES group, is focused on threat intelligence, vulnerability 
       
       <guid>https://thalium.github.io/blog/posts/pivoting_to_the_secure_world/</guid>
       <description>&lt;ol&gt;
-&lt;li&gt;We discover two vulnerabilities in secure world components&lt;/li&gt;
-&lt;li&gt;We exploit them to get code execution in a trusted driver, while not having a debugger for this obscure environment&lt;/li&gt;
-&lt;li&gt;We leverage aarch32 T32 instruction set to find nice stack pivots&lt;/li&gt;
-&lt;li&gt;We turn arbitrary write to arbitrary code execution&lt;/li&gt;
+&lt;li&gt;Discovery of two vulnerabilities in secure world components&lt;/li&gt;
+&lt;li&gt;Exploitation to get code execution in a trusted driver, while not having a debugger for this obscure environment&lt;/li&gt;
+&lt;li&gt;Leverage of aarch32 T32 instruction set to find nice stack pivots&lt;/li&gt;
+&lt;li&gt;Turning an arbitrary write into an arbitrary code execution&lt;/li&gt;
 &lt;/ol&gt;</description>
     </item>
     

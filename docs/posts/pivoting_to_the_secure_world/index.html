@@ -12,10 +12,10 @@
 <link rel="canonical" href="https://thalium.github.io/blog/posts/pivoting_to_the_secure_world/">
 <meta property="og:title" content="ARM TrustZone: pivoting to the secure world" />
 <meta property="og:description" content="
-We discover two vulnerabilities in secure world components
-We exploit them to get code execution in a trusted driver, while not having a debugger for this obscure environment
-We leverage aarch32 T32 instruction set to find nice stack pivots
-We turn arbitrary write to arbitrary code execution
+Discovery of two vulnerabilities in secure world components
+Exploitation to get code execution in a trusted driver, while not having a debugger for this obscure environment
+Leverage of aarch32 T32 instruction set to find nice stack pivots
+Turning an arbitrary write into an arbitrary code execution
 " />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://thalium.github.io/blog/posts/pivoting_to_the_secure_world/" /><meta property="article:section" content="posts" />
@@ -26,22 +26,22 @@ We turn arbitrary write to arbitrary code execution
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="ARM TrustZone: pivoting to the secure world"/>
 <meta name="twitter:description" content="
-We discover two vulnerabilities in secure world components
-We exploit them to get code execution in a trusted driver, while not having a debugger for this obscure environment
-We leverage aarch32 T32 instruction set to find nice stack pivots
-We turn arbitrary write to arbitrary code execution
+Discovery of two vulnerabilities in secure world components
+Exploitation to get code execution in a trusted driver, while not having a debugger for this obscure environment
+Leverage of aarch32 T32 instruction set to find nice stack pivots
+Turning an arbitrary write into an arbitrary code execution
 "/>
 
 
 <meta itemprop="name" content="ARM TrustZone: pivoting to the secure world">
 <meta itemprop="description" content="
-We discover two vulnerabilities in secure world components
-We exploit them to get code execution in a trusted driver, while not having a debugger for this obscure environment
-We leverage aarch32 T32 instruction set to find nice stack pivots
-We turn arbitrary write to arbitrary code execution
+Discovery of two vulnerabilities in secure world components
+Exploitation to get code execution in a trusted driver, while not having a debugger for this obscure environment
+Leverage of aarch32 T32 instruction set to find nice stack pivots
+Turning an arbitrary write into an arbitrary code execution
 "><meta itemprop="datePublished" content="2023-03-24T13:37:00+00:00" />
 <meta itemprop="dateModified" content="2023-03-24T13:37:00+00:00" />
-<meta itemprop="wordCount" content="6473">
+<meta itemprop="wordCount" content="6496">
 <meta itemprop="keywords" content="" />
 
 <link rel="stylesheet" href="https://thalium.github.io/blog/css/layout.css" />
@@ -169,18 +169,18 @@ if (!doNotTrack) {
 <article class="post">
     <h1 class="title"> ARM TrustZone: pivoting to the secure world </h1>
     <div class="content"> <ol>
-<li>We discover two vulnerabilities in secure world components</li>
-<li>We exploit them to get code execution in a trusted driver, while not having a debugger for this obscure environment</li>
-<li>We leverage aarch32 T32 instruction set to find nice stack pivots</li>
-<li>We turn arbitrary write to arbitrary code execution</li>
+<li>Discovery of two vulnerabilities in secure world components</li>
+<li>Exploitation to get code execution in a trusted driver, while not having a debugger for this obscure environment</li>
+<li>Leverage of aarch32 T32 instruction set to find nice stack pivots</li>
+<li>Turning an arbitrary write into an arbitrary code execution</li>
 </ol>
 <h2 id="the-hidden-world-beneath-android">The hidden world beneath Android</h2>
-<p>The story starts where one of the previous stories you have heard about Android ends, with arbitrary code execution in both userland and kernel. Let&rsquo;s assume we have defused SELinux, bypassed seccomp limitations and we have full privileges over Linux kernel. What could we do next ?</p>
-<p>While Android lives in plain sight, the secure world leaves in its shadow. Let us put light on it ! First, let&rsquo;s coin a few terms:</p>
+<p>The story starts where one of the previous stories you have heard about Android ends, with arbitrary code execution in both userland and kernel. Let&rsquo;s assume we have defused SELinux, bypassed seccomp limitations and have full privileges over Linux kernel. What could we do next?</p>
+<p>While Android lives in plain sight, the secure world lives in its shadow. Let us put light on it! First, let&rsquo;s coin a few terms:</p>
 <ul>
-<li><strong>ARM TrustZone</strong>: security extensions that ship with ARM v7-A and v8-A. They basically allow to <strong>partition the hardware in two: normal and secure worlds</strong>. In this model, the secure world embeds the most privileged exception level, <code>S-EL3</code>, and secure OS, <code>S-EL1</code>, holds a powerful hand on the hardware devices</li>
-<li><strong>Trusted Execution Environment</strong>: aka <strong>TEE</strong> encompasses applets, libraries and operating system living in the secure world</li>
-<li><strong>Samsung Knox</strong>: a set of trusted components and normal world application components, such as Android apps, and libraries. The terms &ldquo;secure&rdquo; and &ldquo;trusted&rdquo; are swappable for the rest of the article. It indicates a small, mastered TCB hosted in a secure execution environment</li>
+<li><strong>ARM TrustZone</strong>: security extensions that ship with ARM v7-A and v8-A. They basically allow <strong>the hardware to be partitioned in two: a normal and a secure worlds</strong>. In this model, the secure world embeds the most privileged exception level, <code>S-EL3</code>, and secure OS, <code>S-EL1</code>, holds a powerful hand on the hardware devices</li>
+<li><strong>Trusted Execution Environment</strong>: aka <strong>TEE</strong> encompasses the applets, libraries and operating system living in the secure world</li>
+<li><strong>Samsung Knox</strong>: a set of trusted components and normal world application components, such as Android apps and libraries. The terms &ldquo;secure&rdquo; and &ldquo;trusted&rdquo; are swappable for the rest of the article. It indicates a small, mastered TCB hosted in a secure execution environment</li>
 <li><strong>TEEgris</strong>: Samsung Trusted OS that ships some Exynos-based devices. In the past, Samsung used to ship with Kinibi, a different trusted OS which has been the subject of security publications. Even Samsung models may ship with Qualcomm SoCs, and its own trusted OS called QSEE. High level descriptions of various TEE and their vulnerabilities can be found in <a href="#SoK">SoK</a></li>
 </ul>
 
@@ -194,11 +194,11 @@ if (!doNotTrack) {
 <p><code>Android applications concerned by security may use Android keystore to save their sensitive cryptographic keys to be compromised in the normal world</code></p>
 </li>
 </ul>
-<p>For the rest of the article, the device we used is <code>SM-J330FN</code>, with early 2019 firmware <code>J330FNXXU3BSA2_J330FNXEF3BSA2_XEF</code>. It ships <code>Exynos7570 SoC</code>, which is based on ARMv8-A design. Samsung has brought to our attention the firmwares based on version Android 12 (or upper) no longer contain the vulnerabilities we present here. More details will be present in sections describing vulnerabilities.</p>
+<p>For the rest of the article, the device we used is <code>SM-J330FN</code>, with early 2019 firmware <code>J330FNXXU3BSA2_J330FNXEF3BSA2_XEF</code>. It ships <code>Exynos7570 SoC</code>, which is based on ARMv8-A design. Samsung has brought to our attention the firmwares based on version Android 12 (or upper) no longer contain the vulnerabilities we present here. More details will be found in sections describing vulnerabilities.</p>
 <h2 id="how-do-normal-world-applications-talk-to-the-secure-world">How do normal world applications talk to the secure world</h2>
 <p>The single software component able to switch the processor state between normal and secure is the trusted firmware operating at EL3. Code running at lower exception levels can use <code>smc</code> instructions to trigger it. As this ARM instruction is not accessible from EL0, <strong>giving normal world applications access to the TEE will require EL1 support</strong>. For our case study:</p>
 <ul>
-<li>a userspace daemon <code>tzdaemon</code> has the adequate SELinux profile to access to the device <code>/dev/tz_wormhole</code>;</li>
+<li>a userspace daemon <code>tzdaemon</code> has the adequate SELinux profile to access the device <code>/dev/tz_wormhole</code>;</li>
 <li>kernel-side, <code>/dev/tz_wormhole</code> implements EL3 triggering mechanism together with sanitization.</li>
 </ul>
 <p>The source code of <code>tz_wormhole</code> is located in <code>drivers/misc/tzdev</code> in Samsung&rsquo;s Android kernel sources.</p>
@@ -208,7 +208,7 @@ if (!doNotTrack) {
 
 <p>TEEGris is the S-EL1 component, and features are brought by the trusted applets, living in S-EL0.</p>
 <h2 id="finding-the-trusted-applets">Finding the trusted applets</h2>
-<p>It is not the case for all TEE designs, but we are lucky this time. The normal world, on which we have total control, holds trusted applets stored as files. For our device, those files are stored at <code>/system/tee/</code>.</p>
+<p>This is not the case for all TEE designs, but we are lucky this time. The normal world, which we have total control of, stores trusted applets as files. For our device, those files are in <code>/system/tee/</code>.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>j3y17lte:/system/tee $ ls -lR
 </span></span><span style="display:flex;"><span>.:
 </span></span><span style="display:flex;"><span>total <span style="color:#ae81ff">6736</span>
@@ -230,7 +230,6 @@ if (!doNotTrack) {
 </span></span><span style="display:flex;"><span>-rw-r--r-- <span style="color:#ae81ff">1</span> root root   <span style="color:#ae81ff">47333</span> 2008-12-31 16:00 00000000-0000-0000-582f-586d3efb39b4
 </span></span><span style="display:flex;"><span>drwxr-xr-x <span style="color:#ae81ff">2</span> root root    <span style="color:#ae81ff">4096</span> 2008-12-31 16:00 driver
 </span></span><span style="display:flex;"><span>-rw-r--r-- <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">1344367</span> 2008-12-31 16:00 startup.tzar
-</span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>./driver:
 </span></span><span style="display:flex;"><span>total <span style="color:#ae81ff">28</span>
 </span></span><span style="display:flex;"><span>-rw-r--r-- <span style="color:#ae81ff">1</span> root root <span style="color:#ae81ff">17217</span> 2008-12-31 16:00 00000000-0000-0000-0000-00535453540b
@@ -252,7 +251,7 @@ $ hexdump -C 00000000-0000-0000-0000-534543535452
 ...       30 82 01 22 30 0d 06 09  2a 86 48 86 f7 0d 01 01  |0.."0...*.H.....|</font>
 </pre>
 
-<p>Embedded ARM32 ELF files can be carved out of their containers, and loaded with IDA. The additional data, not part of the ELF, most probably contains a signature, to ensure integrity in case of normal world corruption.</p>
+<p>Embedded ARM32 ELF files can be carved out of their containers, and loaded with IDA. The additional data, which isn&rsquo;t part of the ELF, most likely contains a signature, to ensure integrity in case of normal world corruption.</p>
 <p><code>/system/tee/startup.tzar</code> contains a part of Secure World userspace files. The name looks like a tar archive, indeed it is an <a href="#tzar">archive format</a>, documented by <a href="#tarasikov">Alexander tarasikov</a>.</p>
 <p>The archive decompresses to:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>$ tree startup_tzar
@@ -275,7 +274,7 @@ $ hexdump -C 00000000-0000-0000-0000-534543535452
 </span></span><span style="display:flex;"><span>│       └── libtzld.so
 </span></span></code></pre></div><p>Overall, the archive contains:</p>
 <ul>
-<li>userspace libraries, in <code>bin/arm</code>, like <code>libtzsl.so</code>, and <code>libteesl.so</code>. Symbols points at TEE GlobalPlatform API, which documents are online. Those libraries are true ARM32 ELF files, without the header and footer we have observed above for trusted applets and drivers;</li>
+<li>userspace libraries, in <code>bin/arm</code>, like <code>libtzsl.so</code>, and <code>libteesl.so</code>. Symbols point to the TEE GlobalPlatform API, which is documented online. Those libraries are true ARM32 ELF files, without the header and footer we have observed above for trusted applets and drivers;</li>
 <li>the dynamic linker, <code>libtzld.so</code>, again, a plain ARM32 ELF file.</li>
 </ul>
 <p>All in all we have found trusted applets, trusted drivers and trusted libraries. Let&rsquo;s analyze them.</p>
@@ -283,9 +282,9 @@ $ hexdump -C 00000000-0000-0000-0000-534543535452
 <p>First we take a look at <code>libteesl.so</code>. It provides the implementation of tons of functions matching the pattern <code>TEE_*</code>. The curious reader might consult TEE GlobalPlatform documents for more information: they define a set of APIs, offered by TEE for trusted applets to execute. For applets to run on a TEE, they need to export a few functions. The set of APIs offered to applets is extensive, including using TCP/IP sockets via a normal userspace daemon. Back to <code>libteesl.so</code>, this is the implementation following the API. In order to help the reverse engineering of trusted components, we have developed an IDA type library:</p>
 <ul>
 <li><em>adapted</em> TEE GlobalPlatform headers are compiled using Hexrays&rsquo;s <code>tilib</code> to build <code>tee_arm.til</code>, to be copied into <code>${IDA_HOME}/til/arm</code>;</li>
-<li>The same headers are processed using <code>pycparser</code> to generate function signatures, and statically map a function name to a type info. The output is Python script <code>tee_arm.py</code>, a script to be launched on your loaded binary to type functions.</li>
+<li>The same headers are processed using <code>pycparser</code> to generate function signatures, and statically map a function name to a type info. The output is a Python script <code>tee_arm.py</code>, that can be launched on a loaded binary to type functions.</li>
 </ul>
-<p>IDA is now capable of nicely understand the TEE API facet of trusted applets and drivers:</p>
+<p>IDA is now capable of understanding the TEE API facet of trusted applets and drivers:</p>
 
 
 <img src="https://thalium.github.io/blog/posts/img/pivoting-to-the-secure-world/ida-Typed_functions.png" alt="Typed functions"/>
@@ -299,7 +298,7 @@ $ hexdump -C 00000000-0000-0000-0000-534543535452
 <li><code>TA_OpenSessionEntryPoint</code> and <code>TA_CloseSessionEntryPoint</code> are called when a normal world application opens and closes a session with it</li>
 <li><code>TA_InvokeCommandEntryPoint</code> is called when a normal world application sends a request to it: this function will hold a dispatch logic based on the request code. Once a normal world has created a session with the trusted applet, it can perform several commands, and then close the session</li>
 </ul>
-<p>Note <code>main</code> function is not located in a trusted applet binary, but is in <code>libteesl.so</code>. It performs initialization of trusted applet then loops to process messages received over POSIX message queues. The exported functions are then called by the teesl library upon reception of suitable messages.</p>
+<p>Note thqt the <code>main</code> function is not located in a trusted applet binary, but is in <code>libteesl.so</code>. It performs initialization of the trusted applet then loops to process messages received over POSIX message queues. The exported functions are then called by the teesl library upon reception of suitable messages.</p>
 <h3 id="the-vulnerability-vanilla-stack-overflow">The vulnerability: vanilla stack overflow</h3>
 <p>Having the binary at hand for static analysis, let us first look at security hardening:</p>
 
@@ -320,28 +319,27 @@ $ <font color="#66d9ef">pwn</font> checksec KEYMST
 </span></span><span style="display:flex;"><span>  size_t pub_exp_size; <span style="color:#75715e">// r2
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>v2; <span style="color:#75715e">// r1
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">__int64</span> v4; <span style="color:#75715e">// [sp+0h] [bp-18h] BYREF
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
-</span></span><span style="display:flex;"><span>  pub_exp_size <span style="color:#f92672">=</span> a1<span style="color:#f92672">-&gt;</span>pub_exp_size;
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  pub_exp_size <span style="color:#f92672">=</span> a1<span style="color:#f92672">-&gt;</span>pub_exp_size;
 </span></span><span style="display:flex;"><span>  v2 <span style="color:#f92672">=</span> (<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>)<span style="color:#f92672">&amp;</span>a1<span style="color:#f92672">-&gt;</span>content <span style="color:#f92672">+</span> a1<span style="color:#f92672">-&gt;</span>pub_exp_offset;
 </span></span><span style="display:flex;"><span>  v4 <span style="color:#f92672">=</span> <span style="color:#ae81ff">0LL</span>;
 </span></span><span style="display:flex;"><span>  memcpy(<span style="color:#f92672">&amp;</span>v4, v2, pub_exp_size); <span style="color:#75715e">/* pub_exp_size is controlled by normal world app */</span>
 </span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> v4;
 </span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>This function is called when importing a PKCS8 formatted RSA private key. An attacker controlled value, the public exponent of the RSA key, is copied onto the stack. While legitimate public exponents are generally small, the key format brings no guarantee that its value fits in a 64 bits integer. The format of the private key by itself does not put restrictions, but the implementation verifies some assumptions about the parts of the key, which of one is the fact that the size of the public exponent is less than 512 bytes. All in all, we can <strong>overwrite up to <code>0x200-8=0x1f8</code> bytes of stack</strong>.</p>
-<p>To reach this vulnerability, we still have to pass through a number of function calls, and each function processes parts of the parameter. We hence need to craft the input buffer to pass through correctly:</p>
+</span></span></code></pre></div><p>This function is called when importing a PKCS8 formatted RSA private key. The public exponent of the RSA key, which is an attacker controlled value, is copied onto the stack. While legitimate public exponents are generally small, the key format brings no guarantee that its value fits in a 64 bits integer. The format of the private key by itself does not have any restrictions, but the implementation does verify some assumptions about the key, among which the size of the public exponent, that should be less than 512 bytes. All in all, we can <strong>overwrite up to <code>0x200-8=0x1f8</code> bytes on the stack</strong>.</p>
+<p>To reach this vulnerability, we still have to pass through a number of function calls, and each function processes parts of the parameter. This means we need to craft the input buffer to go through:</p>
 <ul>
 <li><code>TA_InvokeCommandEntryPoint</code>: TEE API entry point. Input buffer embeds a type, which is <strong>verified</strong></li>
-<li><code>tz_process_command</code>, <code>km_import_key</code>: those functions parse and assert parameters of the public key. We will not detail the verifications done, as they are not complex to get round</li>
+<li><code>tz_process_command</code>, <code>km_import_key</code>: those functions parse and assert parameters of the public key. We will not detail the verifications done, as they are not complex to get around</li>
 <li><code>km_rsa_key_get_pub_exp</code>: jumper to <code>hal_rsa_key_get_pub_exp</code>, which <strong>overflows the stack</strong></li>
 </ul>
-<p>As we have not a single working sample of an input buffer, we have to rebuild a correct one from scratch. Yet there is no way to debug the secure world on a production device, to identify the code paths taken when processing a request.</p>
+<p>As we do not have any working input buffer, we have to build a correct one from scratch. However, there is no way to debug the secure world on a production device, so as to identify the code paths taken when processing a request.</p>
 <h3 id="building-a-teegris-emulator-on-top-of-qiling">Building a TEEGris emulator on top of <code>qiling</code></h3>
-<p>To enhance our dynamic analysis capabilities, we have implemented a TEEGris emulator based on <code>qiling</code>. The device will only be used to test our cooked payloads, and veriy meaningful effects. We have not opted to follow Alexander Tarasikov track, as we want to be able to add dynamic analysis fragments of code, and not recompile qemu each time.</p>
+<p>To enhance our dynamic analysis capabilities, we have implemented a TEEGris emulator based on <code>qiling</code>. The device will only be used to test our cooked payloads, and verify meaningful effects. We have not opted to follow Alexander Tarasikov&rsquo;s track, since we want to be able to add dynamic analysis fragments of code, and not recompile qemu each time.</p>
 <p>We have chosen <code>qiling</code> for the following reasons:</p>
 <ul>
-<li><code>qiling</code> is written in Python, and allows for easy hooking of instructions, or memory. As we emulate, we can build advanced analysis we would be unable to benefit on real hardware using a debug interface, like looking for uninitialized stack variables</li>
+<li><code>qiling</code> is written in Python, and allows for easy hooking of instructions and memory. As we emulate, we can build advanced analysis that we would be unable to get on real hardware using a debug interface, like looking for uninitialized stack variables</li>
 <li><code>qiling</code> already has POSIX syscall emulation, though the mecanism will need to be adapted to TEEGris syscalls flavour</li>
-<li><code>qiling</code> supports snapshot and restore, so we can bootstrap a trusted applet, snapshot it, and later quickly restore it and further explore from the restored state</li>
+<li><code>qiling</code> supports snapshot and restore, so we can bootstrap a trusted applet, snapshot it, and quickly restore it later to further explore from the restored state</li>
 </ul>
 <p>To know more about the TEEGris system calls, we analyze <code>libtzsl.so</code>:</p>
 <ul>
@@ -371,7 +369,7 @@ $ <font color="#66d9ef">pwn</font> checksec KEYMST
 </pre>
 
 <ul>
-<li>To find the system call numbers: we have written a Python script that automates the job of spotting <code>r7</code> initialization followed by supervisor call, by stepping backwards a few instructions once <code>svc #0</code> has been found. Once a system call pattern has been detected, we lookup the last exported function preceding it. A few corner cases have to be hand resolved, as the logic is a bit too simplistic.</li>
+<li>To find the system call numbers: we have written a Python script that automates the job of spotting <code>r7</code> initialization followed by supervisor call, by looking back a few instructions once <code>svc #0</code> has been found. Once a system call pattern has been detected, we lookup the last exported function preceding it. A few corner cases have to be hand resolved, as the logic is a bit too simplistic.</li>
 </ul>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">$</span> <span style="color:#f92672">./</span>extract<span style="color:#f92672">-</span>syscalls<span style="color:#f92672">.</span>py startup_tzar<span style="color:#f92672">/</span>bin<span style="color:#f92672">/</span>arm<span style="color:#f92672">/</span>libtzsl<span style="color:#f92672">.</span>so
 </span></span><span style="display:flex;"><span>syscalls <span style="color:#f92672">=</span> {
@@ -387,32 +385,29 @@ $ <font color="#66d9ef">pwn</font> checksec KEYMST
 </span></span><span style="display:flex;"><span><span style="color:#f92672">...</span>
 </span></span></code></pre></div><p>Back to qiling, we had to modify <code>os</code> and <code>linker</code> layers:</p>
 <ol>
-<li><strong>os</strong> : analyzing <code>libtzsl.so</code> has yielded system calls numbers and names. We make sure to emulate <code>open</code> and <code>mmap</code> correctly at first, then implement additional system calls as they are needed</li>
-<li><strong>linker</strong>: OS passes information about the started binary through an auxiliary vector. This information is processed in the early life of the dynamic linker. The linker expects an hardwired order of the values in the auxiliary vector</li>
-<li><strong>os</strong>: even though secure kernel looks POSIX, it uses weird semantics: <code>ioctl(fd, 0, 0)</code> on a file backed descriptor returns the size of the file, just like<code>fstat(fd, &amp;stat); return stat.st_size;</code> would do</li>
+<li><strong>os</strong> : analyzing <code>libtzsl.so</code> has yielded system call numbers and names. We made sure to emulate <code>open</code> and <code>mmap</code> properly at first, then implemented additional system calls when needed</li>
+<li><strong>linker</strong>: OS passes information about the started binary through an auxiliary vector. This information is processed in the early life of the dynamic linker. The linker expects a hardwired order of the values in the auxiliary vector</li>
+<li><strong>os</strong>: even though secure kernel looks POSIX, it uses weird semantics: <code>ioctl(fd, 0, 0)</code> on a file backed descriptor returns the size of the file, just like <code>fstat(fd, &amp;stat); return stat.st_size;</code> would</li>
 </ol>
 <h4 id="glue-teegris-system-calls-to-already-emulated-qiling-system-calls">Glue TEEGris system calls to already emulated qiling system calls</h4>
-<p>To add new system calls, we use <code>Qiling.set_syscall</code>. However, we are more interested in wiring a given system call number to the correct emulation already performed for Linux emulation: we use <code>Qiling.set_syscall</code> and we lookup the original emulation via:</p>
+<p>To add new system calls, we use <code>Qiling.set_syscall</code>. Rather than rewrite every system call, we prefer to wire each given system call number to a Linux syscall that is already emulated in <code>qiling</code>: we use <code>Qiling.set_syscall</code> and we lookup the original implementation with:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>    self<span style="color:#f92672">.</span>original_handlers <span style="color:#f92672">=</span> {}
 </span></span><span style="display:flex;"><span>    map_syscall <span style="color:#f92672">=</span> utils<span style="color:#f92672">.</span>ql_syscall_mapping_function(self<span style="color:#f92672">.</span>ostype)
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> x <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">400</span>):
 </span></span><span style="display:flex;"><span>      y <span style="color:#f92672">=</span> map_syscall(self, x)
-</span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>      <span style="color:#75715e"># syscall is not already handled by qiling</span>
 </span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">if</span> y <span style="color:#f92672">is</span> <span style="color:#66d9ef">None</span>: <span style="color:#66d9ef">continue</span>
-</span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>      <span style="color:#75715e"># resolve handler</span>
 </span></span><span style="display:flex;"><span>      handler <span style="color:#f92672">=</span> <span style="color:#66d9ef">None</span>
 </span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">if</span> y <span style="color:#f92672">in</span> dir(posix_syscall):
 </span></span><span style="display:flex;"><span>        handler <span style="color:#f92672">=</span> getattr(posix_syscall, y)
 </span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">elif</span> y <span style="color:#f92672">in</span> dir(linux_syscall):
 </span></span><span style="display:flex;"><span>        handler <span style="color:#f92672">=</span> getattr(linux_syscall, y)
-</span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">assert</span>(y<span style="color:#f92672">.</span>startswith(<span style="color:#e6db74">&#39;ql_syscall_&#39;</span>))
 </span></span><span style="display:flex;"><span>      name <span style="color:#f92672">=</span> y[<span style="color:#ae81ff">11</span>:]
 </span></span></code></pre></div><p>The new handler can rely on the original <code>qiling</code> implementation, either to simply call it, or to adapt the system call arguments to TEEGris expectations.</p>
 <h4 id="map-filesystem-names-to-custom-handlers">Map filesystem names to custom handlers</h4>
-<p>While implementing <code>open</code>, we have observed TEEgris uses URI as filenames. Those filesystem names will not be handled correctly during <code>qiling</code> emulation, as they cannot be mapped to Linux host filesystem. Fortunately <code>qiling</code> anticipates that need, and users can add custom I/O easily, through <code>QlFsMappedObject</code>:</p>
+<p>While implementing <code>open</code>, we have observed TEEgris uses URIs as filenames. Those filesystem names will not be handled correctly during <code>qiling</code> emulation, as they cannot be mapped to the Linux host filesystem. Fortunately, <code>qiling</code> anticipates that need, and users can add custom I/O easily, through <code>QlFsMappedObject</code>:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>self<span style="color:#f92672">.</span>add_fs_mapper(<span style="color:#e6db74">&#39;sys://proc&#39;</span>, Fake_sys_proc())
 </span></span></code></pre></div><p>A toy implementation is as simple as:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Fake_sys_proc</span>(QlFsMappedObject):
@@ -422,55 +417,51 @@ $ <font color="#66d9ef">pwn</font> checksec KEYMST
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>
 </span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">close</span>(self):
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>
-</span></span></code></pre></div><p>This template is easily extensible is a stateful behavior is needed for some reasons. While <code>QlFsMappedObject</code> defines an ioctl method, we have opted to implement it in the system call handler. We need to write to the address given in the third parameter of the ioctl system call, which is not directly feasible using the <code>QlFsMappedObject</code> interface.</p>
+</span></span></code></pre></div><p>This template is easily extensible as a stateful behavior, and is needed for some reasons. While <code>QlFsMappedObject</code> defines an ioctl method, we have opted to implement it in the system call handler. We need to write to the address given in the third parameter of the ioctl system call, which is not directly feasible using the <code>QlFsMappedObject</code> interface.</p>
 <h3 id="triggering-the-vulnerability">Triggering the vulnerability</h3>
-<p>Thanks to our emulator, <code>KEYMST</code> can be loaded. Yet we do not have a request example capable of reaching the vulnerability location. To help us in finding a correct message, we have created a feedback loop: once in main processing loop, we map our input parameter and call to <code>TA_InvokeCommandEntryPoint</code>. <code>qiling</code> then generates a <code>drcov</code> coverage of the execution, with which we feed IDA and lighthouse plugin. Repeat, rinse, and we have successfully crafted an input complying with the checks made and yet allowed us to control most input shared buffer. The input buffer shown below is 87856 bytes long, yellow bars indicate memory areas read while processing the normal world request:</p>
+<p>Thanks to our emulator, <code>KEYMST</code> can be loaded. However, we do not have a request example capable of reaching the vulnerability location. To help us find a correct message, we have created a feedback loop: once in main processing loop, we map our input parameter and call to <code>TA_InvokeCommandEntryPoint</code>. <code>qiling</code> then generates a <code>drcov</code> coverage of the execution, with which we feed the IDA and lighthouse plugin. Rinse and repeat, and we have successfully crafted an input complying with the checks made and allowing us to control most of the input shared buffer. The input buffer shown below is 87856 bytes long, and the yellow bars indicate memory areas read while processing the normal world request:
 
 
 <img src="https://thalium.github.io/blog/posts/img/pivoting-to-the-secure-world/shared-mem-with-zoom.png" alt="Input buffer constraints" style="background-color:white;"/>
 
-<p>Input buffer is largely unaccessed: we can freely use it to embed controlled information we will use later, during exploit. The yellow zones, accessed and mostly checked are the PKCS8 RSA private key and a &ldquo;tags table&rdquo;.</p>
+The input buffer is largely unaccessed: we can freely use it to embed controlled information we will use later, during exploitation. The yellow zones, accessed and mostly checked are the PKCS8 RSA private key and a &ldquo;tags table&rdquo;.</p>
 <h3 id="building-a-ropchain-to-pivot-to-a-subsequent-ropchain">Building a ropchain to pivot to a subsequent ropchain</h3>
-<p>The stack overflow is nice, and the initial stack space we can overwrite is small. As we gain code execution in the secure world, we would also want to observe it from the inside, from the point of view of a trusted applet. It is important to test system calls behaviors, verify assumptions we have made regarding non POSIX system calls.</p>
-<p>As we fully control a large part of the input buffer, we build a first ropchain which will copy a second, larger, embedded ropchain, and pivot to it:</p>
+<p>The stack overflow is nice, and the initial stack space we can overwrite is small. As we gain code execution in the secure world, we would also want to observe it from the inside, from the point of view of a trusted applet. It is important to test system calls behaviors, and verify assumptions we have made regarding non POSIX system calls.
+As we fully control a large part of the input buffer, we build a first ropchain which will copy a second, larger, embedded ropchain, and pivot to it:</p>
 <ol>
-<li>
-<p><strong>First</strong>, a bootstrap ropchain, which fits in <code>0x1f8</code> bytes:</p>
+<li><strong>First</strong>, a bootstrap ropchain, which fits in <code>0x1f8</code> bytes:
 <ol>
-<li>Save registers content before losing their initial values. There is a suitable space in <code>KEYMST</code> <code>.bss</code></li>
+<li>Save register content before losing their initial values. There is a suitable space in <code>KEYMST</code> <code>.bss</code></li>
 <li>Allocate a new stack at a fixed address. Make the trusted applet do <code>mmap(0xdead000, 0x8000, PROT_READ|PROT_WRITE, MAP_FIXED|MAP_ANONYMOUS)</code>. The chosen address is arbitrary but for robustness sake, we could have used the TEEGris specific system call that verifies memory range existence and permissions</li>
-<li>Copy part of a large part of input shared memory to the newly allocated stack</li>
+<li>Copy a large part of input shared memory to the newly allocated stack</li>
 </ol>
 </li>
-<li>
-<p><strong>Next</strong>, a second embedded ropchain. We have arbitrarily chosen to split the buffer into <code>0x5e00</code> bytes stack and <code>0x2000</code> bytes of data. As the trusted applet is <code>aarch32</code>, instruction set includes <code>load multiple</code> aka <code>ldm</code> instructions. We have selected <code>[KEYMST:thumb] 0x1975c: ldm.w r4, {r0, r1, r2, r3, r4, r5, r6, r7, r8, sb, fp, sp, lr, pc}</code>. This instruction is a T32 instruction that spreads over 4 bytes. We have observed <code>ROPgadget</code>, <code>ropper</code> and <code>xrop</code> do not output this gadget, even though it is legitimately classified as a Jump Oriented Programming gadget. The curious reader can read the details in Annex <a href="#t32-isa">T32 ISA</a></p>
-<p>The embedded payload is composed of three parts, again we have arbitrarily chosen the limit between data and stack zones:</p>
+<li><strong>Second</strong>, an embedded ropchain. We have arbitrarily chosen to split the buffer into <code>0x5e00</code> bytes of stack and <code>0x2000</code> bytes of data. As the trusted applet is <code>aarch32</code>, instruction set includes <code>load multiple</code> aka <code>ldm</code> instructions. We have selected <code>[KEYMST:thumb] 0x1975c: ldm.w r4, {r0, r1, r2, r3, r4, r5, r6, r7, r8, sb, fp, sp, lr, pc}</code>. This instruction is a T32 instruction that spreads over 4 bytes. We have observed <code>ROPgadget</code>, <code>ropper</code> and <code>xrop</code> do not output this gadget, even though it is legitimately classified as a Jump Oriented Programming gadget. The curious reader can read the details in Annex <a href="#t32-isa">T32 ISA</a>
+The embedded payload is composed of three parts, again we have arbitrarily chosen the limit between data and stack zones:
 <ul>
-<li><code>[0x100-0x200]</code>: new registers values</li>
-<li><code>[0x200-0x6000]</code>: <code>sp</code> is set to <code>0xdead000+0x200</code>, which will be top of stack just after <code>ldm.w</code> executes</li>
-<li><code>[0x6000-0x8000]</code>: data used by embedded payload</li>
+<li><code>[0x100-0x200]</code>: new register values</li>
+<li><code>[0x200-0x6000]</code>: <code>sp</code> is set to <code>0xdead000+0x200</code>, which will be top of the stack just after <code>ldm.w</code> executes</li>
+<li><code>[0x6000-0x8000]</code>: data used by embedded payload
+As we have mapped our input buffer to a fixed address, we can compute the address of our copied data in the target program, and easily reference input or output parameters we want to supply as reference to system calls.</li>
 </ul>
-<p>As we have mapped our input buffer to a fixed address, we can compute the address of our copied data into the target program, and easily reference input or output parameters we want to supply as reference to system calls.</p>
 </li>
-<li>
-<p><strong>Finally</strong>, as we have backed up initial registers values in step 1, we could restore processor context to a deeper call frame, to return in the <code>main</code> loop of <code>libteesl.so</code>, safely waiting for new messages to process.</p>
-</li>
+<li><strong>Finally</strong>, as we have backed up the initial register values in step 1, we could restore processor context to a deeper call frame, to return in the <code>main</code> loop of <code>libteesl.so</code>, safely waiting for new messages to process.</li>
 </ol>
 <h3 id="interact-with-the-secure-kernel">Interact with the secure kernel</h3>
-<p>We have now the ability to ROP into a trusted applet. This means we can perform secure system calls on behalf of it. We have explored the secure userspace environment, looking for ways to gain arbitrary code execution:</p>
+<p>We now have the ability to ROP into a trusted applet. This means we can perform secure system calls on behalf of it. We have explored the secure userspace environment, looking for ways to gain arbitrary code execution:</p>
 <ul>
-<li><strong>open a file for writing, save arbitrary code, open it for reading, map it RX</strong>: it does not work, because files cannot be opened with write access mode. It is possible to map existing files RX though, even at a fixed address. We can enrich our accessible gadgets set that way, for example by loading <code>libteesock.so</code> which contains indirect branches of all kinds</li>
-<li><strong>map anonymous memory RW, remap it RX</strong>: there is no system call to perform the equivalent of <code>mprotect</code>. We have tried to use <code>mmap</code> to do the same, but none of our attempts worked</li>
-<li><strong>create a socketpair, and map the content as RX</strong>: we have identified the only supported socket type, domain, and family. Reversing the secure kernel shows that this type of file descriptors support <code>mmap</code> system call. But the mapping failed while asking for <code>PROT_EXEC</code></li>
-<li><strong>use <code>TEES_ExecuteCustomHandler</code> and <code>TEES_RegisterCustomHandler</code> system calls</strong>: though their names look interesting, executing them in the context of <code>KEYMST</code> fails, and the system call returns <code>-1</code>, <code>EPERM</code></li>
+<li><strong>open a file for writing, save arbitrary code, open it for reading, map it as RX</strong>: it does not work, because files cannot be opened with write access mode. It is possible to map existing files as RX though, even at a fixed address. We can enrich our accessible gadgets set that way, for example by loading <code>libteesock.so</code> which contains indirect branches of all kinds</li>
+<li><strong>map anonymous memory as RW, remap it as RX</strong>: there is no system call to perform the equivalent of <code>mprotect</code>. We have tried to use <code>mmap</code> to do the same, but none of our attempts worked</li>
+<li><strong>create a socketpair, and map the content as RX</strong>: we have identified the only supported socket type, domain, and family. Reversing the secure kernel shows that this type of file descriptor supports <code>mmap</code> system call. But the mapping failed while asking for <code>PROT_EXEC</code></li>
+<li><strong>use <code>TEES_ExecuteCustomHandler</code> and <code>TEES_RegisterCustomHandler</code> system calls</strong>: though their names look interesting, executing them in the context of <code>KEYMST</code> fails, and the system call returns <code>-1</code>, <code>EPERM</code>
+The trusted drivers we have seen in <code>startup.tzar</code> are not directly reachable from normal world. Thanks to this vulnerability, we can make <code>KEYMST</code> communicate to the trusted drivers, and explore the drivers features.</li>
 </ul>
-<p>The trusted drivers we have seen in <code>startup.tzar</code> are not directly reachable from normal world. Thanks to this vulnerability, we can make <code>KEYMST</code> communicate to the trusted drivers, and explore the drivers features.</p>
 <h3 id="impacted-versions">Impacted versions</h3>
 <p>Samsung has confirmed the vulnerability affects <code>KEYMST</code>, that only exists in Android P firmwares. More recent versions are not affected by this vulnerability.</p>
 <h2 id="expanding-control-over-trusted-driver">Expanding control over trusted driver</h2>
 <h3 id="motivation-gain-code-execution-in-secure-kernel">Motivation: gain code execution in secure kernel</h3>
-<p>Intuitively, we expect a trusted driver to have more privileges than a trusted applet. Let&rsquo;s start with analyzing the driver contained in the startup archive.</p>
-<p>The static analysis of <code>driver/00000000-0000-0000-0000-00535453540b</code> in <code>startup.tzar</code> reveals it calls an awkward system call <code>TEES_ExecuteCustomHandler</code>:</p>
+<p>Intuitively, we expect a trusted driver to have more privileges than a trusted applet. Let&rsquo;s start with analyzing the driver contained in the startup archive.
+The static analysis of <code>driver/00000000-0000-0000-0000-00535453540b</code> in <code>startup.tzar</code> reveals it calls an awkward system call <code>TEES_ExecuteCustomHandler</code>:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#66d9ef">__fastcall</span> <span style="color:#a6e22e">timautil_sram_recovery_read</span>(<span style="color:#66d9ef">int</span> a1)
 </span></span><span style="display:flex;"><span>{
 </span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">int</span> result; <span style="color:#75715e">// r0
@@ -478,8 +469,7 @@ $ <font color="#66d9ef">pwn</font> checksec KEYMST
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">int</span> v4[<span style="color:#ae81ff">3</span>]; <span style="color:#75715e">// [sp+8h] [bp-24h] BYREF
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">int</span> v5[<span style="color:#ae81ff">4</span>]; <span style="color:#75715e">// [sp+14h] [bp-18h] BYREF
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">int</span> v6; <span style="color:#75715e">// [sp+24h] [bp-8h]
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
-</span></span><span style="display:flex;"><span>  v6 <span style="color:#f92672">=</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">3</span>;
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  v6 <span style="color:#f92672">=</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">3</span>;
 </span></span><span style="display:flex;"><span>  TEE_MemFill(v4, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">28</span>);
 </span></span><span style="display:flex;"><span>  v4[<span style="color:#ae81ff">0</span>] <span style="color:#f92672">=</span> <span style="color:#ae81ff">130</span>;
 </span></span><span style="display:flex;"><span>  v4[<span style="color:#ae81ff">1</span>] <span style="color:#f92672">=</span> <span style="color:#ae81ff">5</span>;
@@ -492,13 +482,12 @@ $ <font color="#66d9ef">pwn</font> checksec KEYMST
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> printf(<span style="color:#e6db74">&#34;Execute Custom handler failed to get mode : retval %d (%08x)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, v6, v2);
 </span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> result;
 </span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>The name looks promising, there even exists a system call named <code>TEES_RegisterCustomHandler</code> which we could leverage to perform some sort of install of a new handler. But first, let&rsquo;s analyze the booting image <code>sboot.img</code>. It contains the image of the secure OS, TEEGris, which will be loaded and run at boot. Annex <a href="#sboot-img">Secure reconnaissance</a> describes how to extract OS from it and perform static analysis of system calls implementation.</p>
-<p>We see that a verification is carried on the caller process:</p>
+</span></span></code></pre></div><p>The name looks promising, there even exists a system call named <code>TEES_RegisterCustomHandler</code> which we could leverage to perform some sort of install of a new handler. But first, let&rsquo;s analyze the booting image <code>sboot.img</code>. It contains the image of the secure OS, TEEGris, which will be loaded and run at boot. Annex <a href="#sboot-img">Secure reconnaissance</a> describes how to extract OS from it and perform static analysis of system call implementation.
+We see that a verification is carried out on the caller process:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">__int64</span> <span style="color:#66d9ef">__fastcall</span> <span style="color:#a6e22e">sel1_syscall_TEES_ExecuteCustomHandler</span>(<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> a1, <span style="color:#66d9ef">__int64</span> a2)
 </span></span><span style="display:flex;"><span>{
 </span></span><span style="display:flex;"><span>  _BYTE v5[<span style="color:#ae81ff">56</span>]; <span style="color:#75715e">// [xsp+28h] [xbp+28h] BYREF
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> ( <span style="color:#f92672">!</span>sub_FFFFFFFFF01059C4(<span style="color:#ae81ff">0x12u</span>, <span style="color:#ae81ff">1</span>i64) ) <span style="color:#75715e">// looks like a verification
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> ( <span style="color:#f92672">!</span>sub_FFFFFFFFF01059C4(<span style="color:#ae81ff">0x12u</span>, <span style="color:#ae81ff">1</span>i64) ) <span style="color:#75715e">// looks like a verification
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>i64;
 </span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> ( (<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span>)j_sel1_do_copy_from_userspace((<span style="color:#66d9ef">__int64</span>)v5, a2, <span style="color:#ae81ff">56</span>i64) )
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">14</span>i64;
@@ -507,7 +496,7 @@ $ <font color="#66d9ef">pwn</font> checksec KEYMST
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">14</span>i64;
 </span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>i64;
 </span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>This verification is the same than the verification performed when calling <code>TEES_RegisterCustomHandler</code>:</p>
+</span></span></code></pre></div><p>This verification is the same as the verification performed when calling <code>TEES_RegisterCustomHandler</code>:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">__int64</span> <span style="color:#66d9ef">__fastcall</span> <span style="color:#a6e22e">sel1_syscall_TEES_RegisterCustomHandler</span>(<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">__int16</span> a1, <span style="color:#66d9ef">__int64</span> a2, <span style="color:#66d9ef">__int64</span> a3, <span style="color:#66d9ef">int</span> a4)
 </span></span><span style="display:flex;"><span>{
 </span></span><span style="display:flex;"><span>  BOOL v8; <span style="color:#75715e">// w0
@@ -519,8 +508,7 @@ $ <font color="#66d9ef">pwn</font> checksec KEYMST
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  _QWORD <span style="color:#f92672">*</span>v15; <span style="color:#75715e">// x25
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">int</span> v16; <span style="color:#75715e">// w19
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> v18; <span style="color:#75715e">// [xsp+5Ch] [xbp+5Ch] BYREF
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
-</span></span><span style="display:flex;"><span>  v8 <span style="color:#f92672">=</span> sub_FFFFFFFFF01059C4(<span style="color:#ae81ff">0x12u</span>, <span style="color:#ae81ff">1</span>i64); <span style="color:#75715e">// the very same verification
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  v8 <span style="color:#f92672">=</span> sub_FFFFFFFFF01059C4(<span style="color:#ae81ff">0x12u</span>, <span style="color:#ae81ff">1</span>i64); <span style="color:#75715e">// the very same verification
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  v9 <span style="color:#f92672">=</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>i64;
 </span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> ( v8 )
 </span></span><span style="display:flex;"><span>  {
@@ -554,9 +542,9 @@ $ <font color="#66d9ef">pwn</font> checksec KEYMST
 </span></span><span style="display:flex;"><span>  }
 </span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> v9;
 </span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>It means that if a process is allowed to call <code>TEES_ExecuteCustomHandler</code>, it may also be authorized to call <code>TEES_RegisterCustomHandler</code>. The function which performs verification is <code>sub_FFFFFFFFF01059C4</code>. The target only has one working driver. This driver looks promising, at it effectively uses a system call that requires the same level of privilege as the system call which registers a handler inside the secure kernel. We will call the driver <code>STST</code> for the rest of the article, based on the UUID naming scheme presented earlier. The driver binary has the same type as <code>KEYMST</code> binary. In particular, it is also a trusted applet, with exported TEE functions.</p>
+</span></span></code></pre></div><p>It means that if a process is allowed to call <code>TEES_ExecuteCustomHandler</code>, it may also be authorized to call <code>TEES_RegisterCustomHandler</code>. The function which performs verification is <code>sub_FFFFFFFFF01059C4</code>. The target only has one active driver. This driver looks promising, at it uses a system call that requires the same privilege level as the system call which registers a handler inside the secure kernel. We will call the driver <code>STST</code> for the rest of the article, based on the UUID naming scheme shown earlier. The driver binary has the same type as <code>KEYMST</code> binary. In particular, it is also a trusted applet, with exported TEE functions.</p>
 <h3 id="examining-driver-entry-points">Examining driver entry points</h3>
-<p>Driver shares the hardening features of <code>STST</code>:</p>
+<p>Driver shares the hardening features of <code>STST</code>:
 
 
 <pre style="background-color:#272822">
@@ -569,20 +557,17 @@ $ <font color="#66d9ef">pwn</font> checksec STST
     PIE:      <font color="#f92672">No PIE (0x10000)</font>
 </pre>
 
-<p>The driver registers itself via <code>TEES_RegisterDriver</code>, called when driver is loaded:</p>
+The driver registers itself with <code>TEES_RegisterDriver</code>, called when the driver is loaded:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">struct</span> driver {
 </span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">int</span> (<span style="color:#f92672">*</span>open_f)();
 </span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">int</span> (<span style="color:#f92672">*</span>ioctl_f)();
 </span></span><span style="display:flex;"><span>  ...
 </span></span><span style="display:flex;"><span>};
-</span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">struct</span> driver drv;
-</span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">TA_CreateEntryPoint</span>()
 </span></span><span style="display:flex;"><span>{
 </span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">int</span> v2; <span style="color:#75715e">// [sp+4h] [bp-8h]
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
-</span></span><span style="display:flex;"><span>  drv.open_f <span style="color:#f92672">=</span> drv_open;
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  drv.open_f <span style="color:#f92672">=</span> drv_open;
 </span></span><span style="display:flex;"><span>  drv.ioctl_f <span style="color:#f92672">=</span> drv_ioctl;
 </span></span><span style="display:flex;"><span>    
 </span></span><span style="display:flex;"><span>  v2 <span style="color:#f92672">=</span> TEES_RegisterDriver(<span style="color:#f92672">&amp;</span>drv);
@@ -597,7 +582,7 @@ $ <font color="#66d9ef">pwn</font> checksec STST
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
 </span></span><span style="display:flex;"><span>  }
 </span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>The driver registers <code>ioctl</code> callback, which may be called from the vulnerable <code>KEYMST</code> applet. A few ioctl commands can be performed on this driver, amongst which two eventually call <code>log_msg</code>:</p>
+</span></span></code></pre></div><p>The driver registers an <code>ioctl</code> callback, which may be called from the vulnerable <code>KEYMST</code> applet. A few ioctl commands can be performed on this driver, among which two eventually call <code>log_msg</code>:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">log_msg</span>(<span style="color:#66d9ef">int</span> a1, <span style="color:#66d9ef">int</span> a2, <span style="color:#66d9ef">int</span> a3, <span style="color:#66d9ef">int</span> a4, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>format)
 </span></span><span style="display:flex;"><span>{
 </span></span><span style="display:flex;"><span>  TEE_MemFill(<span style="color:#f92672">&amp;</span>g_entry_ptr, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0x80u</span>);
@@ -615,33 +600,32 @@ $ <font color="#66d9ef">pwn</font> checksec STST
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div><p>The format argument comes from the <code>ioctl</code> argument, but is not located on the stack, meaning that we cannot directly control <code>printf</code> arguments with our input buffer. In the next part, we devise a strategy to gain arbitrary read and write.</p>
 <h3 id="gaining-arbitrary-read-and-write">Gaining arbitrary read and write</h3>
-<p>The vulnerability can be used several times in a row, as the driver process does not exit between invocations. We have chosen to alter a part of the stack which is deep enough not be reused between two <code>ioctl</code> calls.</p>
-<p>We have identified a chain of three stack words that point to each other:</p>
+<p>The vulnerability can be used several times in a row, as the driver process does not exit between calls. We have chosen to alter the stack in a part deep enough to not be reused in between two <code>ioctl</code> calls.
+We have identified a chain of three stack words that point to each other:
 
 
 <img src="https://thalium.github.io/blog/posts/img/pivoting-to-the-secure-world/stack-stack-layout.svg" alt="Chain of three stack words"/>
 
-<p>In the diagram above, the value <code>K</code> will not be altered by the program between multiple ioctl calls, yielding the ability to fully control its value.</p>
-<p>To put an arbitrary address <code>a</code> instead of <code>K</code> above, we write it byte by byte, overwriting each time the low byte of <code>J</code> with an incrementing value:</p>
+In the diagram above, the value <code>K</code> will not be altered by the program between multiple ioctl calls, giving us the ability to fully control its value.
+To put an arbitrary address <code>a</code> instead of <code>K</code> above, we write it byte by byte, overwriting the low byte of <code>J</code> each time with an incrementing value:
 
 
 <img src="https://thalium.github.io/blog/posts/img/pivoting-to-the-secure-world/stack-overwrite-J-cell.svg" alt="Overwrite LSB of J"/>
 
-<p>Once we are able to put an arbitrary address on the stack, we can simply turn <code>printf</code> to our advantage using <code>%pU</code> or <code>%n</code> variants.</p>
+Once we are able to put an arbitrary address on the stack, we can simply turn <code>printf</code> to our advantage using <code>%pU</code> or <code>%n</code> variants.
 
 
 <img src="https://thalium.github.io/blog/posts/img/pivoting-to-the-secure-world/stack-control-K-value.svg" alt="Control over K value"/>
 
-<p>As the driver is not <code>PIE</code>, the <code>.got</code> section is at a fixed location in memory. Leaking two words of <code>.got</code>, we make the randomized addresses of <code>libteesl.so</code> and <code>libtzsl.so</code> leak. A question still exists: how to turn a sequence of well-balanced writes to code execution ?</p>
+Since the driver is not <code>PIE</code>, the <code>.got</code> section is at a fixed location in memory. Leaking two words of <code>.got</code>, we leak the randomized addresses of <code>libteesl.so</code> and <code>libtzsl.so</code>. A question remains: how to turn a sequence of well-balanced writes to code execution?</p>
 <h3 id="gaining-arbitrary-code-execution">Gaining arbitrary code execution</h3>
-<p>Using dynamic memory hooks like <code>__malloc_hook</code> is not an option here, as <code>libtzsl.so</code>  heap implementation does not have a hooking mechanism. Overwriting a return address in the stack stays possible, but we have opted to leverage a specific feature called <code>custom printf format specifiers</code>, which <code>glibc</code> implements. Luckily for us <code>libtzsl.so</code> also implements this juicy feature. In essence, it gives an application a way to dynamically register new format specifiers, by mapping a custom format, like <code>%W</code> to a user-specified function that will output the argument. The following function illustrates how a new custom specifier registers a callback:</p>
+<p>Using dynamic memory hooks like <code>__malloc_hook</code> is not an option here, as <code>libtzsl.so</code> heap implementation does not have a hooking mechanism. Overwriting a return address in the stack is still possible, but we have chosen to leverage a specific feature called <code>custom printf format specifiers</code>, which <code>glibc</code> implements. Luckily for us <code>libtzsl.so</code> also implements this juicy feature. In essence, it gives an application a way to dynamically register new format specifiers, by mapping a custom format, like <code>%W</code> to a user-specified function that will output the argument. The following function illustrates how a new custom specifier registers a callback:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#66d9ef">__fastcall</span> <span style="color:#a6e22e">register_printf_format</span>(<span style="color:#66d9ef">char</span> a1, <span style="color:#66d9ef">int</span> a2)
 </span></span><span style="display:flex;"><span>{
 </span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">int</span> i; <span style="color:#75715e">// r2
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>v3; <span style="color:#75715e">// lr
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">int</span> result; <span style="color:#75715e">// r0
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">for</span> ( i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">!=</span> <span style="color:#ae81ff">10</span>; <span style="color:#f92672">++</span>i )
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">for</span> ( i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">!=</span> <span style="color:#ae81ff">10</span>; <span style="color:#f92672">++</span>i )
 </span></span><span style="display:flex;"><span>  {
 </span></span><span style="display:flex;"><span>    v3 <span style="color:#f92672">=</span> <span style="color:#f92672">&amp;</span>custom_formats_tab[<span style="color:#ae81ff">8</span> <span style="color:#f92672">*</span> i];
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> ( <span style="color:#f92672">!*</span>((_DWORD <span style="color:#f92672">*</span>)v3 <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>) )
@@ -654,7 +638,7 @@ $ <font color="#66d9ef">pwn</font> checksec STST
 </span></span><span style="display:flex;"><span>  }
 </span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
 </span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>This newly registered format specifier may then be used with <code>printf</code>. Backend <code>printf</code> implementation is complex and large, but in the end the following fragment loops through custom format specifiers:</p>
+</span></span></code></pre></div><p>This newly registered format specifier may then be used with <code>printf</code>. Backend <code>printf</code> implementation is complex and large, but the interesting part is the following fragment, that loops through custom format specifiers:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>...
 </span></span><span style="display:flex;"><span>LABEL_138:
 </span></span><span style="display:flex;"><span>  v44 <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
@@ -677,7 +661,7 @@ $ <font color="#66d9ef">pwn</font> checksec STST
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">goto</span> LABEL_174;
 </span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> result;
 </span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>Upon custom function call, <code>r12</code> points to <code>vasprintf</code> pointer in <code>libtzsl.so</code> <code>.got</code>:</p>
+</span></span></code></pre></div><p>Upon custom function call, <code>r12</code> points to the <code>vasprintf</code> pointer in <code>libtzsl.so</code> <code>.got</code>:
 
 
 <pre style="background-color:#272822">
@@ -712,15 +696,14 @@ $ <font color="#66d9ef">pwn</font> checksec STST
 .data:0001F898                 DCB    0
 </pre>
 
-<p>One may ask where does this value come from. The reason is:</p>
+One may ask where does this value comes from. The reason is:</p>
 <ol>
 <li><code>printf</code> internally uses <code>vasprintf;</code></li>
 <li>Both functions are in <code>libtzsl.so</code>, hence have no reason to perform the branch via <code>.plt</code>;</li>
-<li>But for good reasons, we must branch through <code>.plt</code>. Reasons include the fact that the branch would not be a valid ARM instruction;</li>
+<li>But for a few reasons, we must branch through <code>.plt</code>. Those reasons include the fact that the branch would not be a valid ARM instruction;</li>
 <li>The veener can be found in <code>.plt</code>, and it uses <code>ip</code>, aka <code>r12</code>, to perform the branch;</li>
-<li>This value is left untouched in <code>ip</code>, as it is only used to branch some internal functions.</li>
-</ol>
-<p>As <code>.got</code> section  is overwritable we conclude driver exploitation with a call to <code>[libteesl.so:thumb] 0x48f9a: ldm.w ip, {r0, r1, r3, r4, r5, r6, r8, sb, fp, ip, sp, pc}</code>. This instruction allows to perform a stack pivot and jump into a ropchain. Due to the constraints we have on <code>.got</code>, we cannot directly control juicy registers at first shot. For example, changing <code>recvmsg</code> will make the driver malfunction, as this function is used to receive ioctl calls. But we can take control of <code>sp</code> and <code>pc</code>, without causing a crash:</p>
+<li>This value is left untouched in <code>ip</code>, as it is only used to branch some internal functions.
+Since the <code>.got</code> section is overwritable we conclude driver exploitation with a call to <code>[libteesl.so:thumb] 0x48f9a: ldm.w ip, {r0, r1, r3, r4, r5, r6, r8, sb, fp, ip, sp, pc}</code>. This instruction allows us to perform a stack pivot and jump into a ropchain. Due to the constraints we have on <code>.got</code>, we cannot directly control juicy registers at first shot. For example, changing <code>recvmsg</code> will make the driver malfunction, as this function is used to receive ioctl calls. But we can take control of <code>sp</code> and <code>pc</code>, without causing a crash:
 
 
 <pre style="background-color:#272822">
@@ -745,12 +728,13 @@ $ <font color="#66d9ef">pwn</font> checksec STST
 .data:0001F898                 DCB    0
 </pre>
 
-<p>Luckily for us, <code>libteesl.so</code> and <code>libtzsl.so</code> have tons of gadgets we can use then, and we have already leaked their base addresses.</p>
+Luckily for us, <code>libteesl.so</code> and <code>libtzsl.so</code> have lots of gadgets we can use, and we have already leaked their base addresses.</li>
+</ol>
 <h3 id="impacted-versions-1">Impacted versions</h3>
 <p>Samsung has confirmed the vulnerability affects <code>STST</code>. This privileged trusted applet ships with Android versions spanning from Android P to Android R. Please note that Android S and more recent are not affected by this vulnerability.</p>
 <h2 id="conclusion">Conclusion</h2>
-<p>We hope you have enjoyed this trip to one of the Samsung variant of ARM secure world. Software is an inextinguishable source of vulnerabilities. ARM TrustZone is a nice feature, but it provides a segregation which is only as strong as the software components that run inside it. In that case, we have chained two vulnerabilities to potentially gain code execution in the context of the secure OS. Those two applets would have benefit from basic hardening measures such as stack cookie, PIE and RELRO.</p>
-<p>We hope to see you again for one of our next trips !</p>
+<p>We hope you have enjoyed this trip to one of the Samsung variant of ARM secure world. Software is an inextinguishable source of vulnerabilities. ARM TrustZone is a nice feature, but it provides a segregation which is only as strong as the software components that run inside it. In our case, we have chained two vulnerabilities to potentially gain code execution in the context of the secure OS. Those two applets would have benefited from basic hardening measures such as stack cookie, PIE and RELRO.
+We hope to see you again for one of our next trips!</p>
 <h2 id="ressources">Ressources</h2>
 <h3 id="articles-about-teegris">Articles about TEEgris</h3>
 <ul>
@@ -767,39 +751,36 @@ $ <font color="#66d9ef">pwn</font> checksec STST
  <a name="baremetal"></a>  <a href="https://developer.arm.com/documentation/dai0527/a">Bare-metal Boot Code for ARMv8-A Processors</a></li>
 </ul>
 <h2 id="t32-isa">T32 ISA</h2>
-
+<p>
 
 <a name="t32-isa"></a>
 
-<p>Modern ARM processors support several instruction sets. Sticking to the most meaningful for us:</p>
+Modern ARM processors support several instruction sets. Sticking to the most meaningful for us:</p>
 <ul>
 <li>ARM instructions which are 4-bytes instructions;</li>
-<li>Thumb instructions which are 2-bytes instructions, and thus provide higher code density. However, the ISA is less rich than the ARM one.</li>
+<li>Thumb instructions which are 2-bytes instructions, and thus provide higher code density. However, the ISA is not as rich than the ARM one.
+Starting with ARMv7, ARM decided to extend Thumb ISA with Thumb2 instructions, which are 4-bytes instructions, to benefit from more compact machine code. Those instructions might look like legal ARM instructions, but they start at an address which is not a multiple of 4. Not all ARM instructions are supported, only a few selected ones are supported when in Thumb mode. Multiple load, or <code>ldm</code>, is one of those.
+While Thumb does have <code>ldm</code> instructions, they do not allow to set <code>pc</code>, as the operand scope is too limited. Thumb2 holds powerful ARM variants, including the ability to set <code>pc</code>. Do note that in the latest version of the ARMv8 ISA, using <code>ldm</code> to set <code>sp</code> causes an unpredictable behaviour. Yet, we did try on our target device, and it just worked: the stack pivoted correctly.
+So when looking for gadgets in ARM code sections, it is useful to search for Thumb2 instruction. The following sample may help to spot the origin of the problem:</li>
 </ul>
-<p>Starting with ARMv7, ARM decided to extend Thumb ISA with Thumb2 instructions, which are 4-bytes instructions, to benefit from more compact machine code. Those instructions might look like legal ARM instructions, but they start at an address which is not a multiple of 4. Not all ARM instructions are supported, only a few selected ones are supported when in Thumb mode. Multiple load, or <code>ldm</code>, is one of those.</p>
-<p>While Thumb does have <code>ldm</code> instructions, they do not allow to set <code>pc</code>, as the operand scope is too limited. Thumb2 holds powerful ARM variants, including the ability to set <code>pc</code>. Do note in latest version of the ARMv8 ISA, using <code>ldm</code> to set <code>sp</code> causes an unpredictable behaviour. Yet, we did try on our target device, and it just worked: the stack pivoted correctly.</p>
-<p>So when looking for gadgets in ARM code sections, it is useful to search for Thumb2 instruction. The following sample may help to spot the origin of the problem:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span><span style="color:#a6e22e">.section</span> <span style="color:#66d9ef">.text</span>
 </span></span><span style="display:flex;"><span><span style="color:#a6e22e">.global</span> <span style="color:#66d9ef">_start</span>
-</span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#a6e22e">.arm</span>
 </span></span><span style="display:flex;"><span>_start:
 </span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">r0</span>, <span style="color:#66d9ef">r0</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">adr</span> <span style="color:#66d9ef">r0</span>, <span style="color:#66d9ef">gadget</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">1</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">bx</span> <span style="color:#66d9ef">r0</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">.byte</span> <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x00</span>
-</span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#a6e22e">.thumb</span>
 </span></span><span style="display:flex;"><span>gadget:
 </span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">.byte</span> <span style="color:#ae81ff">0xe8</span>, <span style="color:#ae81ff">0x94</span>, <span style="color:#ae81ff">0xeb</span>, <span style="color:#ae81ff">0xff</span>
 </span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">.byte</span> <span style="color:#ae81ff">0xff</span>, <span style="color:#ae81ff">0xeb</span>, <span style="color:#ae81ff">0x94</span>, <span style="color:#ae81ff">0xe8</span>
-</span></span></code></pre></div><p>Existing ROP tools - we have tested with <code>ROPgadget</code>, <code>xrop </code> and <code>ropper</code> - might miss it. This mainly due to the way those tools work: they spot an interesting ending instruction, and then perform disassembly at a few backward places, trying to find a non-branching flow ending there. Looking at the tools one by one:</p>
+</span></span></code></pre></div><p>Existing ROP tools - we have tested with <code>ROPgadget</code>, <code>xrop </code> and <code>ropper</code> - might miss it. This is mainly due to the way those tools work: they spot an interesting ending instruction, and then perform disassembly at a few backward places, trying to find a non-branching flow ending there. Looking at the tools one by one:</p>
 <ul>
 <li><code>ROPgadget</code> detects multiple load as a possible ending. But it is only detected when it starts with an address multiple of 4. As we have seen, Thumb2 allows such a gadget on an address multiple of 2, but not 4. If we specify <code>--align 2</code> option, then the gadget will be falsely detected as ARM - recall that Thumb2 is mainly ARM instructions. The instruction flow in which the instruction lives is Thumb however.</li>
 <li><code>ropper</code> does not detect multiple load as possible ending;</li>
-<li><code>xrop</code> detects multiple load as a possible ending. The disassembly engine, based on bfd libopcodes, supports Thumb and Thumb2 decoding. However, it fails to detect the gadget in our test binary.</li>
-</ul>
-<p>When applied to the sample above, the tools yield:</p>
+<li><code>xrop</code> detects multiple load as a possible ending. The disassembly engine, based on bfd libopcodes, supports Thumb and Thumb2 decoding. However, it fails to detect the gadget in our test binary.
+When applied to the sample above, the tools yield:
 
 
 <pre>
@@ -817,7 +798,6 @@ Gadgets information
 0x00010050 : andeq r0, r1, r0 ; mov r0, r0 ; add r0, pc, #3 ; bx r0
 0x0001005c : bx r0
 0x00010054 : mov r0, r0 ; add r0, pc, #3 ; bx r0
-
 Unique gadgets found: 10
  &gt; <font color="#4E9A06"><b># The gadget will be detected as we force the alignment to Thumb alignment</b></font>
  &gt; ./ROPgadget.py --binary ../samples/ldm --align 2
@@ -829,40 +809,27 @@ Gadgets information
 0x0001005c : bx r0
 0x00010066 : ldm r4, {r0, r1, r2, r3, r4, r5, r6, r7, r8, sb, fp, sp, lr, pc}
 0x00010054 : mov r0, r0 ; add r0, pc, #3 ; bx r0
-
 Unique gadgets found: 6
  &gt; <font color="#cc0000"><b># The gadget will not be detected</b></font>
  &gt; Ropper.py -a ARMTHUMB -f ./ldm
 <font color="#4E9A06">[INFO]</font> Load gadgets from cache
 <font color="#4E9A06">[LOAD]</font> loading... <font color="#D3D7CF">100%</font>
-
-
-
 Gadgets
 =======
-
-
-
 0 gadgets found
  &gt; <font color="#cc0000"><b># The gadget will not be detected</b></font>
  &gt; Ropper.py -a ARM -f ./ldm
 <font color="#4E9A06">[INFO]</font> Load gadgets from cache
 <font color="#4E9A06">[LOAD]</font> loading... <font color="#D3D7CF">100%</font>
 <font color="#4E9A06">[LOAD]</font> removing double gadgets... <font color="#D3D7CF">100%</font>
-
-
-
 Gadgets
 =======
-
-
 <font color="#CC0000">0x00010058</font>: <font color="#FCE94F"><b>add</b></font> <font color="#D3D7CF">r0, pc, #3</font><font color="#729FCF"><b>; </b></font><font color="#FCE94F"><b>bx</b></font> <font color="#D3D7CF">r0</font><font color="#729FCF"><b>; </b></font>
 <font color="#CC0000">0x00010048</font>: <font color="#FCE94F"><b>andeq</b></font> <font color="#D3D7CF">r0, r0, ip, rrx</font><font color="#729FCF"><b>; </b></font><font color="#FCE94F"><b>andeq</b></font> <font color="#D3D7CF">r0, r0, r5</font><font color="#729FCF"><b>; </b></font><font color="#FCE94F"><b>andeq</b></font> <font color="#D3D7CF">r0, r1, r0</font><font color="#729FCF"><b>; </b></font><font color="#FCE94F"><b>mov</b></font> <font color="#D3D7CF">r0, r0</font><font color="#729FCF"><b>;</b></font> ...
 <font color="#CC0000">0x0001004c</font>: <font color="#FCE94F"><b>andeq</b></font> <font color="#D3D7CF">r0, r0, r5</font><font color="#729FCF"><b>; </b></font><font color="#FCE94F"><b>andeq</b></font> <font color="#D3D7CF">r0, r1, r0</font><font color="#729FCF"><b>; </b></font><font color="#FCE94F"><b>mov</b></font> <font color="#D3D7CF">r0, r0</font><font color="#729FCF"><b>; </b></font><font color="#FCE94F"><b>add</b></font> <font color="#D3D7CF">r0, pc, #3</font><font color="#729FCF"><b>; </b></font><font color="#FCE94F"><b>bx</b></font> <font color="#D3D7CF">r0</font><font color="#729FCF"><b>; </b></font>
 <font color="#CC0000">0x00010050</font>: <font color="#FCE94F"><b>andeq</b></font> <font color="#D3D7CF">r0, r1, r0</font><font color="#729FCF"><b>; </b></font><font color="#FCE94F"><b>mov</b></font> <font color="#D3D7CF">r0, r0</font><font color="#729FCF"><b>; </b></font><font color="#FCE94F"><b>add</b></font> <font color="#D3D7CF">r0, pc, #3</font><font color="#729FCF"><b>; </b></font><font color="#FCE94F"><b>bx</b></font> <font color="#D3D7CF">r0</font><font color="#729FCF"><b>; </b></font>
 <font color="#CC0000">0x0001005c</font>: <font color="#FCE94F"><b>bx</b></font> <font color="#D3D7CF">r0</font><font color="#729FCF"><b>; </b></font>
 <font color="#CC0000">0x00010054</font>: <font color="#FCE94F"><b>mov</b></font> <font color="#D3D7CF">r0, r0</font><font color="#729FCF"><b>; </b></font><font color="#FCE94F"><b>add</b></font> <font color="#D3D7CF">r0, pc, #3</font><font color="#729FCF"><b>; </b></font><font color="#FCE94F"><b>bx</b></font> <font color="#D3D7CF">r0</font><font color="#729FCF"><b>; </b></font>
-
 6 gadgets found
  &gt; <font color="#cc0000"><b># The gadget will not be detected</b></font>
  &gt; xrop -b 16 -r arm ./ldm
@@ -879,9 +846,10 @@ _______________________________________________________________
 <font color="#3465A4">0x5c                  </font><font color="#576364">E12FFF10                  </font><font color="#CC0000">bx</font>	<font color="#CC0000">r0</font>
 _______________________________________________________________
 </pre>
-
+</li>
+</ul>
 <h2 id="secure-reconnaissance">Secure reconnaissance</h2>
-
+<p>
 
 <a name="sboot-img"></a>
 
@@ -889,14 +857,14 @@ _______________________________________________________________
 
 <img src="https://thalium.github.io/blog/posts/img/pivoting-to-the-secure-world/teegris-Secure-boot.svg" alt="Samsung Secure boot"/>
 
-<p>The firmware zip file contains multiple tar archives, amongst which the <code>BL_</code> prefixed one contains <code>sboot.bin</code> which is the file used by <code>BootROM</code> to start the Secure World: it will contain TEEgris secure kernel. It may have been encrypted, but it was in clear for our target.</p>
-<p><code>sboot.bin</code> is a flat file, and a few aarch64 system architecture facts help to analyze it:</p>
+The firmware zip file contains multiple tar archives, among which the <code>BL_</code> prefixed one contains <code>sboot.bin</code> which is the file used by <code>BootROM</code> to start the Secure World: it will contain TEEgris secure kernel. It can be encrypted, but it was not for our particular target.
+<code>sboot.bin</code> is a flat file, and a few aarch64 system architecture facts help to analyze it:</p>
 <ul>
 <li>ARM <a href="#baremetal">bare metal boot</a>: the use of ARM64 system registers to set up a system with multiple exception levels;</li>
-<li>the structure of ARM64 exception vector table is singular and allows to be identified in a flat binary: aligned with <code>0x800</code>, each vector is <code>0x80</code> bytes long. <code>NOP</code> padding is used to fulfill the alignment constraint. Some entries are infinite loops that jump to self;</li>
-<li>a well-identified exception vector serves supervisor calls made by inferior exception levels. This vector shall reach the dispatch logic that will call a specific function associated with the supervisor call identifier. The two possible interrupt vectors are <code>synchronous lower el using aarch64</code>, at <code>+0x400</code> and <code>synchronous lower el using aarch32</code> at <code>+0x600</code>.</li>
-</ul>
-<p>The secure kernel can be extracted from the firmware, and the system calls implementation analyzed.</p> </div>
+<li>the structure of the ARM64 exception vector table is singular and allows to be identified in a flat binary: aligned with <code>0x800</code>, each vector is <code>0x80</code> bytes long. <code>NOP</code> padding is used to fulfill the alignment constraint. Some entries are infinite loops that jump to self;</li>
+<li>a well-identified exception vector serves supervisor calls made by inferior exception levels. This vector shall reach the dispatch logic that will call a specific function associated with the supervisor call identifier. The two possible interrupt vectors are <code>synchronous lower el using aarch64</code>, at <code>+0x400</code> and <code>synchronous lower el using aarch32</code> at <code>+0x600</code>.
+The secure kernel can be extracted from the firmware, and the system calls implementation analyzed.</li>
+</ul> </div>
     <footer class="post-footer">
 
   <div class="post-footer-data">
