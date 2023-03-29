@@ -7,16 +7,15 @@
 <meta name="description" content="Thalium blog." />
 <meta name="keywords" content="blog, tech" />
 <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
-<meta name="generator" content="Hugo 0.95.0" />
+<meta name="generator" content="Hugo 0.108.0">
 
-<link rel="canonical" href="https://thalium.github.io/blog/posts/deserialization-bug-through-rdp-smart-card-extension/">
+<link rel="canonical" href="https://blog.thalium.re/posts/deserialization-bug-through-rdp-smart-card-extension/">
 <meta property="og:title" content="Remote Deserialization Bug in Microsoft&#39;s RDP Client through Smart Card Extension (CVE-2021-38666)" />
 <meta property="og:description" content="This is the third installment in my three-part series of articles on fuzzing Microsoft&rsquo;s RDP client, where I explain a bug I found by fuzzing the smart card extension." />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://thalium.github.io/blog/posts/deserialization-bug-through-rdp-smart-card-extension/" /><meta property="article:section" content="posts" />
+<meta property="og:url" content="https://blog.thalium.re/posts/deserialization-bug-through-rdp-smart-card-extension/" /><meta property="article:section" content="posts" />
 <meta property="article:published_time" content="2021-12-10T06:00:01+01:00" />
 <meta property="article:modified_time" content="2021-12-10T06:00:01+01:00" />
-
 
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Remote Deserialization Bug in Microsoft&#39;s RDP Client through Smart Card Extension (CVE-2021-38666)"/>
@@ -29,13 +28,13 @@
 <meta itemprop="wordCount" content="2804">
 <meta itemprop="keywords" content="RDP,Exploit,CVE,Vulnerability Research,RCE," />
 
-<link rel="stylesheet" href="https://thalium.github.io/blog/css/layout.css" />
+<link rel="stylesheet" href="https://blog.thalium.re/css/layout.css" />
 
 
-<link rel="stylesheet" href="https://thalium.github.io/blog/css/default-dark.css" />
+<link rel="stylesheet" href="https://blog.thalium.re/css/default-dark.css" />
 
 
-<link rel="icon" href="https://thalium.github.io/blog/favicon.ico" />
+<link rel="icon" href="https://blog.thalium.re/favicon.ico" />
 
 
 <script type="application/javascript">
@@ -106,19 +105,19 @@ if (!doNotTrack) {
 
   <nav>
     <div class="siteTitle">
-      <a href="https://thalium.github.io/blog/">
-        <img src="https://thalium.github.io/blog/shard_only_no_background.png" width=12%></img>
+      <a href="https://blog.thalium.re/">
+        <img src="https://blog.thalium.re/shard_only_no_background.png" width=12%></img>
         <span>THALIUM</span>
       </a>
     </div> 
 
     
     
-    <a class="nav-item" href="https://thalium.github.io/blog/posts/"><div class="nav-item-title">Posts</div></a>
+    <a class="nav-item" href="https://blog.thalium.re/posts/"><div class="nav-item-title">Posts</div></a>
     
-    <a class="nav-item" href="https://thalium.github.io/blog/joinus/"><div class="nav-item-title">Join Us</div></a>
+    <a class="nav-item" href="https://blog.thalium.re/joinus/"><div class="nav-item-title">Join Us</div></a>
     
-    <a class="nav-item" href="https://thalium.github.io/blog/about/"><div class="nav-item-title">About</div></a>
+    <a class="nav-item" href="https://blog.thalium.re/about/"><div class="nav-item-title">About</div></a>
     
 
   </nav>
@@ -160,9 +159,9 @@ if (!doNotTrack) {
 </ul>
 <p>Other articles in this series:</p>
 <ul>
-<li><a href="https://thalium.github.io/blog/posts/fuzzing-microsoft-rdp-client-using-virtual-channels/">Fuzzing Microsoft&rsquo;s RDP Client using Virtual Channels: Overview &amp; Methodology</a></li>
-<li><a href="https://thalium.github.io/blog/posts/leaking-aslr-through-rdp-printer-cache-registry/">Remote ASLR Leak in Microsoft&rsquo;s RDP Client through Printer Cache Registry (CVE-2021-38665)</a></li>
-<li><a href="https://thalium.github.io/blog/posts/deserialization-bug-through-rdp-smart-card-extension/">Remote Deserialization Bug in Microsoft&rsquo;s RDP Client through Smart Card Extension (CVE-2021-38666)</a></li>
+<li><a href="https://blog.thalium.re/posts/fuzzing-microsoft-rdp-client-using-virtual-channels/">Fuzzing Microsoft&rsquo;s RDP Client using Virtual Channels: Overview &amp; Methodology</a></li>
+<li><a href="https://blog.thalium.re/posts/leaking-aslr-through-rdp-printer-cache-registry/">Remote ASLR Leak in Microsoft&rsquo;s RDP Client through Printer Cache Registry (CVE-2021-38665)</a></li>
+<li><a href="https://blog.thalium.re/posts/deserialization-bug-through-rdp-smart-card-extension/">Remote Deserialization Bug in Microsoft&rsquo;s RDP Client through Smart Card Extension (CVE-2021-38666)</a></li>
 </ul>
 <h2 id="table-of-contents">Table of Contents</h2>
 <ul>
@@ -186,7 +185,7 @@ if (!doNotTrack) {
 <p>At Blackhat Europe 2019, a team of researchers showed they <a href="https://www.unexploitable.systems/papers/park:rdpfuzzing-slides.pdf">found an RCE</a> in the RDP client. Their motivation was that North Korean hackers would alledgely carry out attacks through RDP servers acting as proxies, and that you could hack them back by setting up a malicious RDP server to which they would connect.</p>
 <p>During my internship at Thalium, I spent time studying and reverse engineering Microsoft RDP, learning about fuzzing, and looking for vulnerabilities.</p>
 <p>In this article, I will explain how I found a deserialization bug in the Microsoft RDP client, but for which I unfortunately couldn&rsquo;t provide an actual proof of concept.</p>
-<p>If you are interested in details about the <strong>Remote Desktop Protocol</strong>, <strong>reversing</strong> the Microsoft RDP client or <strong>fuzzing</strong> methodology, I invite you to read <strong><a href="https://thalium.github.io/blog/posts/fuzzing-microsoft-rdp-client-using-virtual-channels/">my first article</a></strong> which tackles these subjects.</p>
+<p>If you are interested in details about the <strong>Remote Desktop Protocol</strong>, <strong>reversing</strong> the Microsoft RDP client or <strong>fuzzing</strong> methodology, I invite you to read <strong><a href="https://blog.thalium.re/posts/fuzzing-microsoft-rdp-client-using-virtual-channels/">my first article</a></strong> which tackles these subjects.</p>
 <p>Either way, I will briefly provide some context required to understand this article:</p>
 <ul>
 <li>The target is Microsoft&rsquo;s official RDP client on Windows 10.</li>
@@ -204,14 +203,14 @@ if (!doNotTrack) {
 <p><strong><code>RDPDR</code></strong> is the name of the static virtual channel which purpose is to <strong>redirect access from the server to the client file system</strong>. It is also the base channel that hosts several <strong>sub-extensions</strong> such as the <strong>smart card extension</strong>, the printing extension or the serial/parallel ports extension.</p>
 <p><code>RDPDR</code> is one of the few channels that are <strong>opened by default</strong> in the RDP client, alongside other static channels <code>RDPSND</code>, <code>CLIPRDR</code>, <code>DRDYNVC</code>. This makes it an even more interesting target risk-wise.</p>
 <p>Microsoft has some nice <a href="https://winprotocoldoc.blob.core.windows.net/productionwindowsarchives/MS-RDPEFS/%5bMS-RDPEFS%5d.pdf">documentation</a> on this channel. It contains the different PDU types, their structures, and even dozens of examples of PDUs which is great for seeding our fuzzer.</p>
-<p>Fuzzing <code>RDPDR</code> yielded a few small bugs, as well as another bug for which I got a CVE (see my previous article: <a href="https://thalium.github.io/blog/posts/leaking-aslr-through-rdp-printer-cache-registry/">Remote ASLR Leak in Microsoft&rsquo;s RDP Client through Printer Cache Registry</a>).</p>
+<p>Fuzzing <code>RDPDR</code> yielded a few small bugs, as well as another bug for which I got a CVE (see my previous article: <a href="https://blog.thalium.re/posts/leaking-aslr-through-rdp-printer-cache-registry/">Remote ASLR Leak in Microsoft&rsquo;s RDP Client through Printer Cache Registry</a>).</p>
 <p>The bug detailed in this article is one of the denser bugs I&rsquo;ve had to deal with among my RDP findings. It was found by analyzing crashes that I got during fuzzing. It may sound obvious, but it&rsquo;s actually not; for instance, the previous vulnerability I found had no crash associated to it :)</p>
 <h1 id="analyzing-crashes">Analyzing crashes</h1>
 <p>The crashes happened while fuzzing the <em>Smart Card</em> sub-protocol, and were quite&hellip; enigmatic.</p>
 <p>
   <figure style="margin-top: 1em; margin-bottom: 1em">
-    <a href="https://thalium.github.io/blog/posts/img/rdp/rdpdr-crashes.png" target="_blank">
-      <img src="https://thalium.github.io/blog/posts/img/rdp/rdpdr-crashes.png" alt="RDPDR enigmatic crashes">
+    <a href="https://blog.thalium.re/posts/img/rdp/rdpdr-crashes.png" target="_blank">
+      <img src="https://blog.thalium.re/posts/img/rdp/rdpdr-crashes.png" alt="RDPDR enigmatic crashes">
     </a>
     <figcaption style="font-weight: normal; font-style: italic; margin-top: 1em">
       Perplexing logs of crashes while fuzzing RDPDR
@@ -223,14 +222,14 @@ if (!doNotTrack) {
 <h2 id="smart-cards-and-rpc">Smart Cards and RPC</h2>
 <p>The crashes in <code>RPCRT4.DLL</code> arise in <code>NdrSimpleTypeConvert+0x307</code>:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">eax</span>, [<span style="color:#66d9ef">rdx</span>] <span style="color:#75715e">; crash
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">bswap</span>   <span style="color:#66d9ef">eax</span>
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#a6e22e">bswap</span>   <span style="color:#66d9ef">eax</span>
 </span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     [<span style="color:#66d9ef">rdx</span>], <span style="color:#66d9ef">eax</span>
 </span></span></code></pre></div><p>It&rsquo;s a classic <strong>out-of-bounds read</strong> on what seems to be the byteswap of a DWORD in the heap.</p>
 <p>Fortunately, we are able to find the associated payload and instantly reproduce the bug. Here&rsquo;s what the call stack looks like when the crash occurs:</p>
 <p>
   <figure style="margin-top: 1em; margin-bottom: 1em">
-    <a href="https://thalium.github.io/blog/posts/img/rdp/rpc-call-stack.png" target="_blank">
-      <img src="https://thalium.github.io/blog/posts/img/rdp/rpc-call-stack.png" alt="RPC bug call stack">
+    <a href="https://blog.thalium.re/posts/img/rdp/rpc-call-stack.png" target="_blank">
+      <img src="https://blog.thalium.re/posts/img/rdp/rpc-call-stack.png" alt="RPC bug call stack">
     </a>
     <figcaption style="font-weight: normal; font-style: italic; margin-top: 1em">
       Call stack at time of the crash in RPCRT4.DLL
@@ -245,13 +244,13 @@ if (!doNotTrack) {
 <li>&hellip;</li>
 </ul>
 <p>What&rsquo;s with all of these? Here&rsquo;s one thing <strong>all these functions have in common</strong>: the following snippet of code.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>v6 <span style="color:#f92672">=</span> MesDecodeBufferHandleCreate(
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>v6 <span style="color:#f92672">=</span> <span style="color:#a6e22e">MesDecodeBufferHandleCreate</span>(
 </span></span><span style="display:flex;"><span>  <span style="color:#f92672">&amp;</span>PDU<span style="color:#f92672">-&gt;</span>InputBuffer,
 </span></span><span style="display:flex;"><span>  PDU<span style="color:#f92672">-&gt;</span>InputBufferLength,
 </span></span><span style="display:flex;"><span>  <span style="color:#f92672">&amp;</span>pHandle
 </span></span><span style="display:flex;"><span>);
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// ...
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>NdrMesTypeDecode3(
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#a6e22e">NdrMesTypeDecode3</span>(
 </span></span><span style="display:flex;"><span>  pHandle,
 </span></span><span style="display:flex;"><span>  <span style="color:#f92672">&amp;</span>pPicklingInfo,
 </span></span><span style="display:flex;"><span>  <span style="color:#f92672">&amp;</span>pProxyInfo,
@@ -286,7 +285,7 @@ InputBuffer
 00 09 00 00 00 ff 00 00 00 00 40 00 00 00 00 00
 00 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 6c 00 00 05
-</code></pre><p>So those are <em>Device I/O Request</em> PDUs, more specifically of sub-type <em>Device Control Request</em>. We already met one in the first article, in the <a href="https://thalium.github.io/blog/posts/fuzzing-microsoft-rdp-client-using-virtual-channels/#arbitrary-malloc-dos-in-rdpdr">arbitrary malloc bug</a>.</p>
+</code></pre><p>So those are <em>Device I/O Request</em> PDUs, more specifically of sub-type <em>Device Control Request</em>. We already met one in the first article, in the <a href="https://blog.thalium.re/posts/fuzzing-microsoft-rdp-client-using-virtual-channels/#arbitrary-malloc-dos-in-rdpdr">arbitrary malloc bug</a>.</p>
 <p>But what is this <code>IoControlCode</code> field exactly? According to the specification:</p>
 <blockquote>
 <p><em><strong>IoControlCode (4 bytes):</strong> A 32-bit unsigned integer. This field is specific to the redirected device.</em></p>
@@ -294,23 +293,23 @@ InputBuffer
 <p>Specific to the redirected device&hellip; For some reason, it took me a long time to realize there was actually <a href="https://winprotocoldoc.blob.core.windows.net/productionwindowsarchives/MS-RDPESC/%5bMS-RDPESC%5d.pdf">a dedicated specification</a> for the Smart Card sub-protocol (as well as the others).</p>
 <p>The section 3.1.4 of the Smart Card specification answers our suspicion. It contains a long <strong>table</strong> that maps <strong><code>IoControlCode</code></strong> values with types of <code>IRP_MJ_DEVICE_CONTROL</code> requests and associated <strong>structures</strong>.</p>
 <p>
-  <a href="https://thalium.github.io/blog/posts/img/rdp/iocontrolcodes.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/rdp/iocontrolcodes.png" alt="IoControlCode table">
+  <a href="https://blog.thalium.re/posts/img/rdp/iocontrolcodes.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/rdp/iocontrolcodes.png" alt="IoControlCode table">
   </a>
 </p>
 <p>Therefore, there are around <strong>60 functions</strong> that contain the same pattern of code using <code>MesDecodeBufferHandleCreate</code> followed by <code>NdrMesTypeDecode3</code>. They are all called the same way with our <code>InputBuffer</code> and <code>InputBufferLength</code> &mdash; only a certain offset parameter varies each time.</p>
 <p>According to the specification, for <code>IoControlCode</code> set to <code>0x000900E8</code>, we get the following <code>LocateCardsByATRA_Call</code> structure:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> _LocateCardsByATRA_Call {
 </span></span><span style="display:flex;"><span>  REDIR_SCARDCONTEXT Context;
-</span></span><span style="display:flex;"><span>  [range(<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">1000</span>)] <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> cAtrs;
-</span></span><span style="display:flex;"><span>  [size_is(cAtrs)] LocateCards_ATRMask<span style="color:#f92672">*</span> rgAtrMasks;
-</span></span><span style="display:flex;"><span>  [range(<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">10</span>)] <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> cReaders;
-</span></span><span style="display:flex;"><span>  [size_is(cReaders)] ReaderStateA<span style="color:#f92672">*</span> rgReaderStates;
+</span></span><span style="display:flex;"><span>  [<span style="color:#a6e22e">range</span>(<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">1000</span>)] <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> cAtrs;
+</span></span><span style="display:flex;"><span>  [<span style="color:#a6e22e">size_is</span>(cAtrs)] LocateCards_ATRMask<span style="color:#f92672">*</span> rgAtrMasks;
+</span></span><span style="display:flex;"><span>  [<span style="color:#a6e22e">range</span>(<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">10</span>)] <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> cReaders;
+</span></span><span style="display:flex;"><span>  [<span style="color:#a6e22e">size_is</span>(cReaders)] ReaderStateA<span style="color:#f92672">*</span> rgReaderStates;
 </span></span><span style="display:flex;"><span>} LocateCardsByATRA_Call;
 </span></span></code></pre></div><p>It seems then that based on <code>IoControlCode</code>, <strong>our input buffer will be decoded according to a certain structure</strong>.</p>
 <h2 id="the-rpc-ndr-marshaling-engine">The RPC NDR marshaling engine</h2>
 <p>Let&rsquo;s come back on the decoding piece of code:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>v6 <span style="color:#f92672">=</span> MesDecodeBufferHandleCreate(
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>v6 <span style="color:#f92672">=</span> <span style="color:#a6e22e">MesDecodeBufferHandleCreate</span>(
 </span></span><span style="display:flex;"><span>  <span style="color:#f92672">&amp;</span>PDU<span style="color:#f92672">-&gt;</span>InputBuffer,
 </span></span><span style="display:flex;"><span>  PDU<span style="color:#f92672">-&gt;</span>InputBufferLength,
 </span></span><span style="display:flex;"><span>  <span style="color:#f92672">&amp;</span>pHandle
@@ -322,7 +321,7 @@ InputBuffer
 <p>So this is what it is all about&hellip; RPC has its own <strong>serialization engine</strong>, called the <a href="https://docs.microsoft.com/en-us/windows/win32/rpc/rpc-ndr-engine"><strong>NDR marshaling engine</strong></a> (Network Data Representation). In particular, there is documentation on how data serialization works: header, format strings, types, etc.</p>
 <p>The RDP client makes &ldquo;manual&rdquo; use of the RPC NDR serialization engine to decode structures from the PDUs.</p>
 <p>After having initialized the <em>decoding handle</em> with the input buffer and length, the data is effectively deserialized:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>NdrMesTypeDecode3(
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#a6e22e">NdrMesTypeDecode3</span>(
 </span></span><span style="display:flex;"><span>  pHandle,
 </span></span><span style="display:flex;"><span>  <span style="color:#f92672">&amp;</span>pPicklingInfo,
 </span></span><span style="display:flex;"><span>  <span style="color:#f92672">&amp;</span>pProxyInfo,
@@ -335,8 +334,8 @@ InputBuffer
 <p>Nonetheless, header files contain information about the parameters and their types that can help us understand a bit more.</p>
 <p>
   <figure style="margin-top: 1em; margin-bottom: 1em">
-    <a href="https://thalium.github.io/blog/posts/img/rdp/ndrmestypedecode3.png" target="_blank">
-      <img src="https://thalium.github.io/blog/posts/img/rdp/ndrmestypedecode3.png" alt="NdrMesTypeDecode3">
+    <a href="https://blog.thalium.re/posts/img/rdp/ndrmestypedecode3.png" target="_blank">
+      <img src="https://blog.thalium.re/posts/img/rdp/ndrmestypedecode3.png" alt="NdrMesTypeDecode3">
     </a>
     <figcaption style="font-weight: normal; font-style: italic; margin-top: 1em">
       Interesting fields inside NdrMesTypeDecode3&#39;s arguments... (pProxyInfo)
@@ -348,10 +347,10 @@ InputBuffer
 <p>For <code>LocateCardsByATRA</code>, <code>0xE</code> gives an offset of <code>0x220</code> in the <code>ArrTypeOffset</code> array, which points to the compiled format associated to the structure we found earlier in the specification:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> _LocateCardsByATRA_Call {
 </span></span><span style="display:flex;"><span>  REDIR_SCARDCONTEXT Context;
-</span></span><span style="display:flex;"><span>  [range(<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">1000</span>)] <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> cAtrs;
-</span></span><span style="display:flex;"><span>  [size_is(cAtrs)] LocateCards_ATRMask<span style="color:#f92672">*</span> rgAtrMasks;
-</span></span><span style="display:flex;"><span>  [range(<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">10</span>)] <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> cReaders;
-</span></span><span style="display:flex;"><span>  [size_is(cReaders)] ReaderStateA<span style="color:#f92672">*</span> rgReaderStates;
+</span></span><span style="display:flex;"><span>  [<span style="color:#a6e22e">range</span>(<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">1000</span>)] <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> cAtrs;
+</span></span><span style="display:flex;"><span>  [<span style="color:#a6e22e">size_is</span>(cAtrs)] LocateCards_ATRMask<span style="color:#f92672">*</span> rgAtrMasks;
+</span></span><span style="display:flex;"><span>  [<span style="color:#a6e22e">range</span>(<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">10</span>)] <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> cReaders;
+</span></span><span style="display:flex;"><span>  [<span style="color:#a6e22e">size_is</span>(cReaders)] ReaderStateA<span style="color:#f92672">*</span> rgReaderStates;
 </span></span><span style="display:flex;"><span>} LocateCardsByATRA_Call;
 </span></span></code></pre></div><p>We are lucky the specification tells us everything about the type structures, and even releases the full IDL in appendix. If we didn&rsquo;t have these, we would have had to decompile the format ourselves, and not only the format pointed by the offset we found. Indeed, there are also many references to other previously defined structures, such as <code>LocateCards_ATRMask</code>.</p>
 <h2 id="root-cause">Root cause</h2>
@@ -393,7 +392,7 @@ InputBuffer
 <p>We managed to clear up why we got crashes in RPCRT4.DLL, and which payloads triggered them. However, we haven&rsquo;t found yet an explanation to the tons of other nonsensical crashes we&rsquo;ve had.</p>
 <p>Let&rsquo;s check the <code>LocateCards_ATRMask</code> structure, that is nested inside <code>LocateCardsByATRA_Call</code>:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> _LocateCards_ATRMask {
-</span></span><span style="display:flex;"><span>  [range(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">36</span>)] <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> cbAtr;
+</span></span><span style="display:flex;"><span>  [<span style="color:#a6e22e">range</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">36</span>)] <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> cbAtr;
 </span></span><span style="display:flex;"><span>  byte rgbAtr[<span style="color:#ae81ff">36</span>];
 </span></span><span style="display:flex;"><span>  byte rgbMask[<span style="color:#ae81ff">36</span>];
 </span></span><span style="display:flex;"><span>} LocateCards_ATRMask;
@@ -438,23 +437,23 @@ InputBuffer
   
     
       <div class="tag">
-        <a href="https://thalium.github.io/blog/tags/rdp">#RDP</a>
+        <a href="https://blog.thalium.re/tags/rdp">#RDP</a>
       </div>
     
       <div class="tag">
-        <a href="https://thalium.github.io/blog/tags/exploit">#Exploit</a>
+        <a href="https://blog.thalium.re/tags/exploit">#Exploit</a>
       </div>
     
       <div class="tag">
-        <a href="https://thalium.github.io/blog/tags/cve">#CVE</a>
+        <a href="https://blog.thalium.re/tags/cve">#CVE</a>
       </div>
     
       <div class="tag">
-        <a href="https://thalium.github.io/blog/tags/vulnerability-research">#Vulnerability Research</a>
+        <a href="https://blog.thalium.re/tags/vulnerability-research">#Vulnerability Research</a>
       </div>
     
       <div class="tag">
-        <a href="https://thalium.github.io/blog/tags/rce">#RCE</a>
+        <a href="https://blog.thalium.re/tags/rce">#RCE</a>
       </div>
     
   
@@ -497,7 +496,7 @@ InputBuffer
   
 
   <div class="social-link">
-  <a href="https://thalium.github.io/blog/index.xml" target="_blank">RSS</a>
+  <a href="https://blog.thalium.re/index.xml" target="_blank">RSS</a>
   </div>
 
 </div>

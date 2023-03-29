@@ -7,16 +7,15 @@
 <meta name="description" content="Thalium blog." />
 <meta name="keywords" content="blog, tech" />
 <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
-<meta name="generator" content="Hugo 0.95.0" />
+<meta name="generator" content="Hugo 0.108.0">
 
-<link rel="canonical" href="https://thalium.github.io/blog/posts/rdpegfx/">
+<link rel="canonical" href="https://blog.thalium.re/posts/rdpegfx/">
 <meta property="og:title" content="Fuzzing RDPEGFX with &#34;what the fuzz&#34;" />
 <meta property="og:description" content="Microsoft’s Remote Desktop Protocol (RDP) client was fuzzed by various teams in the past few years, it thus seemed like a good target to try a recent snapshot fuzzer: what the fuzz (wtf) (of which we are only users). In this companion post to our Hexacon 2022 talk (slides, video) we’ll show how we took advantage of wtf flexibility in order to efficiently fuzz the RDPEGFX channel of Microsoft RDP client and uncover CVE-2022-30221." />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://thalium.github.io/blog/posts/rdpegfx/" /><meta property="article:section" content="posts" />
+<meta property="og:url" content="https://blog.thalium.re/posts/rdpegfx/" /><meta property="article:section" content="posts" />
 <meta property="article:published_time" content="2022-10-14T00:00:00+00:00" />
 <meta property="article:modified_time" content="2022-10-14T00:00:00+00:00" />
-
 
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Fuzzing RDPEGFX with &#34;what the fuzz&#34;"/>
@@ -29,13 +28,13 @@
 <meta itemprop="wordCount" content="7596">
 <meta itemprop="keywords" content="RDP,Fuzzing,CVE,Vulnerability Research," />
 
-<link rel="stylesheet" href="https://thalium.github.io/blog/css/layout.css" />
+<link rel="stylesheet" href="https://blog.thalium.re/css/layout.css" />
 
 
-<link rel="stylesheet" href="https://thalium.github.io/blog/css/default-dark.css" />
+<link rel="stylesheet" href="https://blog.thalium.re/css/default-dark.css" />
 
 
-<link rel="icon" href="https://thalium.github.io/blog/favicon.ico" />
+<link rel="icon" href="https://blog.thalium.re/favicon.ico" />
 
 
 <script type="application/javascript">
@@ -106,19 +105,19 @@ if (!doNotTrack) {
 
   <nav>
     <div class="siteTitle">
-      <a href="https://thalium.github.io/blog/">
-        <img src="https://thalium.github.io/blog/shard_only_no_background.png" width=12%></img>
+      <a href="https://blog.thalium.re/">
+        <img src="https://blog.thalium.re/shard_only_no_background.png" width=12%></img>
         <span>THALIUM</span>
       </a>
     </div> 
 
     
     
-    <a class="nav-item" href="https://thalium.github.io/blog/posts/"><div class="nav-item-title">Posts</div></a>
+    <a class="nav-item" href="https://blog.thalium.re/posts/"><div class="nav-item-title">Posts</div></a>
     
-    <a class="nav-item" href="https://thalium.github.io/blog/joinus/"><div class="nav-item-title">Join Us</div></a>
+    <a class="nav-item" href="https://blog.thalium.re/joinus/"><div class="nav-item-title">Join Us</div></a>
     
-    <a class="nav-item" href="https://thalium.github.io/blog/about/"><div class="nav-item-title">About</div></a>
+    <a class="nav-item" href="https://blog.thalium.re/about/"><div class="nav-item-title">About</div></a>
     
 
   </nav>
@@ -165,7 +164,7 @@ Valentino&rsquo;s setup was built around WinAFL and, despite his successes, had 
 <p>Conveniently, that summer, <a href="https://twitter.com/0vercl0k">@0vercl0k</a> released <a href="https://github.com/0vercl0k/wtf">what the fuzz (wtf)</a>, described by the author as &ldquo;a distributed, code-coverage guided, customizable, cross-platform snapshot-based fuzzer designed for attacking user and or kernel-mode targets running on Microsoft Windows&rdquo;. Unfortunately, Valentino had finished his internship and would not return before the following spring to work on another subject.</p>
 <p>With some time off a few months later, we decided to give <em>wtf</em> a chance and revisit Valentino&rsquo;s work to try to circumvent some of its limitations.
 In this blog post, we describe that endeavour and show how we took advantage of wtf&rsquo;s flexibility in order to efficiently fuzz the RDPEGFX channel of Microsoft RDP client and uncover <a href="https://msrc.microsoft.com/update-guide/en-US/vulnerability/CVE-2022-30221">CVE-2022-30221</a>.</p>
-<p>This work was presented at <a href="https://www.hexacon.fr/conference/speakers/#fuzzing_rdpegfx">Hexacon 2022</a> (<a href="https://thalium.github.io/blog/posts/misc/rdpegfx/Hexacon2022-Fuzzing_RDPEGFX_with_wtf.pdf">slides</a>, <a href="https://youtu.be/4pftjmKqeoM">video</a>).</p>
+<p>This work was presented at <a href="https://www.hexacon.fr/conference/speakers/#fuzzing_rdpegfx">Hexacon 2022</a> (<a href="https://blog.thalium.re/posts/misc/rdpegfx/Hexacon2022-Fuzzing_RDPEGFX_with_wtf.pdf">slides</a>, <a href="https://youtu.be/4pftjmKqeoM">video</a>).</p>
 <h1 id="rdp-and-the-graphics-pipeline-extension">RDP and the Graphics Pipeline Extension</h1>
 <p>We will not present Microsoft&rsquo;s Remote Desktop Protocol (RDP) as it has already been discussed <a href="https://thalium.github.io/blog/posts/fuzzing-microsoft-rdp-client-using-virtual-channels/#the-remote-desktop-protocol">here</a>.
 The only thing to know is that RDP is not limited to forwarding keyboard and screen between a client and a server, but can also forward various devices through specific channels as well as define extension to those channels.</p>
@@ -181,14 +180,14 @@ It efficiently encodes and transmits graphical display data from the server to t
 </ul>
 <p>Here is an overview of the blit commands taken from <a href="https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-rdpegfx/5229ee1e-1cb4-4178-9739-a36f1258b685">Microsoft&rsquo;s documentation</a>:</p>
 <p><a href="https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-rdpegfx/5229ee1e-1cb4-4178-9739-a36f1258b685">
-  <a href="https://thalium.github.io/blog/posts/img/rdpegfx/RDPEGFX_blit_cmds.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/rdpegfx/RDPEGFX_blit_cmds.png" alt="Overview of the blit commands">
+  <a href="https://blog.thalium.re/posts/img/rdpegfx/RDPEGFX_blit_cmds.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/rdpegfx/RDPEGFX_blit_cmds.png" alt="Overview of the blit commands">
   </a>
 </a></p>
 <p>One data exchange may contain several commands, referenced in the code and documentation as Protocol Data Units (PDUs). They all have a common header with a <code>cmdId</code> and a <code>pduLength</code> defining the type and length of the current command respectively:</p>
 <p>
-  <a href="https://thalium.github.io/blog/posts/img/rdpegfx/header.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/rdpegfx/header.png" alt="RDPEGFX Common Header">
+  <a href="https://blog.thalium.re/posts/img/rdpegfx/header.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/rdpegfx/header.png" alt="RDPEGFX Common Header">
   </a>
 </p>
 <p><code>flags</code> does not seem to be used, and Microsoft&rsquo;s documentation specifies that it must be set to zero.</p>
@@ -243,16 +242,16 @@ Taking another snapshot at the reception of the second message greatly improved 
 We are interested in the processing of messages of the RDPEGFX channel by Microsoft&rsquo;s RDP client.
 This processing is performed in the <code>RdpGfxProtocolClientDecoder::Decode</code> method of <code>mstscax.dll</code> (<em>MicroSoft Terminal Services Client ActiveX control</em>) whose control flow graph (CFG) is shown on the following figure:</p>
 <p>
-  <a href="https://thalium.github.io/blog/posts/img/rdpegfx/RdpGfxProtocolClientDecoder-Decode.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/rdpegfx/RdpGfxProtocolClientDecoder-Decode.png" alt="&lt;code&gt;mstscax.dll!RdpGfxProtocolClientDecoder::Decode&lt;/code&gt;">
+  <a href="https://blog.thalium.re/posts/img/rdpegfx/RdpGfxProtocolClientDecoder-Decode.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/rdpegfx/RdpGfxProtocolClientDecoder-Decode.png" alt="&lt;code&gt;mstscax.dll!RdpGfxProtocolClientDecoder::Decode&lt;/code&gt;">
   </a>
 </p>
 <p>In order to simplify this CFG, we assigned colors to basic blocks and grouped them together.
 We want to fuzz the basic blocks in white, where the received message is processed. We can clearly see a dispatcher with twenty options.
 Abstracting away most of the code we get this much simpler high level view:</p>
 <p>
-  <a href="https://thalium.github.io/blog/posts/img/rdpegfx/RdpGfxProtocolClientDecoder-Decode_grouped.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/rdpegfx/RdpGfxProtocolClientDecoder-Decode_grouped.png" alt="&lt;code&gt;mstscax.dll!RdpGfxProtocolClientDecoder::Decode&lt;/code&gt;">
+  <a href="https://blog.thalium.re/posts/img/rdpegfx/RdpGfxProtocolClientDecoder-Decode_grouped.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/rdpegfx/RdpGfxProtocolClientDecoder-Decode_grouped.png" alt="&lt;code&gt;mstscax.dll!RdpGfxProtocolClientDecoder::Decode&lt;/code&gt;">
   </a>
 </p>
 <ol>
@@ -472,8 +471,8 @@ Both use one time breakpoints to record basic block coverage; edge coverage woul
 <p>Adding a sample to the corpus effectively locks out of the corpus all potential samples that would result in a behavior already covered by the existing corpus and the added sample.
 Let us illustrate this concept with the following animation:</p>
 <p>
-  <a href="https://thalium.github.io/blog/posts/img/rdpegfx/signal.gif" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/rdpegfx/signal.gif" alt="">
+  <a href="https://blog.thalium.re/posts/img/rdpegfx/signal.gif" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/rdpegfx/signal.gif" alt="">
   </a>
 </p>
 <p>Each sample execution is represented by a blue dot; green dots are samples whose execution increased the coverage, or equivalently exhibited a new behavior according to the chosen coverage. White cells represent the set of samples that won&rsquo;t exhibit a new behavior. Of course this illustration is far from perfect (samples can rarely be represented on a 2D continuous plane, and samples with a similar behavior rarely live in a nice convex set for starter) but it will be enough to convey our point.</p>
@@ -535,8 +534,8 @@ Knowing which modifications in our code or process were decisive is very hard, a
 <p>We decided to run various fuzzing campaigns starting from the same corpus and running under similar conditions.</p>
 <p>The following histogram shows the distribution of the size of the samples in our initial corpus, the one we got from capturing a live RDP session:</p>
 <p>
-  <a href="https://thalium.github.io/blog/posts/img/rdpegfx/sample_sizes_hist.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/rdpegfx/sample_sizes_hist.png" alt="">
+  <a href="https://blog.thalium.re/posts/img/rdpegfx/sample_sizes_hist.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/rdpegfx/sample_sizes_hist.png" alt="">
   </a>
 </p>
 <p>Most of the samples are smaller than 22KB (or 0X5600), so that&rsquo;s the value we chose for the <code>max_len</code> parameter.
@@ -552,8 +551,8 @@ Moreover since we did not encounter any infinite loops, we did not set the <code
 Moreover, bochscpu is so slow that we decided to replace one slow but precise bochscpu backend with a coarse but fast KVM one.</p>
 <p>The results are shown in the following graphs:</p>
 <p>
-  <a href="https://thalium.github.io/blog/posts/img/rdpegfx/dirty.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/rdpegfx/dirty.png" alt="">
+  <a href="https://blog.thalium.re/posts/img/rdpegfx/dirty.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/rdpegfx/dirty.png" alt="">
   </a>
 </p>
 <p>Where are the 15 runs per configuration?
@@ -581,8 +580,8 @@ If we looked at the number of edges covered or pages written to, the orange and 
 In fact what we are really interested in is the number of bugs found.
 We only found one, so it is hard to do stats on that, but here are the curves of the number of campaigns reporting crashes:</p>
 <p>
-  <a href="https://thalium.github.io/blog/posts/img/rdpegfx/crashes.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/rdpegfx/crashes.png" alt="">
+  <a href="https://blog.thalium.re/posts/img/rdpegfx/crashes.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/rdpegfx/crashes.png" alt="">
   </a>
 </p>
 <p>The maximum is 15 since we ran each configuration 15 times.
@@ -598,7 +597,7 @@ Anyway, even if they are not, the orange campaigns were better at finding our bu
 <p>During our initial campaigns, we got a dozen of crashes (not counting duplicates) but most of them where either linked to an incomplete snapshot or a bug in our modifications to wtf or our aggressively optimized harness.
 We were eventually able to get rid of all of them but one: <code>crash-ACCESS_VIOLATION_WRITE-0x7df491561122</code>.</p>
 <p>The bug itself is not that interesting and we were not able to exploit it.
-For a detailed description you can have a look at our <a href="https://thalium.github.io/blog/posts/misc/rdpegfx/CVE-2022-30221_Report.txt">MSRC report</a>.
+For a detailed description you can have a look at our <a href="https://blog.thalium.re/posts/misc/rdpegfx/CVE-2022-30221_Report.txt">MSRC report</a>.
 Instead we&rsquo;ll recount here how we analyzed it (or rather, how we should have analyzed it in retrospect).</p>
 <p>Even though it consistently lead to a crash under the bochscpu and KVM backends we were confronted to three difficulties:</p>
 <ol>
@@ -634,8 +633,8 @@ Instead we&rsquo;ll recount here how we analyzed it (or rather, how we should ha
 </ul>
 <p>Looking at the parameters the minimized sample was consistent with an out-of-bound write:</p>
 <p>
-  <a href="https://thalium.github.io/blog/posts/img/rdpegfx/RDPEGFXoverflow.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/rdpegfx/RDPEGFXoverflow.png" alt="RDPGFX_CREATE_SURFACE_PDU and overflowing RDPGFX_SOLIDFILL_PDU">
+  <a href="https://blog.thalium.re/posts/img/rdpegfx/RDPEGFXoverflow.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/rdpegfx/RDPEGFXoverflow.png" alt="RDPGFX_CREATE_SURFACE_PDU and overflowing RDPGFX_SOLIDFILL_PDU">
   </a>
 </p>
 <p>We had a better understanding of the crash but still could not analyze it properly, as the resulting trace was still huge.
@@ -669,8 +668,8 @@ We got the explanation why the faulting code was not in the initial dump: it was
 </code></pre><p>Going to the last execution of <code>JITCopyContext::ExecuteResourceCopy+0x6f</code> we identified the address of the jitted code.
 As tenet records memory writes (and reads), we were able to retrieve the binary code, copy it in a new segment in IDA, and get the assembly code, with tenet support as a bonus.</p>
 <p>
-  <a href="https://thalium.github.io/blog/posts/img/rdpegfx/jitcode.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/rdpegfx/jitcode.png" alt="">
+  <a href="https://blog.thalium.re/posts/img/rdpegfx/jitcode.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/rdpegfx/jitcode.png" alt="">
   </a>
 </p>
 <h2 id="reproduction-on-a-live-system">Reproduction on a live system</h2>
@@ -690,8 +689,8 @@ Another way to deactivate hardware acceleration specific to virtual machines is 
 The crashing trace goes on with <code>UMContext::CopyImmediateData</code> and the non-crashing one soon switches to <code>WarpPlatform::RecordError</code>.</p>
 <p>Loading both tenet traces in two instances of IDA and jumping to the last execution of <code>d3d10warp!UMContext::CopyImmediateData+0x2f4</code> we can observe various checks:</p>
 <p>
-  <a href="https://thalium.github.io/blog/posts/img/rdpegfx/tenet-diff.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/rdpegfx/tenet-diff.png" alt="">
+  <a href="https://blog.thalium.re/posts/img/rdpegfx/tenet-diff.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/rdpegfx/tenet-diff.png" alt="">
   </a>
 </p>
 <p>Offset 0x2f4 is the last jump. The crashing trace skips the jump and the non-crashing one takes it.
@@ -975,7 +974,7 @@ the bug might be triggerable in other contexts.</p>
 <p>By bypassing bound checks for both <code>top</code> and <code>bottom</code> we can hope to get rid of the periodic writes and enforce a single out of bound write. But this is not how it works. The jitted code performs the same integer overflow when calculating the first address to write and then iterate <code>bottom - top</code> times.</p>
 <p>The part of <code>SOLIDFILL_PDU</code> defining the rectangle to fill is actually a <code>RDPGFX_RECT16</code> structure. We looked at other PDU manipulating this structure or the <code>width</code> and <code>height</code> parameters but the ones we looked at properly checked their bounds.</p>
 <h1 id="responsible-disclosure">Responsible Disclosure</h1>
-<p>We sent the <a href="https://thalium.github.io/blog/posts/misc/rdpegfx/CVE-2022-30221_Report.txt">report already mentioned earlier</a> to MSRC mid-march together with a PoC and a few tenet traces.</p>
+<p>We sent the <a href="https://blog.thalium.re/posts/misc/rdpegfx/CVE-2022-30221_Report.txt">report already mentioned earlier</a> to MSRC mid-march together with a PoC and a few tenet traces.</p>
 <p>To be clear our PoC is just a trigger, not an exploit.
 Our PoC is composed of a FreeRDP patch, a Dockerfile, and a Makefile to build and invoke the container with the right parameters.</p>
 <p>The Dockerfile builds and exposes a patched FreeRDP server.
@@ -1039,8 +1038,8 @@ and just appends our payload to every messages sent through the GFX channel in t
 </span></span></code></pre></div><p>Connecting to this patched server from Microsoft&rsquo;s RDP client shipped with the last versions of Windows Insider Preview (as of time of submission) led to a crash of the application.</p>
 <p>We did not get much news for almost a month but then we got a few exchanges with our case manager. They reviewed our HexaCon submission and eventually awarded us with a $5000 bounty just before releasing a patch early July.</p>
 <p>
-  <a href="https://thalium.github.io/blog/posts/img/rdpegfx/Timeline.svg" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/rdpegfx/Timeline.svg" alt="Timeline">
+  <a href="https://blog.thalium.re/posts/img/rdpegfx/Timeline.svg" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/rdpegfx/Timeline.svg" alt="Timeline">
   </a>
 </p>
 <!-- raw HTML omitted -->
@@ -1063,19 +1062,19 @@ Trace minimization, differential analysis, and <a href="https://github.com/gaase
   
     
       <div class="tag">
-        <a href="https://thalium.github.io/blog/tags/rdp">#RDP</a>
+        <a href="https://blog.thalium.re/tags/rdp">#RDP</a>
       </div>
     
       <div class="tag">
-        <a href="https://thalium.github.io/blog/tags/fuzzing">#Fuzzing</a>
+        <a href="https://blog.thalium.re/tags/fuzzing">#Fuzzing</a>
       </div>
     
       <div class="tag">
-        <a href="https://thalium.github.io/blog/tags/cve">#CVE</a>
+        <a href="https://blog.thalium.re/tags/cve">#CVE</a>
       </div>
     
       <div class="tag">
-        <a href="https://thalium.github.io/blog/tags/vulnerability-research">#Vulnerability Research</a>
+        <a href="https://blog.thalium.re/tags/vulnerability-research">#Vulnerability Research</a>
       </div>
     
   
@@ -1118,7 +1117,7 @@ Trace minimization, differential analysis, and <a href="https://github.com/gaase
   
 
   <div class="social-link">
-  <a href="https://thalium.github.io/blog/index.xml" target="_blank">RSS</a>
+  <a href="https://blog.thalium.re/index.xml" target="_blank">RSS</a>
   </div>
 
 </div>

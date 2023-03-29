@@ -7,17 +7,16 @@
 <meta name="description" content="Thalium blog." />
 <meta name="keywords" content="blog, tech" />
 <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
-<meta name="generator" content="Hugo 0.95.0" />
+<meta name="generator" content="Hugo 0.108.0">
 
-<link rel="canonical" href="https://thalium.github.io/blog/posts/apocalypse2021-off-the-grid/">
+<link rel="canonical" href="https://blog.thalium.re/posts/apocalypse2021-off-the-grid/">
 <meta property="og:title" content="Cyber Apocalypse 2021 3/5 - Off the grid" />
 <meta property="og:description" content="Off-the-grid was the 4th hardware challenge of the Cyber Apocalypse 2021 CTF organized by HackTheBox.
 We were given an Saleae trace and schematics to analyse. Thalium was one of the very first of 99 players to complete it." />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://thalium.github.io/blog/posts/apocalypse2021-off-the-grid/" /><meta property="article:section" content="posts" />
+<meta property="og:url" content="https://blog.thalium.re/posts/apocalypse2021-off-the-grid/" /><meta property="article:section" content="posts" />
 <meta property="article:published_time" content="2021-04-28T12:00:02+01:00" />
 <meta property="article:modified_time" content="2021-04-28T12:00:02+01:00" />
-
 
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Cyber Apocalypse 2021 3/5 - Off the grid"/>
@@ -32,13 +31,13 @@ We were given an Saleae trace and schematics to analyse. Thalium was one of the 
 <meta itemprop="wordCount" content="816">
 <meta itemprop="keywords" content="CTF,Writeup,CyberApocalypse2021,Hardware," />
 
-<link rel="stylesheet" href="https://thalium.github.io/blog/css/layout.css" />
+<link rel="stylesheet" href="https://blog.thalium.re/css/layout.css" />
 
 
-<link rel="stylesheet" href="https://thalium.github.io/blog/css/default-dark.css" />
+<link rel="stylesheet" href="https://blog.thalium.re/css/default-dark.css" />
 
 
-<link rel="icon" href="https://thalium.github.io/blog/favicon.ico" />
+<link rel="icon" href="https://blog.thalium.re/favicon.ico" />
 
 
 <script type="application/javascript">
@@ -109,19 +108,19 @@ if (!doNotTrack) {
 
   <nav>
     <div class="siteTitle">
-      <a href="https://thalium.github.io/blog/">
-        <img src="https://thalium.github.io/blog/shard_only_no_background.png" width=12%></img>
+      <a href="https://blog.thalium.re/">
+        <img src="https://blog.thalium.re/shard_only_no_background.png" width=12%></img>
         <span>THALIUM</span>
       </a>
     </div> 
 
     
     
-    <a class="nav-item" href="https://thalium.github.io/blog/posts/"><div class="nav-item-title">Posts</div></a>
+    <a class="nav-item" href="https://blog.thalium.re/posts/"><div class="nav-item-title">Posts</div></a>
     
-    <a class="nav-item" href="https://thalium.github.io/blog/joinus/"><div class="nav-item-title">Join Us</div></a>
+    <a class="nav-item" href="https://blog.thalium.re/joinus/"><div class="nav-item-title">Join Us</div></a>
     
-    <a class="nav-item" href="https://thalium.github.io/blog/about/"><div class="nav-item-title">About</div></a>
+    <a class="nav-item" href="https://blog.thalium.re/about/"><div class="nav-item-title">About</div></a>
     
 
   </nav>
@@ -157,12 +156,12 @@ if (!doNotTrack) {
 <article class="post">
     <h1 class="title"> Cyber Apocalypse 2021 3/5 - Off the grid </h1>
     <div class="content"> <p><strong>Off-the-grid</strong> was the 4th hardware challenge of the Cyber Apocalypse 2021 CTF organized by HackTheBox.
-We were given an <a href="https://thalium.github.io/blog/posts/misc/off-the-grid/off_the_grid.sal">Saleae trace</a> and schematics to analyse. Thalium was one of the very first of 99 players to complete it.</p>
+We were given an <a href="https://blog.thalium.re/posts/misc/off-the-grid/off_the_grid.sal">Saleae trace</a> and schematics to analyse. Thalium was one of the very first of 99 players to complete it.</p>
 <h2 id="analyzing-the-saleae-capture">Analyzing the Saleae capture</h2>
 <p>First thing first, what does the schematic tell us ?</p>
 <p>
-  <a href="https://thalium.github.io/blog/posts/img/off-the-grid/schematics.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/off-the-grid/schematics.png" alt="OLED schematics">
+  <a href="https://blog.thalium.re/posts/img/off-the-grid/schematics.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/off-the-grid/schematics.png" alt="OLED schematics">
   </a>
 </p>
 <p>We have a hardware logic analyzer and one of those cheap OLED screens. In our case, it is an SH1306, with a 128x64 pixels grid (1.3&quot;).
@@ -170,8 +169,8 @@ The schematic shows us how the logic analyzer is connected to the screen&rsquo;s
 There is still one thing missing, not given in the archive. A file you almost always need when doing hardware reverse: The Datasheet. Just google &ldquo;SH1036 datasheet&rdquo; and you end up with a link like <a href="https://cdn-shop.adafruit.com/datasheets/SSD1306.pdf">this one</a>.
 Armed with these information, let&rsquo;s take a look at the trace now.</p>
 <p>
-  <a href="https://thalium.github.io/blog/posts/img/off-the-grid/logic.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/off-the-grid/logic.png" alt="Saleae Logic capture">
+  <a href="https://blog.thalium.re/posts/img/off-the-grid/logic.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/off-the-grid/logic.png" alt="Saleae Logic capture">
   </a>
 </p>
 <p>As you can see on the left, I already labeled the 5 first channels using what I learned from the schematic. There are 6 group of lines, each one aproximatively 1 second appart. We could then assume that 6 different images were drawn on the screen. But what are they, and how do you draw something on the SH1306 OLED screen ? Time to dig into the datasheet.</p>
@@ -187,8 +186,8 @@ With DIN and CLK, we now know it uses some kind of synchronous communication. D/
 <li>I²C</li>
 </ul>
 <p>
-  <a href="https://thalium.github.io/blog/posts/img/off-the-grid/datasheet_com_buses.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/off-the-grid/datasheet_com_buses.png" alt="Communication buses">
+  <a href="https://blog.thalium.re/posts/img/off-the-grid/datasheet_com_buses.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/off-the-grid/datasheet_com_buses.png" alt="Communication buses">
   </a>
 </p>
 <p>8-bit communication needs an&hellip; 8 bit bus. In our case, we only use one bit on the DIN channel. Only the 2 types of SPI and I²C use a pin labeled &ldquo;SCLK&rdquo;. On these 3 left, I²C uses 2 pins for data.
@@ -196,27 +195,27 @@ That leaves us with SPI. But which one ? If you look closely on the &ldquo;D/C&r
 <p>We know which communication bus is in use in our case. How can we extract the data ?</p>
 <p>Saleae software comes with many analyzers. To select one, click on the &ldquo;analyzer&rdquo; icon on the left. By default, you have a quick access to the most used bus/protocols: UART, I²C and SPI. Select SPI.</p>
 <p>
-  <a href="https://thalium.github.io/blog/posts/img/off-the-grid/saleae_analyzer.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/off-the-grid/saleae_analyzer.png" alt="Analyzers">
+  <a href="https://blog.thalium.re/posts/img/off-the-grid/saleae_analyzer.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/off-the-grid/saleae_analyzer.png" alt="Analyzers">
   </a>
 </p>
 <p>It then asks you the settings to decode a SPI trace. Set them as in the screenshot below</p>
 <p>
-  <a href="https://thalium.github.io/blog/posts/img/off-the-grid/spi_settings.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/off-the-grid/spi_settings.png" alt="SPI settings">
+  <a href="https://blog.thalium.re/posts/img/off-the-grid/spi_settings.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/off-the-grid/spi_settings.png" alt="SPI settings">
   </a>
 </p>
 <p>The clock setting is&hellip; well, CLK channel. We arbitrarily chose RST for the &ldquo;Enable&rdquo; setting, since it stays high all the time.
 MOSI and MISO can be inverted, it will just change the way you parse the extracted data.
 You end up with something like this:</p>
 <p>
-  <a href="https://thalium.github.io/blog/posts/img/off-the-grid/spi_command_and_data.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/off-the-grid/spi_command_and_data.png" alt="SPI decoded">
+  <a href="https://blog.thalium.re/posts/img/off-the-grid/spi_command_and_data.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/off-the-grid/spi_command_and_data.png" alt="SPI decoded">
   </a>
 </p>
 <p>And voila !</p>
 <p>The data sent on the wire is a command if the D/C channel is LOW and handled as data otherwise.
-We can use the SPI analyzer to export a <a href="https://thalium.github.io/blog/posts/misc/off-the-grid/trace.txt">trace</a> file:</p>
+We can use the SPI analyzer to export a <a href="https://blog.thalium.re/posts/misc/off-the-grid/trace.txt">trace</a> file:</p>
 <pre tabindex="0"><code>$ head trace.txt
 Time [s],Packet ID,MOSI,MISO
 1.828613640000000,0,0xAE,0x00
@@ -259,35 +258,35 @@ in our case, will allow us to decode the bursts into 128x64 images:</p>
 <tbody>
 <tr>
 <td>
-  <a href="https://thalium.github.io/blog/posts/img/off-the-grid/screen_1.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/off-the-grid/screen_1.png" alt="trace">
+  <a href="https://blog.thalium.re/posts/img/off-the-grid/screen_1.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/off-the-grid/screen_1.png" alt="trace">
   </a>
 </td>
 <td>
-  <a href="https://thalium.github.io/blog/posts/img/off-the-grid/screen_2.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/off-the-grid/screen_2.png" alt="trace">
+  <a href="https://blog.thalium.re/posts/img/off-the-grid/screen_2.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/off-the-grid/screen_2.png" alt="trace">
   </a>
 </td>
 <td>
-  <a href="https://thalium.github.io/blog/posts/img/off-the-grid/screen_3.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/off-the-grid/screen_3.png" alt="trace">
+  <a href="https://blog.thalium.re/posts/img/off-the-grid/screen_3.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/off-the-grid/screen_3.png" alt="trace">
   </a>
 </td>
 </tr>
 <tr>
 <td>
-  <a href="https://thalium.github.io/blog/posts/img/off-the-grid/screen_4.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/off-the-grid/screen_4.png" alt="trace">
+  <a href="https://blog.thalium.re/posts/img/off-the-grid/screen_4.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/off-the-grid/screen_4.png" alt="trace">
   </a>
 </td>
 <td>
-  <a href="https://thalium.github.io/blog/posts/img/off-the-grid/screen_5.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/off-the-grid/screen_5.png" alt="trace">
+  <a href="https://blog.thalium.re/posts/img/off-the-grid/screen_5.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/off-the-grid/screen_5.png" alt="trace">
   </a>
 </td>
 <td>
-  <a href="https://thalium.github.io/blog/posts/img/off-the-grid/screen_6.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/off-the-grid/screen_6.png" alt="trace">
+  <a href="https://blog.thalium.re/posts/img/off-the-grid/screen_6.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/off-the-grid/screen_6.png" alt="trace">
   </a>
 </td>
 </tr>
@@ -302,19 +301,19 @@ in our case, will allow us to decode the bursts into 128x64 images:</p>
   
     
       <div class="tag">
-        <a href="https://thalium.github.io/blog/tags/ctf">#CTF</a>
+        <a href="https://blog.thalium.re/tags/ctf">#CTF</a>
       </div>
     
       <div class="tag">
-        <a href="https://thalium.github.io/blog/tags/writeup">#Writeup</a>
+        <a href="https://blog.thalium.re/tags/writeup">#Writeup</a>
       </div>
     
       <div class="tag">
-        <a href="https://thalium.github.io/blog/tags/cyberapocalypse2021">#CyberApocalypse2021</a>
+        <a href="https://blog.thalium.re/tags/cyberapocalypse2021">#CyberApocalypse2021</a>
       </div>
     
       <div class="tag">
-        <a href="https://thalium.github.io/blog/tags/hardware">#Hardware</a>
+        <a href="https://blog.thalium.re/tags/hardware">#Hardware</a>
       </div>
     
   
@@ -357,7 +356,7 @@ in our case, will allow us to decode the bursts into 128x64 images:</p>
   
 
   <div class="social-link">
-  <a href="https://thalium.github.io/blog/index.xml" target="_blank">RSS</a>
+  <a href="https://blog.thalium.re/index.xml" target="_blank">RSS</a>
   </div>
 
 </div>

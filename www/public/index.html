@@ -1,0 +1,689 @@
+
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+<meta charset="utf-8" />
+<meta name="author" content="Thalium Team" />
+<meta name="description" content="Thalium blog." />
+<meta name="keywords" content="blog, tech" />
+<meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
+<meta name="generator" content="Hugo 0.108.0">
+
+<link rel="canonical" href="http://example.org/">
+<meta property="og:title" content="THALIUM" />
+<meta property="og:description" content="" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="http://example.org/" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="THALIUM"/>
+<meta name="twitter:description" content=""/>
+
+
+<meta itemprop="name" content="THALIUM">
+<meta itemprop="description" content="">
+
+<link rel="stylesheet" href="http://example.org/css/layout.css" />
+
+
+<link rel="stylesheet" href="http://example.org/css/default-dark.css" />
+
+
+<link rel="icon" href="http://example.org/favicon.ico" />
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-141692648-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+<title>
+
+
+     THALIUM 
+
+</title>
+
+
+
+<script>
+  MathJax = {
+    tex: {
+      inlineMath: [['∳', '∳']],   
+      displayMath: [['∳∳','∳∳']],
+      processEscapes: true,
+    },
+    svg: {
+      fontCache: 'global'
+    }
+  };
+</script>
+<script type="text/javascript" id="MathJax-script" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+</script>
+
+</head>
+
+
+<body>
+  <style>
+  @font-face {
+    font-family: 'days_one';
+    src: url('/blog/days_one.ttf') format('truetype');
+  }
+  .siteTitle {
+    margin-top: 24px;
+  }
+  .siteTitle img {
+    display: inline-block;
+    vertical-align: middle;
+    margin-top: -24px;
+    margin-right: -10px;
+  }
+  .siteTitle span {
+    font-family: 'days_one', Fallback, sans-serif;
+    color: white;
+    font-size: 160%;
+  }
+  </style>
+<div class="main">
+<header>
+
+<div class="header-bar">
+
+  <nav>
+    <div class="siteTitle">
+      <a href="http://example.org/">
+        <img src="http://example.org/shard_only_no_background.png" width=12%></img>
+        <span>THALIUM</span>
+      </a>
+    </div> 
+
+    
+    
+    <a class="nav-item" href="http://example.org/posts/"><div class="nav-item-title">Posts</div></a>
+    
+    <a class="nav-item" href="http://example.org/joinus/"><div class="nav-item-title">Join Us</div></a>
+    
+    <a class="nav-item" href="http://example.org/about/"><div class="nav-item-title">About</div></a>
+    
+
+  </nav>
+
+  
+<div class="social-links-header">
+
+  
+  <a href="mailto:contact@thalium.re"><div class="social-link">Email</div></a>
+  
+
+  
+  <a href="https://github.com/thalium" target="_blank"><div class="social-link">Github</div></a>
+  
+
+  
+
+  
+  <a href="https://twitter.com/thalium_team" target="_blank"><div class="social-link">Twitter</div></a>
+  
+
+  
+
+</div>
+
+
+</div>
+
+
+</header>
+
+
+<main>
+
+
+  
+    <article class="post-preview">
+
+  <header>
+    <h2 class="title"> <a href='http://example.org/posts/pivoting_to_the_secure_world/'> ARM TrustZone: pivoting to the secure world</a> </h2>
+    <div class="meta">
+      <div class="date">
+        24 Mar, 2023
+        by 
+          <a href='https://twitter.com/thalium_team'>Anonymous</a>
+        
+      </div>
+      
+<div class="tags">
+  
+</div>
+
+    </div>
+
+  </header>
+
+  <div class="summary">
+    <ol>
+<li>Discovery of two vulnerabilities in secure world components</li>
+<li>Exploitation to get code execution in a trusted driver, while not having a debugger for this obscure environment</li>
+<li>Leverage of aarch32 T32 instruction set to find nice stack pivots</li>
+<li>Turning an arbitrary write into an arbitrary code execution</li>
+</ol>
+  </div>
+
+  <div class="rmore">
+    <a href='http://example.org/posts/pivoting_to_the_secure_world/' class="rmore">Read more</a>
+  </div>
+
+
+</article>
+
+
+    <article class="post-preview">
+
+  <header>
+    <h2 class="title"> <a href='http://example.org/posts/rdpegfx/'> Fuzzing RDPEGFX with &#34;what the fuzz&#34;</a> </h2>
+    <div class="meta">
+      <div class="date">
+        14 Oct, 2022
+        by 
+          Colas Le Guernic, Jérémy Rubert, and Anonymous from Thalium team
+        
+      </div>
+      
+<div class="tags">
+  
+    
+      <div class="tag">
+        <a href="http://example.org/tags/rdp">#RDP</a>
+      </div>
+    
+      <div class="tag">
+        <a href="http://example.org/tags/fuzzing">#Fuzzing</a>
+      </div>
+    
+      <div class="tag">
+        <a href="http://example.org/tags/cve">#CVE</a>
+      </div>
+    
+      <div class="tag">
+        <a href="http://example.org/tags/vulnerability-research">#Vulnerability Research</a>
+      </div>
+    
+  
+</div>
+
+    </div>
+
+  </header>
+
+  <div class="summary">
+    Microsoft’s Remote Desktop Protocol (RDP) client was fuzzed by various teams in the past few years, it thus seemed like a good target to try a recent snapshot fuzzer: <a href="https://github.com/0vercl0k/wtf">what the fuzz (wtf)</a> (of which we are only users). In this companion post to our <a href="https://www.hexacon.fr/conference/speakers/#fuzzing_rdpegfx">Hexacon 2022 talk</a> (<a href="http://example.org/posts/misc/rdpegfx/Hexacon2022-Fuzzing_RDPEGFX_with_wtf.pdf">slides</a>, <a href="https://youtu.be/4pftjmKqeoM">video</a>) we’ll show how we took advantage of wtf flexibility in order to efficiently fuzz the RDPEGFX channel of Microsoft RDP client and uncover <a href="https://msrc.microsoft.com/update-guide/en-US/vulnerability/CVE-2022-30221">CVE-2022-30221</a>.
+  </div>
+
+  <div class="rmore">
+    <a href='http://example.org/posts/rdpegfx/' class="rmore">Read more</a>
+  </div>
+
+
+</article>
+
+
+    <article class="post-preview">
+
+  <header>
+    <h2 class="title"> <a href='http://example.org/posts/deserialization-bug-through-rdp-smart-card-extension/'> Remote Deserialization Bug in Microsoft&#39;s RDP Client through Smart Card Extension (CVE-2021-38666)</a> </h2>
+    <div class="meta">
+      <div class="date">
+        10 Dec, 2021
+        by 
+          Valentino Ricotta
+        
+      </div>
+      
+<div class="tags">
+  
+    
+      <div class="tag">
+        <a href="http://example.org/tags/rdp">#RDP</a>
+      </div>
+    
+      <div class="tag">
+        <a href="http://example.org/tags/exploit">#Exploit</a>
+      </div>
+    
+      <div class="tag">
+        <a href="http://example.org/tags/cve">#CVE</a>
+      </div>
+    
+      <div class="tag">
+        <a href="http://example.org/tags/vulnerability-research">#Vulnerability Research</a>
+      </div>
+    
+      <div class="tag">
+        <a href="http://example.org/tags/rce">#RCE</a>
+      </div>
+    
+  
+</div>
+
+    </div>
+
+  </header>
+
+  <div class="summary">
+    <p>This is the <strong>third installment</strong> in my three-part series of articles on fuzzing Microsoft&rsquo;s RDP client, where I explain a bug I found by fuzzing the <strong>smart card extension</strong>.</p>
+  </div>
+
+  <div class="rmore">
+    <a href='http://example.org/posts/deserialization-bug-through-rdp-smart-card-extension/' class="rmore">Read more</a>
+  </div>
+
+
+</article>
+
+
+    <article class="post-preview">
+
+  <header>
+    <h2 class="title"> <a href='http://example.org/posts/leaking-aslr-through-rdp-printer-cache-registry/'> Remote ASLR Leak in Microsoft&#39;s RDP Client through Printer Cache Registry (CVE-2021-38665)</a> </h2>
+    <div class="meta">
+      <div class="date">
+        10 Dec, 2021
+        by 
+          Valentino Ricotta
+        
+      </div>
+      
+<div class="tags">
+  
+    
+      <div class="tag">
+        <a href="http://example.org/tags/rdp">#RDP</a>
+      </div>
+    
+      <div class="tag">
+        <a href="http://example.org/tags/exploit">#Exploit</a>
+      </div>
+    
+      <div class="tag">
+        <a href="http://example.org/tags/cve">#CVE</a>
+      </div>
+    
+      <div class="tag">
+        <a href="http://example.org/tags/vulnerability-research">#Vulnerability Research</a>
+      </div>
+    
+      <div class="tag">
+        <a href="http://example.org/tags/aslr">#ASLR</a>
+      </div>
+    
+  
+</div>
+
+    </div>
+
+  </header>
+
+  <div class="summary">
+    <p>This is the <strong>second installment</strong> in my three-part series of articles on fuzzing Microsoft&rsquo;s RDP client. I will explain a bug I found by fuzzing the <strong>printer sub-protocol</strong>, and how I exploited it.</p>
+  </div>
+
+  <div class="rmore">
+    <a href='http://example.org/posts/leaking-aslr-through-rdp-printer-cache-registry/' class="rmore">Read more</a>
+  </div>
+
+
+</article>
+
+
+    <article class="post-preview">
+
+  <header>
+    <h2 class="title"> <a href='http://example.org/posts/fuzzing-microsoft-rdp-client-using-virtual-channels/'> Fuzzing Microsoft&#39;s RDP Client using Virtual Channels: Overview &amp; Methodology</a> </h2>
+    <div class="meta">
+      <div class="date">
+        10 Nov, 2021
+        by 
+          Valentino Ricotta
+        
+      </div>
+      
+<div class="tags">
+  
+    
+      <div class="tag">
+        <a href="http://example.org/tags/rdp">#RDP</a>
+      </div>
+    
+      <div class="tag">
+        <a href="http://example.org/tags/fuzzing">#Fuzzing</a>
+      </div>
+    
+      <div class="tag">
+        <a href="http://example.org/tags/winafl">#WinAFL</a>
+      </div>
+    
+      <div class="tag">
+        <a href="http://example.org/tags/vulnerability-research">#Vulnerability Research</a>
+      </div>
+    
+      <div class="tag">
+        <a href="http://example.org/tags/cve">#CVE</a>
+      </div>
+    
+  
+</div>
+
+    </div>
+
+  </header>
+
+  <div class="summary">
+    <p>This article begins my three-part series on fuzzing Microsoft&rsquo;s RDP client. In this <strong>first installment</strong>, I set up a methodology for <strong>fuzzing Virtual Channels</strong> using WinAFL and share some of my findings.</p>
+  </div>
+
+  <div class="rmore">
+    <a href='http://example.org/posts/fuzzing-microsoft-rdp-client-using-virtual-channels/' class="rmore">Read more</a>
+  </div>
+
+
+</article>
+
+
+    <article class="post-preview">
+
+  <header>
+    <h2 class="title"> <a href='http://example.org/posts/ecw2021-writeup/'> ECW 2021 - WriteUp</a> </h2>
+    <div class="meta">
+      <div class="date">
+        25 Oct, 2021
+        by 
+          Thalium team
+        
+      </div>
+      
+<div class="tags">
+  
+    
+      <div class="tag">
+        <a href="http://example.org/tags/ctf">#CTF</a>
+      </div>
+    
+      <div class="tag">
+        <a href="http://example.org/tags/writeup">#Writeup</a>
+      </div>
+    
+      <div class="tag">
+        <a href="http://example.org/tags/ecw-2021">#ECW 2021</a>
+      </div>
+    
+      <div class="tag">
+        <a href="http://example.org/tags/reverse-engineering">#Reverse Engineering</a>
+      </div>
+    
+      <div class="tag">
+        <a href="http://example.org/tags/exploitation">#Exploitation</a>
+      </div>
+    
+  
+</div>
+
+    </div>
+
+  </header>
+
+  <div class="summary">
+    <p>For the <a href="https://www.european-cyber-week.eu/">European Cyber Week</a> CTF 2021 Thalium created some challenges in our core competencies: reverse and exploitation. This blog post presents some of the write-ups:</p>
+<ul>
+<li><a href="#chest">Chest (36 solve) - reverse</a></li>
+<li><a href="#fsb-as-a-service">FSB as a service (3 solve) - exploitation</a></li>
+<li><a href="#wysiwyg">WYSIWYG (3 solve) - reverse</a></li>
+<li>Pipe Dream (1 solve) - reverse
+<ul>
+<li>the author posted his solution on <a href="https://face.0xff.re/posts/ecw-ctf-2021-pipe-dream-writeup/">his personal blog</a></li>
+</ul>
+</li>
+</ul>
+<p>Thalium&rsquo;s challenges have been less resolved than others. They were not that difficult, but probably a bit more unexpected. A few additional challenges designed by Thalium are:</p>
+  </div>
+
+  <div class="rmore">
+    <a href='http://example.org/posts/ecw2021-writeup/' class="rmore">Read more</a>
+  </div>
+
+
+</article>
+
+
+    <article class="post-preview">
+
+  <header>
+    <h2 class="title"> <a href='http://example.org/posts/nt_py_icebox/'> NT objects access tracing</a> </h2>
+    <div class="meta">
+      <div class="date">
+        7 Jun, 2021
+        by 
+          <a href='https://twitter.com/_anyfun'>Arnaud Gatignol</a>
+        
+      </div>
+      
+<div class="tags">
+  
+</div>
+
+    </div>
+
+  </header>
+
+  <div class="summary">
+    Draw me a map As homework during the lockdown, I wanted to automate the attack surface analysis of a target on Windows. The main objective was to construct a view of a software architecture to highlight the attack surface (whether remote or local).
+The software architecture can be composed of several elements:
+processes privileges ipc etc Usually, software architecture analysis is done with tools that give a view at a specific time (ProcessHacker, WinObjEx, etc).
+  </div>
+
+  <div class="rmore">
+    <a href='http://example.org/posts/nt_py_icebox/' class="rmore">Read more</a>
+  </div>
+
+
+</article>
+
+
+    <article class="post-preview">
+
+  <header>
+    <h2 class="title"> <a href='http://example.org/posts/sstic_infra_windows/'> SSTIC : how to setup a ctf win10 pwn user environment</a> </h2>
+    <div class="meta">
+      <div class="date">
+        2 Jun, 2021
+        by 
+          <a href='https://twitter.com/thalium_team'>Thalium</a>
+        
+      </div>
+      
+<div class="tags">
+  
+</div>
+
+    </div>
+
+  </header>
+
+  <div class="summary">
+    Introduction This post aims to present how to easily setup a lightweight secure user pwning environment for Windows. From your binary challenge communicating with stdin/stdout, this environment provides a multi-client broker listening on a socket, redirecting it to the IO of your binary, and executing it in a jail. This environment is mainly based on the project AppJaillauncher-rs from trailofbits, with some security fixes and some tips to easily setup the RW rights to the system files from the jail.
+  </div>
+
+  <div class="rmore">
+    <a href='http://example.org/posts/sstic_infra_windows/' class="rmore">Read more</a>
+  </div>
+
+
+</article>
+
+
+    <article class="post-preview">
+
+  <header>
+    <h2 class="title"> <a href='http://example.org/posts/apocalypse2021-artillery/'> Cyber Apocalypse 2021 5/5 - Artillery</a> </h2>
+    <div class="meta">
+      <div class="date">
+        28 Apr, 2021
+        by 
+          pistach3
+        
+      </div>
+      
+<div class="tags">
+  
+    
+      <div class="tag">
+        <a href="http://example.org/tags/ctf">#CTF</a>
+      </div>
+    
+      <div class="tag">
+        <a href="http://example.org/tags/writeup">#Writeup</a>
+      </div>
+    
+      <div class="tag">
+        <a href="http://example.org/tags/cyberapocalypse2021">#CyberApocalypse2021</a>
+      </div>
+    
+  
+</div>
+
+    </div>
+
+  </header>
+
+  <div class="summary">
+    <p><strong>Artillery</strong> was a web challenge of the Cyber Apocalypse 2021 CTF organized by HackTheBox. We were given the source code of the server to help us solve the challenge. This challenge was a nice opportunity to learn more about <strong>XXE</strong> vulnerabilities.</p>
+  </div>
+
+  <div class="rmore">
+    <a href='http://example.org/posts/apocalypse2021-artillery/' class="rmore">Read more</a>
+  </div>
+
+
+</article>
+
+
+    <article class="post-preview">
+
+  <header>
+    <h2 class="title"> <a href='http://example.org/posts/apocalypse2021-discovery/'> Cyber Apocalypse 2021 4/5 - Discovery</a> </h2>
+    <div class="meta">
+      <div class="date">
+        28 Apr, 2021
+        by 
+          Thalium team
+        
+      </div>
+      
+<div class="tags">
+  
+    
+      <div class="tag">
+        <a href="http://example.org/tags/ctf">#CTF</a>
+      </div>
+    
+      <div class="tag">
+        <a href="http://example.org/tags/writeup">#Writeup</a>
+      </div>
+    
+      <div class="tag">
+        <a href="http://example.org/tags/cyberapocalypse2021">#CyberApocalypse2021</a>
+      </div>
+    
+  
+</div>
+
+    </div>
+
+  </header>
+
+  <div class="summary">
+    <p>One of the least solved challenges, yet probably not the most difficult one. It is a Hardware challenge, though it is significantly different from the other challenges of this category. The first thing to spot is that when starting the challenge machine, we have access to two network services:</p>
+<ul>
+<li>an HTTP server, requesting an authentication</li>
+<li>an AMQP broker, <code>rabbitmq</code></li>
+</ul>
+  </div>
+
+  <div class="rmore">
+    <a href='http://example.org/posts/apocalypse2021-discovery/' class="rmore">Read more</a>
+  </div>
+
+
+</article>
+
+
+
+
+<div class="page-nav">
+  <div class="page-prev">
+    
+  </div> 
+
+  <div class="page-num">
+    1/2
+  </div> 
+
+  <div class="page-next">
+    
+    <a href="http://example.org/page/2/" title="Next page"> >> </a>
+    
+  </div> 
+</div> 
+
+
+</main>
+
+  <footer>
+
+  <div class="social-links-footer">
+
+  
+  <a href="mailto:contact@thalium.re"><div class="social-link">Email</div></a>
+  
+
+  
+  <a href="https://github.com/thalium" target="_blank"><div class="social-link">GitHub</div></a>
+  
+
+  
+
+  
+  <a href="https://twitter.com/thalium_team" target="_blank"><div class="social-link">Twitter</div></a>
+  
+
+  
+
+  <div class="social-link">
+  <a href="http://example.org/index.xml" target="_blank">RSS</a>
+  </div>
+
+</div>
+
+
+  <div class="copyright"> Copyright (c) 2020, all rights reserved. </div>
+
+  <div class="poweredby">
+    Powered by <a href="https://gohugo.io/">Hugo</a>.
+  </div>
+
+  </footer>
+
+</div> 
+
+</body>
+</html>
+

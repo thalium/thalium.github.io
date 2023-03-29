@@ -2,18 +2,18 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>RCE on THALIUM</title>
-    <link>https://thalium.github.io/blog/tags/rce/</link>
+    <link>https://blog.thalium.re/tags/rce/</link>
     <description>Recent content in RCE on THALIUM</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>Copyright (c) 2020, all rights reserved.</copyright>
-    <lastBuildDate>Fri, 10 Dec 2021 06:00:01 +0100</lastBuildDate><atom:link href="https://thalium.github.io/blog/tags/rce/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 10 Dec 2021 06:00:01 +0100</lastBuildDate><atom:link href="https://blog.thalium.re/tags/rce/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Remote Deserialization Bug in Microsoft&#39;s RDP Client through Smart Card Extension (CVE-2021-38666)</title>
-      <link>https://thalium.github.io/blog/posts/deserialization-bug-through-rdp-smart-card-extension/</link>
+      <link>https://blog.thalium.re/posts/deserialization-bug-through-rdp-smart-card-extension/</link>
       <pubDate>Fri, 10 Dec 2021 06:00:01 +0100</pubDate>
       
-      <guid>https://thalium.github.io/blog/posts/deserialization-bug-through-rdp-smart-card-extension/</guid>
+      <guid>https://blog.thalium.re/posts/deserialization-bug-through-rdp-smart-card-extension/</guid>
       <description>&lt;p&gt;This is the &lt;strong&gt;third installment&lt;/strong&gt; in my three-part series of articles on fuzzing Microsoft&amp;rsquo;s RDP client, where I explain a bug I found by fuzzing the &lt;strong&gt;smart card extension&lt;/strong&gt;.&lt;/p&gt;</description>
     </item>
     

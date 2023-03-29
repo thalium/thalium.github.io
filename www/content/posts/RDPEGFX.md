@@ -16,7 +16,7 @@ summary: >
 
 Last year, in 2021, Valentino Ricotta performed his first internship with us working on fuzzing RDP clients.
 He found some vulnerabilities and got four CVEs by fuzzing various RDP clients.
-Most of his work was presented [here in a three blog posts series](https://thalium.github.io/blog/posts/fuzzing-microsoft-rdp-client-using-virtual-channels/).
+Most of his work was presented [here in a three blog posts series](/posts/fuzzing-microsoft-rdp-client-using-virtual-channels/).
 Valentino's setup was built around WinAFL and, despite his successes, had some inherent limitations:
 
 - some channels were not available;
@@ -32,7 +32,7 @@ This work was presented at [Hexacon 2022](https://www.hexacon.fr/conference/spea
 
 # RDP and the Graphics Pipeline Extension
 
-We will not present Microsoft's Remote Desktop Protocol (RDP) as it has already been discussed [here](https://thalium.github.io/blog/posts/fuzzing-microsoft-rdp-client-using-virtual-channels/#the-remote-desktop-protocol).
+We will not present Microsoft's Remote Desktop Protocol (RDP) as it has already been discussed [here](/posts/fuzzing-microsoft-rdp-client-using-virtual-channels/#the-remote-desktop-protocol).
 The only thing to know is that RDP is not limited to forwarding keyboard and screen between a client and a server, but can also forward various devices through specific channels as well as define extension to those channels.
 
 RDPEGFX is such an extension, the Graphics Pipeline Extension.
@@ -114,7 +114,7 @@ We did not use lockmem either. One of our colleagues suggested we start Windows 
 
 Indeed the KVM and whv backends of wtf need to set breakpoints in the memory dump to record coverage before any execution.
 To do that, wtf needs to translate virtual addresses into physical ones.
-We won't enter into the details here, but wtf implements the generic VAT case and we added the ability to access in-transition pages in [pull request #136](https://github.com/0vercl0k/wtf/pull/136). Interested readers can take a look at [Windows full memory introspection with IceBox](https://thalium.github.io/blog/posts/windows-full-memory-introspection-with-icebox/#windows-virtual-address-translation) to know more about Windows VAT and WinPE mode.
+We won't enter into the details here, but wtf implements the generic VAT case and we added the ability to access in-transition pages in [pull request #136](https://github.com/0vercl0k/wtf/pull/136). Interested readers can take a look at [Windows full memory introspection with IceBox](/posts/windows-full-memory-introspection-with-icebox/#windows-virtual-address-translation) to know more about Windows VAT and WinPE mode.
 
 The second reason why getting a good snapshot for fuzzing purposes can be hard is more target specific. One has to ensure that the target is in the right state when memory and CPU are dumped.
 As an example, our first snapshot was at the reception of the first message by the client on the RDPGFX channel, but this message must be of type `RDPGFX_CAPS_CONFIRM_PDU`.

@@ -7,14 +7,13 @@
 <meta name="description" content="Thalium blog." />
 <meta name="keywords" content="blog, tech" />
 <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
-<meta name="generator" content="Hugo 0.95.0" />
+<meta name="generator" content="Hugo 0.108.0">
 
-<link rel="canonical" href="https://thalium.github.io/blog/tags/fuzzing/">
+<link rel="canonical" href="https://blog.thalium.re/tags/fuzzing/">
 <meta property="og:title" content="Fuzzing" />
 <meta property="og:description" content="" />
 <meta property="og:type" content="website" />
-<meta property="og:url" content="https://thalium.github.io/blog/tags/fuzzing/" />
-
+<meta property="og:url" content="https://blog.thalium.re/tags/fuzzing/" />
 
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Fuzzing"/>
@@ -24,13 +23,13 @@
 <meta itemprop="name" content="Fuzzing">
 <meta itemprop="description" content="">
 
-<link rel="stylesheet" href="https://thalium.github.io/blog/css/layout.css" />
+<link rel="stylesheet" href="https://blog.thalium.re/css/layout.css" />
 
 
-<link rel="stylesheet" href="https://thalium.github.io/blog/css/default-dark.css" />
+<link rel="stylesheet" href="https://blog.thalium.re/css/default-dark.css" />
 
 
-<link rel="icon" href="https://thalium.github.io/blog/favicon.ico" />
+<link rel="icon" href="https://blog.thalium.re/favicon.ico" />
 
 
 <script type="application/javascript">
@@ -101,19 +100,19 @@ if (!doNotTrack) {
 
   <nav>
     <div class="siteTitle">
-      <a href="https://thalium.github.io/blog/">
-        <img src="https://thalium.github.io/blog/shard_only_no_background.png" width=12%></img>
+      <a href="https://blog.thalium.re/">
+        <img src="https://blog.thalium.re/shard_only_no_background.png" width=12%></img>
         <span>THALIUM</span>
       </a>
     </div> 
 
     
     
-    <a class="nav-item" href="https://thalium.github.io/blog/posts/"><div class="nav-item-title">Posts</div></a>
+    <a class="nav-item" href="https://blog.thalium.re/posts/"><div class="nav-item-title">Posts</div></a>
     
-    <a class="nav-item" href="https://thalium.github.io/blog/joinus/"><div class="nav-item-title">Join Us</div></a>
+    <a class="nav-item" href="https://blog.thalium.re/joinus/"><div class="nav-item-title">Join Us</div></a>
     
-    <a class="nav-item" href="https://thalium.github.io/blog/about/"><div class="nav-item-title">About</div></a>
+    <a class="nav-item" href="https://blog.thalium.re/about/"><div class="nav-item-title">About</div></a>
     
 
   </nav>
@@ -147,14 +146,14 @@ if (!doNotTrack) {
 
 
 <h2 class="term-list-title">
-    <a href="https://thalium.github.io/blog/tags/fuzzing/" class="linktopost">tag: Fuzzing</a>
+    <a href="https://blog.thalium.re/tags/fuzzing/" class="linktopost">tag: Fuzzing</a>
 </h2>
 
 
     <article class="post-preview">
 
   <header>
-    <h2 class="title"> <a href='https://thalium.github.io/blog/posts/rdpegfx/'> Fuzzing RDPEGFX with &#34;what the fuzz&#34;</a> </h2>
+    <h2 class="title"> <a href='https://blog.thalium.re/posts/rdpegfx/'> Fuzzing RDPEGFX with &#34;what the fuzz&#34;</a> </h2>
     <div class="meta">
       <div class="date">
         14 Oct, 2022
@@ -167,19 +166,19 @@ if (!doNotTrack) {
   
     
       <div class="tag">
-        <a href="https://thalium.github.io/blog/tags/rdp">#RDP</a>
+        <a href="https://blog.thalium.re/tags/rdp">#RDP</a>
       </div>
     
       <div class="tag">
-        <a href="https://thalium.github.io/blog/tags/fuzzing">#Fuzzing</a>
+        <a href="https://blog.thalium.re/tags/fuzzing">#Fuzzing</a>
       </div>
     
       <div class="tag">
-        <a href="https://thalium.github.io/blog/tags/cve">#CVE</a>
+        <a href="https://blog.thalium.re/tags/cve">#CVE</a>
       </div>
     
       <div class="tag">
-        <a href="https://thalium.github.io/blog/tags/vulnerability-research">#Vulnerability Research</a>
+        <a href="https://blog.thalium.re/tags/vulnerability-research">#Vulnerability Research</a>
       </div>
     
   
@@ -190,11 +189,11 @@ if (!doNotTrack) {
   </header>
 
   <div class="summary">
-    Microsoft’s Remote Desktop Protocol (RDP) client was fuzzed by various teams in the past few years, it thus seemed like a good target to try a recent snapshot fuzzer: <a href="https://github.com/0vercl0k/wtf">what the fuzz (wtf)</a> (of which we are only users). In this companion post to our <a href="https://www.hexacon.fr/conference/speakers/#fuzzing_rdpegfx">Hexacon 2022 talk</a> (<a href="https://thalium.github.io/blog/posts/misc/rdpegfx/Hexacon2022-Fuzzing_RDPEGFX_with_wtf.pdf">slides</a>, <a href="https://youtu.be/4pftjmKqeoM">video</a>) we’ll show how we took advantage of wtf flexibility in order to efficiently fuzz the RDPEGFX channel of Microsoft RDP client and uncover <a href="https://msrc.microsoft.com/update-guide/en-US/vulnerability/CVE-2022-30221">CVE-2022-30221</a>.
+    Microsoft’s Remote Desktop Protocol (RDP) client was fuzzed by various teams in the past few years, it thus seemed like a good target to try a recent snapshot fuzzer: <a href="https://github.com/0vercl0k/wtf">what the fuzz (wtf)</a> (of which we are only users). In this companion post to our <a href="https://www.hexacon.fr/conference/speakers/#fuzzing_rdpegfx">Hexacon 2022 talk</a> (<a href="https://blog.thalium.re/posts/misc/rdpegfx/Hexacon2022-Fuzzing_RDPEGFX_with_wtf.pdf">slides</a>, <a href="https://youtu.be/4pftjmKqeoM">video</a>) we’ll show how we took advantage of wtf flexibility in order to efficiently fuzz the RDPEGFX channel of Microsoft RDP client and uncover <a href="https://msrc.microsoft.com/update-guide/en-US/vulnerability/CVE-2022-30221">CVE-2022-30221</a>.
   </div>
 
   <div class="rmore">
-    <a href='https://thalium.github.io/blog/posts/rdpegfx/' class="rmore">Read more</a>
+    <a href='https://blog.thalium.re/posts/rdpegfx/' class="rmore">Read more</a>
   </div>
 
 
@@ -204,7 +203,7 @@ if (!doNotTrack) {
     <article class="post-preview">
 
   <header>
-    <h2 class="title"> <a href='https://thalium.github.io/blog/posts/fuzzing-microsoft-rdp-client-using-virtual-channels/'> Fuzzing Microsoft&#39;s RDP Client using Virtual Channels: Overview &amp; Methodology</a> </h2>
+    <h2 class="title"> <a href='https://blog.thalium.re/posts/fuzzing-microsoft-rdp-client-using-virtual-channels/'> Fuzzing Microsoft&#39;s RDP Client using Virtual Channels: Overview &amp; Methodology</a> </h2>
     <div class="meta">
       <div class="date">
         10 Nov, 2021
@@ -217,23 +216,23 @@ if (!doNotTrack) {
   
     
       <div class="tag">
-        <a href="https://thalium.github.io/blog/tags/rdp">#RDP</a>
+        <a href="https://blog.thalium.re/tags/rdp">#RDP</a>
       </div>
     
       <div class="tag">
-        <a href="https://thalium.github.io/blog/tags/fuzzing">#Fuzzing</a>
+        <a href="https://blog.thalium.re/tags/fuzzing">#Fuzzing</a>
       </div>
     
       <div class="tag">
-        <a href="https://thalium.github.io/blog/tags/winafl">#WinAFL</a>
+        <a href="https://blog.thalium.re/tags/winafl">#WinAFL</a>
       </div>
     
       <div class="tag">
-        <a href="https://thalium.github.io/blog/tags/vulnerability-research">#Vulnerability Research</a>
+        <a href="https://blog.thalium.re/tags/vulnerability-research">#Vulnerability Research</a>
       </div>
     
       <div class="tag">
-        <a href="https://thalium.github.io/blog/tags/cve">#CVE</a>
+        <a href="https://blog.thalium.re/tags/cve">#CVE</a>
       </div>
     
   
@@ -248,7 +247,7 @@ if (!doNotTrack) {
   </div>
 
   <div class="rmore">
-    <a href='https://thalium.github.io/blog/posts/fuzzing-microsoft-rdp-client-using-virtual-channels/' class="rmore">Read more</a>
+    <a href='https://blog.thalium.re/posts/fuzzing-microsoft-rdp-client-using-virtual-channels/' class="rmore">Read more</a>
   </div>
 
 
@@ -277,7 +276,7 @@ if (!doNotTrack) {
   
 
   <div class="social-link">
-  <a href="https://thalium.github.io/blog/index.xml" target="_blank">RSS</a>
+  <a href="https://blog.thalium.re/index.xml" target="_blank">RSS</a>
   </div>
 
 </div>

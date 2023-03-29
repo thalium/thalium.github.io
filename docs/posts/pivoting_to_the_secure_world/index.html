@@ -7,9 +7,9 @@
 <meta name="description" content="Thalium blog." />
 <meta name="keywords" content="blog, tech" />
 <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
-<meta name="generator" content="Hugo 0.95.0" />
+<meta name="generator" content="Hugo 0.108.0">
 
-<link rel="canonical" href="https://thalium.github.io/blog/posts/pivoting_to_the_secure_world/">
+<link rel="canonical" href="https://blog.thalium.re/posts/pivoting_to_the_secure_world/">
 <meta property="og:title" content="ARM TrustZone: pivoting to the secure world" />
 <meta property="og:description" content="
 Discovery of two vulnerabilities in secure world components
@@ -18,10 +18,9 @@ Leverage of aarch32 T32 instruction set to find nice stack pivots
 Turning an arbitrary write into an arbitrary code execution
 " />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://thalium.github.io/blog/posts/pivoting_to_the_secure_world/" /><meta property="article:section" content="posts" />
+<meta property="og:url" content="https://blog.thalium.re/posts/pivoting_to_the_secure_world/" /><meta property="article:section" content="posts" />
 <meta property="article:published_time" content="2023-03-24T13:37:00+00:00" />
 <meta property="article:modified_time" content="2023-03-24T13:37:00+00:00" />
-
 
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="ARM TrustZone: pivoting to the secure world"/>
@@ -41,16 +40,16 @@ Leverage of aarch32 T32 instruction set to find nice stack pivots
 Turning an arbitrary write into an arbitrary code execution
 "><meta itemprop="datePublished" content="2023-03-24T13:37:00+00:00" />
 <meta itemprop="dateModified" content="2023-03-24T13:37:00+00:00" />
-<meta itemprop="wordCount" content="6496">
+<meta itemprop="wordCount" content="6498">
 <meta itemprop="keywords" content="" />
 
-<link rel="stylesheet" href="https://thalium.github.io/blog/css/layout.css" />
+<link rel="stylesheet" href="https://blog.thalium.re/css/layout.css" />
 
 
-<link rel="stylesheet" href="https://thalium.github.io/blog/css/default-dark.css" />
+<link rel="stylesheet" href="https://blog.thalium.re/css/default-dark.css" />
 
 
-<link rel="icon" href="https://thalium.github.io/blog/favicon.ico" />
+<link rel="icon" href="https://blog.thalium.re/favicon.ico" />
 
 
 <script type="application/javascript">
@@ -121,19 +120,19 @@ if (!doNotTrack) {
 
   <nav>
     <div class="siteTitle">
-      <a href="https://thalium.github.io/blog/">
-        <img src="https://thalium.github.io/blog/shard_only_no_background.png" width=12%></img>
+      <a href="https://blog.thalium.re/">
+        <img src="https://blog.thalium.re/shard_only_no_background.png" width=12%></img>
         <span>THALIUM</span>
       </a>
     </div> 
 
     
     
-    <a class="nav-item" href="https://thalium.github.io/blog/posts/"><div class="nav-item-title">Posts</div></a>
+    <a class="nav-item" href="https://blog.thalium.re/posts/"><div class="nav-item-title">Posts</div></a>
     
-    <a class="nav-item" href="https://thalium.github.io/blog/joinus/"><div class="nav-item-title">Join Us</div></a>
+    <a class="nav-item" href="https://blog.thalium.re/joinus/"><div class="nav-item-title">Join Us</div></a>
     
-    <a class="nav-item" href="https://thalium.github.io/blog/about/"><div class="nav-item-title">About</div></a>
+    <a class="nav-item" href="https://blog.thalium.re/about/"><div class="nav-item-title">About</div></a>
     
 
   </nav>
@@ -185,7 +184,7 @@ if (!doNotTrack) {
 </ul>
 
 
-<img src="https://thalium.github.io/blog/posts/img/pivoting-to-the-secure-world/teegris-ARM-TrustZone.svg" alt="TEEgris names on ARM TrustZone" />
+<img src="https://blog.thalium.re/posts/img/pivoting-to-the-secure-world/teegris-ARM-TrustZone.svg" alt="TEEgris names on ARM TrustZone" />
 
 <p>TEEgris information is rather scarce on the Internet, we have only found a few sources: <a href="#menaniri">Federico menaniri @RISCURE</a>, who exploits several vulnerabilities to gain secure memory write from normal world and <a href="#tarasikov">Alexander tarasikov</a>, who emulates secure boot using <code>qemu</code> and performs <code>afl</code> fuzzing of trusted applets</p>
 <ul>
@@ -204,7 +203,7 @@ if (!doNotTrack) {
 <p>The source code of <code>tz_wormhole</code> is located in <code>drivers/misc/tzdev</code> in Samsung&rsquo;s Android kernel sources.</p>
 
 
-<img src="https://thalium.github.io/blog/posts/img/pivoting-to-the-secure-world/teegris-Samsung-TEE.svg" alt="Samsung TEEgris"/>
+<img src="https://blog.thalium.re/posts/img/pivoting-to-the-secure-world/teegris-Samsung-TEE.svg" alt="Samsung TEEgris"/>
 
 <p>TEEGris is the S-EL1 component, and features are brought by the trusted applets, living in S-EL0.</p>
 <h2 id="finding-the-trusted-applets">Finding the trusted applets</h2>
@@ -287,7 +286,7 @@ $ hexdump -C 00000000-0000-0000-0000-534543535452
 <p>IDA is now capable of understanding the TEE API facet of trusted applets and drivers:</p>
 
 
-<img src="https://thalium.github.io/blog/posts/img/pivoting-to-the-secure-world/ida-Typed_functions.png" alt="Typed functions"/>
+<img src="https://blog.thalium.re/posts/img/pivoting-to-the-secure-world/ida-Typed_functions.png" alt="Typed functions"/>
 
 <p>We now have a nice environment to perform static analysis of the keymaster trusted applet. It is named <code>00000000-0000-0000-0000-4b45594d5354</code> in tzar archive. Note that <code>hexlify(b'KEYMST') == b'4b45594d5354'</code></p>
 <h2 id="gaining-control-of-keymst-trustlet">Gaining control of KEYMST trustlet</h2>
@@ -316,13 +315,13 @@ $ <font color="#66d9ef">pwn</font> checksec KEYMST
 <p>Starting with <code>TA_InvokeCommandEntryPoiny</code>, we quickly jump to <code>tz_process_command</code>, and after a while end up in a small function doing a weird <code>memcpy</code>:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">__int64</span> <span style="color:#a6e22e">hal_rsa_key_get_pub_exp</span>(hal_rsa_key <span style="color:#f92672">*</span>a1)
 </span></span><span style="display:flex;"><span>{
-</span></span><span style="display:flex;"><span>  size_t pub_exp_size; <span style="color:#75715e">// r2
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">size_t</span> pub_exp_size; <span style="color:#75715e">// r2
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>v2; <span style="color:#75715e">// r1
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">__int64</span> v4; <span style="color:#75715e">// [sp+0h] [bp-18h] BYREF
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  pub_exp_size <span style="color:#f92672">=</span> a1<span style="color:#f92672">-&gt;</span>pub_exp_size;
 </span></span><span style="display:flex;"><span>  v2 <span style="color:#f92672">=</span> (<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>)<span style="color:#f92672">&amp;</span>a1<span style="color:#f92672">-&gt;</span>content <span style="color:#f92672">+</span> a1<span style="color:#f92672">-&gt;</span>pub_exp_offset;
 </span></span><span style="display:flex;"><span>  v4 <span style="color:#f92672">=</span> <span style="color:#ae81ff">0LL</span>;
-</span></span><span style="display:flex;"><span>  memcpy(<span style="color:#f92672">&amp;</span>v4, v2, pub_exp_size); <span style="color:#75715e">/* pub_exp_size is controlled by normal world app */</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">memcpy</span>(<span style="color:#f92672">&amp;</span>v4, v2, pub_exp_size); <span style="color:#75715e">/* pub_exp_size is controlled by normal world app */</span>
 </span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> v4;
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div><p>This function is called when importing a PKCS8 formatted RSA private key. The public exponent of the RSA key, which is an attacker controlled value, is copied onto the stack. While legitimate public exponents are generally small, the key format brings no guarantee that its value fits in a 64 bits integer. The format of the private key by itself does not have any restrictions, but the implementation does verify some assumptions about the key, among which the size of the public exponent, that should be less than 512 bytes. All in all, we can <strong>overwrite up to <code>0x200-8=0x1f8</code> bytes on the stack</strong>.</p>
@@ -422,7 +421,7 @@ $ <font color="#66d9ef">pwn</font> checksec KEYMST
 <p>Thanks to our emulator, <code>KEYMST</code> can be loaded. However, we do not have a request example capable of reaching the vulnerability location. To help us find a correct message, we have created a feedback loop: once in main processing loop, we map our input parameter and call to <code>TA_InvokeCommandEntryPoint</code>. <code>qiling</code> then generates a <code>drcov</code> coverage of the execution, with which we feed the IDA and lighthouse plugin. Rinse and repeat, and we have successfully crafted an input complying with the checks made and allowing us to control most of the input shared buffer. The input buffer shown below is 87856 bytes long, and the yellow bars indicate memory areas read while processing the normal world request:
 
 
-<img src="https://thalium.github.io/blog/posts/img/pivoting-to-the-secure-world/shared-mem-with-zoom.png" alt="Input buffer constraints" style="background-color:white;"/>
+<img src="https://blog.thalium.re/posts/img/pivoting-to-the-secure-world/shared-mem-with-zoom.png" alt="Input buffer constraints" style="background-color:white;"/>
 
 The input buffer is largely unaccessed: we can freely use it to embed controlled information we will use later, during exploitation. The yellow zones, accessed and mostly checked are the PKCS8 RSA private key and a &ldquo;tags table&rdquo;.</p>
 <h3 id="building-a-ropchain-to-pivot-to-a-subsequent-ropchain">Building a ropchain to pivot to a subsequent ropchain</h3>
@@ -470,16 +469,16 @@ The static analysis of <code>driver/00000000-0000-0000-0000-00535453540b</code> 
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">int</span> v5[<span style="color:#ae81ff">4</span>]; <span style="color:#75715e">// [sp+14h] [bp-18h] BYREF
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">int</span> v6; <span style="color:#75715e">// [sp+24h] [bp-8h]
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  v6 <span style="color:#f92672">=</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">3</span>;
-</span></span><span style="display:flex;"><span>  TEE_MemFill(v4, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">28</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">TEE_MemFill</span>(v4, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">28</span>);
 </span></span><span style="display:flex;"><span>  v4[<span style="color:#ae81ff">0</span>] <span style="color:#f92672">=</span> <span style="color:#ae81ff">130</span>;
 </span></span><span style="display:flex;"><span>  v4[<span style="color:#ae81ff">1</span>] <span style="color:#f92672">=</span> <span style="color:#ae81ff">5</span>;
 </span></span><span style="display:flex;"><span>  v4[<span style="color:#ae81ff">2</span>] <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>  printf(<span style="color:#e6db74">&#34;@echeck: result: %d, cmd_ret0: %d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, v6, v5[<span style="color:#ae81ff">0</span>]);
-</span></span><span style="display:flex;"><span>  v6 <span style="color:#f92672">=</span> TEES_ExecuteCustomHandler(<span style="color:#ae81ff">0xB2000202</span>, v4);
-</span></span><span style="display:flex;"><span>  printf(<span style="color:#e6db74">&#34;##echeck: result: %d, cmd_ret0: %d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, v6, v5[<span style="color:#ae81ff">0</span>]);
-</span></span><span style="display:flex;"><span>  result <span style="color:#f92672">=</span> TEE_MemMove(<span style="color:#f92672">*</span>(_DWORD <span style="color:#f92672">*</span>)(a1 <span style="color:#f92672">+</span> <span style="color:#ae81ff">8</span>), v5, <span style="color:#ae81ff">4</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;@echeck: result: %d, cmd_ret0: %d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, v6, v5[<span style="color:#ae81ff">0</span>]);
+</span></span><span style="display:flex;"><span>  v6 <span style="color:#f92672">=</span> <span style="color:#a6e22e">TEES_ExecuteCustomHandler</span>(<span style="color:#ae81ff">0xB2000202</span>, v4);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;##echeck: result: %d, cmd_ret0: %d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, v6, v5[<span style="color:#ae81ff">0</span>]);
+</span></span><span style="display:flex;"><span>  result <span style="color:#f92672">=</span> <span style="color:#a6e22e">TEE_MemMove</span>(<span style="color:#f92672">*</span>(_DWORD <span style="color:#f92672">*</span>)(a1 <span style="color:#f92672">+</span> <span style="color:#ae81ff">8</span>), v5, <span style="color:#ae81ff">4</span>);
 </span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> ( v6 )
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> printf(<span style="color:#e6db74">&#34;Execute Custom handler failed to get mode : retval %d (%08x)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, v6, v2);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;Execute Custom handler failed to get mode : retval %d (%08x)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, v6, v2);
 </span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> result;
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div><p>The name looks promising, there even exists a system call named <code>TEES_RegisterCustomHandler</code> which we could leverage to perform some sort of install of a new handler. But first, let&rsquo;s analyze the booting image <code>sboot.img</code>. It contains the image of the secure OS, TEEGris, which will be loaded and run at boot. Annex <a href="#sboot-img">Secure reconnaissance</a> describes how to extract OS from it and perform static analysis of system call implementation.
@@ -487,12 +486,12 @@ We see that a verification is carried out on the caller process:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">__int64</span> <span style="color:#66d9ef">__fastcall</span> <span style="color:#a6e22e">sel1_syscall_TEES_ExecuteCustomHandler</span>(<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> a1, <span style="color:#66d9ef">__int64</span> a2)
 </span></span><span style="display:flex;"><span>{
 </span></span><span style="display:flex;"><span>  _BYTE v5[<span style="color:#ae81ff">56</span>]; <span style="color:#75715e">// [xsp+28h] [xbp+28h] BYREF
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> ( <span style="color:#f92672">!</span>sub_FFFFFFFFF01059C4(<span style="color:#ae81ff">0x12u</span>, <span style="color:#ae81ff">1</span>i64) ) <span style="color:#75715e">// looks like a verification
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> ( <span style="color:#f92672">!</span><span style="color:#a6e22e">sub_FFFFFFFFF01059C4</span>(<span style="color:#ae81ff">0x12u</span>, <span style="color:#ae81ff">1</span>i64) ) <span style="color:#75715e">// looks like a verification
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>i64;
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> ( (<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span>)j_sel1_do_copy_from_userspace((<span style="color:#66d9ef">__int64</span>)v5, a2, <span style="color:#ae81ff">56</span>i64) )
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> ( (<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span>)<span style="color:#a6e22e">j_sel1_do_copy_from_userspace</span>((<span style="color:#66d9ef">__int64</span>)v5, a2, <span style="color:#ae81ff">56</span>i64) )
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">14</span>i64;
-</span></span><span style="display:flex;"><span>  sel1_perform_smc(a1, v5, <span style="color:#ae81ff">0x40000000</span>);
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> ( (<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span>)j_sel1_do_copy_to_userspace(a2, (<span style="color:#66d9ef">__int64</span>)v5, <span style="color:#ae81ff">56</span>i64) )
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">sel1_perform_smc</span>(a1, v5, <span style="color:#ae81ff">0x40000000</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> ( (<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span>)<span style="color:#a6e22e">j_sel1_do_copy_to_userspace</span>(a2, (<span style="color:#66d9ef">__int64</span>)v5, <span style="color:#ae81ff">56</span>i64) )
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">14</span>i64;
 </span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>i64;
 </span></span><span style="display:flex;"><span>}
@@ -508,32 +507,32 @@ We see that a verification is carried out on the caller process:</p>
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  _QWORD <span style="color:#f92672">*</span>v15; <span style="color:#75715e">// x25
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">int</span> v16; <span style="color:#75715e">// w19
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> v18; <span style="color:#75715e">// [xsp+5Ch] [xbp+5Ch] BYREF
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  v8 <span style="color:#f92672">=</span> sub_FFFFFFFFF01059C4(<span style="color:#ae81ff">0x12u</span>, <span style="color:#ae81ff">1</span>i64); <span style="color:#75715e">// the very same verification
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  v8 <span style="color:#f92672">=</span> <span style="color:#a6e22e">sub_FFFFFFFFF01059C4</span>(<span style="color:#ae81ff">0x12u</span>, <span style="color:#ae81ff">1</span>i64); <span style="color:#75715e">// the very same verification
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  v9 <span style="color:#f92672">=</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>i64;
 </span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> ( v8 )
 </span></span><span style="display:flex;"><span>  {
 </span></span><span style="display:flex;"><span>    v9 <span style="color:#f92672">=</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">22</span>i64;
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> ( (<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">__int64</span>)(a3 <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>) <span style="color:#f92672">&lt;=</span> <span style="color:#ae81ff">0x3FFFF</span> <span style="color:#f92672">&amp;&amp;</span> a2 <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span> )
 </span></span><span style="display:flex;"><span>    {
-</span></span><span style="display:flex;"><span>      v11 <span style="color:#f92672">=</span> sub_FFFFFFFFF012413C(
-</span></span><span style="display:flex;"><span>              <span style="color:#f92672">*</span>(_QWORD <span style="color:#f92672">*</span>)(((_ReadStatusReg(ARM64_SYSREG(<span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">13</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">4</span>)) <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>) <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0xFFFFFFFFFFFFE000u</span>i64) <span style="color:#f92672">+</span> <span style="color:#ae81ff">0x68</span>) <span style="color:#f92672">+</span> <span style="color:#ae81ff">468</span>i64,
+</span></span><span style="display:flex;"><span>      v11 <span style="color:#f92672">=</span> <span style="color:#a6e22e">sub_FFFFFFFFF012413C</span>(
+</span></span><span style="display:flex;"><span>              <span style="color:#f92672">*</span>(_QWORD <span style="color:#f92672">*</span>)(((<span style="color:#a6e22e">_ReadStatusReg</span>(<span style="color:#a6e22e">ARM64_SYSREG</span>(<span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">13</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">4</span>)) <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>) <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0xFFFFFFFFFFFFE000u</span>i64) <span style="color:#f92672">+</span> <span style="color:#ae81ff">0x68</span>) <span style="color:#f92672">+</span> <span style="color:#ae81ff">468</span>i64,
 </span></span><span style="display:flex;"><span>              <span style="color:#ae81ff">16</span>i64);
 </span></span><span style="display:flex;"><span>      v18 <span style="color:#f92672">=</span> (<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">__int64</span>)(a3 <span style="color:#f92672">+</span> <span style="color:#ae81ff">4095</span>) <span style="color:#f92672">&gt;&gt;</span> <span style="color:#ae81ff">12</span>; <span style="color:#75715e">// round to page size
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>      v12 <span style="color:#f92672">=</span> sub_FFFFFFFFF010EC00(<span style="color:#f92672">&amp;</span>v18, <span style="color:#ae81ff">0</span>i64, <span style="color:#ae81ff">0</span>);
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>      v12 <span style="color:#f92672">=</span> <span style="color:#a6e22e">sub_FFFFFFFFF010EC00</span>(<span style="color:#f92672">&amp;</span>v18, <span style="color:#ae81ff">0</span>i64, <span style="color:#ae81ff">0</span>);
 </span></span><span style="display:flex;"><span>      v13 <span style="color:#f92672">=</span> v12;
 </span></span><span style="display:flex;"><span>      v9 <span style="color:#f92672">=</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">12</span>i64;
 </span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">if</span> ( v12 )
 </span></span><span style="display:flex;"><span>      {
-</span></span><span style="display:flex;"><span>        v14 <span style="color:#f92672">=</span> sub_FFFFFFFFF010EA34(v12);
+</span></span><span style="display:flex;"><span>        v14 <span style="color:#f92672">=</span> <span style="color:#a6e22e">sub_FFFFFFFFF010EA34</span>(v12);
 </span></span><span style="display:flex;"><span>        v15 <span style="color:#f92672">=</span> (_QWORD <span style="color:#f92672">*</span>)v14;
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> ( <span style="color:#f92672">!</span>v14 <span style="color:#f92672">||</span> (<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span>)j_sel1_do_copy_from_userspace(v14, a2, a3) ) <span style="color:#75715e">// copy from userspace
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> ( <span style="color:#f92672">!</span>v14 <span style="color:#f92672">||</span> (<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span>)<span style="color:#a6e22e">j_sel1_do_copy_from_userspace</span>(v14, a2, a3) ) <span style="color:#75715e">// copy from userspace
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        {
 </span></span><span style="display:flex;"><span>          v16 <span style="color:#f92672">=</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">14</span>;
 </span></span><span style="display:flex;"><span>LABEL_11:
-</span></span><span style="display:flex;"><span>          sub_FFFFFFFFF010ED0C(v13, v18);
+</span></span><span style="display:flex;"><span>          <span style="color:#a6e22e">sub_FFFFFFFFF010ED0C</span>(v13, v18);
 </span></span><span style="display:flex;"><span>          <span style="color:#66d9ef">return</span> v16;
 </span></span><span style="display:flex;"><span>        }
-</span></span><span style="display:flex;"><span>        v16 <span style="color:#f92672">=</span> sub_FFFFFFFFF01194D4(a1, v11, v15, v18, a4);
+</span></span><span style="display:flex;"><span>        v16 <span style="color:#f92672">=</span> <span style="color:#a6e22e">sub_FFFFFFFFF01194D4</span>(a1, v11, v15, v18, a4);
 </span></span><span style="display:flex;"><span>        v9 <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>i64;
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> ( v16 )
 </span></span><span style="display:flex;"><span>          <span style="color:#66d9ef">goto</span> LABEL_11;
@@ -570,22 +569,22 @@ The driver registers itself with <code>TEES_RegisterDriver</code>, called when t
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  drv.open_f <span style="color:#f92672">=</span> drv_open;
 </span></span><span style="display:flex;"><span>  drv.ioctl_f <span style="color:#f92672">=</span> drv_ioctl;
 </span></span><span style="display:flex;"><span>    
-</span></span><span style="display:flex;"><span>  v2 <span style="color:#f92672">=</span> TEES_RegisterDriver(<span style="color:#f92672">&amp;</span>drv);
+</span></span><span style="display:flex;"><span>  v2 <span style="color:#f92672">=</span> <span style="color:#a6e22e">TEES_RegisterDriver</span>(<span style="color:#f92672">&amp;</span>drv);
 </span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> ( v2 )
 </span></span><span style="display:flex;"><span>  {
-</span></span><span style="display:flex;"><span>    printf(<span style="color:#e6db74">&#34;register_driver failed, ret = %d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, v2);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;register_driver failed, ret = %d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, v2);
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">65536</span>;
 </span></span><span style="display:flex;"><span>  }
 </span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">else</span>
 </span></span><span style="display:flex;"><span>  {
-</span></span><span style="display:flex;"><span>    printf(<span style="color:#e6db74">&#34;TIMA Driver registered</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;TIMA Driver registered</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
 </span></span><span style="display:flex;"><span>  }
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div><p>The driver registers an <code>ioctl</code> callback, which may be called from the vulnerable <code>KEYMST</code> applet. A few ioctl commands can be performed on this driver, among which two eventually call <code>log_msg</code>:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">log_msg</span>(<span style="color:#66d9ef">int</span> a1, <span style="color:#66d9ef">int</span> a2, <span style="color:#66d9ef">int</span> a3, <span style="color:#66d9ef">int</span> a4, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>format)
 </span></span><span style="display:flex;"><span>{
-</span></span><span style="display:flex;"><span>  TEE_MemFill(<span style="color:#f92672">&amp;</span>g_entry_ptr, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0x80u</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">TEE_MemFill</span>(<span style="color:#f92672">&amp;</span>g_entry_ptr, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0x80u</span>);
 </span></span><span style="display:flex;"><span>  byte_23118 <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;
 </span></span><span style="display:flex;"><span>  byte_23119 <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
 </span></span><span style="display:flex;"><span>  byte_2311A <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
@@ -594,9 +593,9 @@ The driver registers itself with <code>TEES_RegisterDriver</code>, called when t
 </span></span><span style="display:flex;"><span>  byte_23115 <span style="color:#f92672">=</span> <span style="color:#ae81ff">39</span>;
 </span></span><span style="display:flex;"><span>  byte_23116 <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
 </span></span><span style="display:flex;"><span>  byte_23117 <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>  snprintf(s, <span style="color:#ae81ff">0x77u</span>, <span style="color:#e6db74">&#34;%s&#34;</span>, format);
-</span></span><span style="display:flex;"><span>  log_add_entry(a1, a2, a3, a4, <span style="color:#f92672">&amp;</span>g_entry_ptr);
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> printf(format); <span style="color:#75715e">/* format string controlled by compromised trusted applet */</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">snprintf</span>(s, <span style="color:#ae81ff">0x77u</span>, <span style="color:#e6db74">&#34;%s&#34;</span>, format);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">log_add_entry</span>(a1, a2, a3, a4, <span style="color:#f92672">&amp;</span>g_entry_ptr);
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">printf</span>(format); <span style="color:#75715e">/* format string controlled by compromised trusted applet */</span>
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div><p>The format argument comes from the <code>ioctl</code> argument, but is not located on the stack, meaning that we cannot directly control <code>printf</code> arguments with our input buffer. In the next part, we devise a strategy to gain arbitrary read and write.</p>
 <h3 id="gaining-arbitrary-read-and-write">Gaining arbitrary read and write</h3>
@@ -604,18 +603,18 @@ The driver registers itself with <code>TEES_RegisterDriver</code>, called when t
 We have identified a chain of three stack words that point to each other:
 
 
-<img src="https://thalium.github.io/blog/posts/img/pivoting-to-the-secure-world/stack-stack-layout.svg" alt="Chain of three stack words"/>
+<img src="https://blog.thalium.re/posts/img/pivoting-to-the-secure-world/stack-stack-layout.svg" alt="Chain of three stack words"/>
 
 In the diagram above, the value <code>K</code> will not be altered by the program between multiple ioctl calls, giving us the ability to fully control its value.
 To put an arbitrary address <code>a</code> instead of <code>K</code> above, we write it byte by byte, overwriting the low byte of <code>J</code> each time with an incrementing value:
 
 
-<img src="https://thalium.github.io/blog/posts/img/pivoting-to-the-secure-world/stack-overwrite-J-cell.svg" alt="Overwrite LSB of J"/>
+<img src="https://blog.thalium.re/posts/img/pivoting-to-the-secure-world/stack-overwrite-J-cell.svg" alt="Overwrite LSB of J"/>
 
 Once we are able to put an arbitrary address on the stack, we can simply turn <code>printf</code> to our advantage using <code>%pU</code> or <code>%n</code> variants.
 
 
-<img src="https://thalium.github.io/blog/posts/img/pivoting-to-the-secure-world/stack-control-K-value.svg" alt="Control over K value"/>
+<img src="https://blog.thalium.re/posts/img/pivoting-to-the-secure-world/stack-control-K-value.svg" alt="Control over K value"/>
 
 Since the driver is not <code>PIE</code>, the <code>.got</code> section is at a fixed location in memory. Leaking two words of <code>.got</code>, we leak the randomized addresses of <code>libteesl.so</code> and <code>libtzsl.so</code>. A question remains: how to turn a sequence of well-balanced writes to code execution?</p>
 <h3 id="gaining-arbitrary-code-execution">Gaining arbitrary code execution</h3>
@@ -651,7 +650,7 @@ Since the driver is not <code>PIE</code>, the <code>.got</code> section is at a 
 </span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> ( result <span style="color:#f92672">==</span> <span style="color:#ae81ff">1</span> )
 </span></span><span style="display:flex;"><span>  {
 </span></span><span style="display:flex;"><span>LABEL_141:
-</span></span><span style="display:flex;"><span>    output_char((<span style="color:#66d9ef">int</span>)<span style="color:#f92672">&amp;</span>current_pos);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">output_char</span>((<span style="color:#66d9ef">int</span>)<span style="color:#f92672">&amp;</span>current_pos);
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> ( <span style="color:#f92672">*</span>cur_fmt )
 </span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">goto</span> LABEL_146;
 </span></span><span style="display:flex;"><span>    <span style="color:#f92672">--</span>cur_fmt;
@@ -855,7 +854,7 @@ _______________________________________________________________
 
 
 
-<img src="https://thalium.github.io/blog/posts/img/pivoting-to-the-secure-world/teegris-Secure-boot.svg" alt="Samsung Secure boot"/>
+<img src="https://blog.thalium.re/posts/img/pivoting-to-the-secure-world/teegris-Secure-boot.svg" alt="Samsung Secure boot"/>
 
 The firmware zip file contains multiple tar archives, among which the <code>BL_</code> prefixed one contains <code>sboot.bin</code> which is the file used by <code>BootROM</code> to start the Secure World: it will contain TEEgris secure kernel. It can be encrypted, but it was not for our particular target.
 <code>sboot.bin</code> is a flat file, and a few aarch64 system architecture facts help to analyze it:</p>
@@ -910,7 +909,7 @@ The secure kernel can be extracted from the firmware, and the system calls imple
   
 
   <div class="social-link">
-  <a href="https://thalium.github.io/blog/index.xml" target="_blank">RSS</a>
+  <a href="https://blog.thalium.re/index.xml" target="_blank">RSS</a>
   </div>
 
 </div>

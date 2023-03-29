@@ -7,41 +7,40 @@
 <meta name="description" content="Thalium blog." />
 <meta name="keywords" content="blog, tech" />
 <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
-<meta name="generator" content="Hugo 0.95.0" />
+<meta name="generator" content="Hugo 0.108.0">
 
-<link rel="canonical" href="https://thalium.github.io/blog/posts/nt_py_icebox/">
+<link rel="canonical" href="https://blog.thalium.re/posts/nt_py_icebox/">
 <meta property="og:title" content="NT objects access tracing" />
 <meta property="og:description" content="Draw me a map As homework during the lockdown, I wanted to automate the attack surface analysis of a target on Windows. The main objective was to construct a view of a software architecture to highlight the attack surface (whether remote or local).
 The software architecture can be composed of several elements:
- processes privileges ipc etc  Usually, software architecture analysis is done with tools that give a view at a specific time (ProcessHacker, WinObjEx, etc)." />
+processes privileges ipc etc Usually, software architecture analysis is done with tools that give a view at a specific time (ProcessHacker, WinObjEx, etc)." />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://thalium.github.io/blog/posts/nt_py_icebox/" /><meta property="article:section" content="posts" />
+<meta property="og:url" content="https://blog.thalium.re/posts/nt_py_icebox/" /><meta property="article:section" content="posts" />
 <meta property="article:published_time" content="2021-06-07T12:00:00+01:00" />
 <meta property="article:modified_time" content="2021-06-07T12:00:00+01:00" />
-
 
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="NT objects access tracing"/>
 <meta name="twitter:description" content="Draw me a map As homework during the lockdown, I wanted to automate the attack surface analysis of a target on Windows. The main objective was to construct a view of a software architecture to highlight the attack surface (whether remote or local).
 The software architecture can be composed of several elements:
- processes privileges ipc etc  Usually, software architecture analysis is done with tools that give a view at a specific time (ProcessHacker, WinObjEx, etc)."/>
+processes privileges ipc etc Usually, software architecture analysis is done with tools that give a view at a specific time (ProcessHacker, WinObjEx, etc)."/>
 
 
 <meta itemprop="name" content="NT objects access tracing">
 <meta itemprop="description" content="Draw me a map As homework during the lockdown, I wanted to automate the attack surface analysis of a target on Windows. The main objective was to construct a view of a software architecture to highlight the attack surface (whether remote or local).
 The software architecture can be composed of several elements:
- processes privileges ipc etc  Usually, software architecture analysis is done with tools that give a view at a specific time (ProcessHacker, WinObjEx, etc)."><meta itemprop="datePublished" content="2021-06-07T12:00:00+01:00" />
+processes privileges ipc etc Usually, software architecture analysis is done with tools that give a view at a specific time (ProcessHacker, WinObjEx, etc)."><meta itemprop="datePublished" content="2021-06-07T12:00:00+01:00" />
 <meta itemprop="dateModified" content="2021-06-07T12:00:00+01:00" />
 <meta itemprop="wordCount" content="2879">
 <meta itemprop="keywords" content="" />
 
-<link rel="stylesheet" href="https://thalium.github.io/blog/css/layout.css" />
+<link rel="stylesheet" href="https://blog.thalium.re/css/layout.css" />
 
 
-<link rel="stylesheet" href="https://thalium.github.io/blog/css/default-dark.css" />
+<link rel="stylesheet" href="https://blog.thalium.re/css/default-dark.css" />
 
 
-<link rel="icon" href="https://thalium.github.io/blog/favicon.ico" />
+<link rel="icon" href="https://blog.thalium.re/favicon.ico" />
 
 
 <script type="application/javascript">
@@ -112,19 +111,19 @@ if (!doNotTrack) {
 
   <nav>
     <div class="siteTitle">
-      <a href="https://thalium.github.io/blog/">
-        <img src="https://thalium.github.io/blog/shard_only_no_background.png" width=12%></img>
+      <a href="https://blog.thalium.re/">
+        <img src="https://blog.thalium.re/shard_only_no_background.png" width=12%></img>
         <span>THALIUM</span>
       </a>
     </div> 
 
     
     
-    <a class="nav-item" href="https://thalium.github.io/blog/posts/"><div class="nav-item-title">Posts</div></a>
+    <a class="nav-item" href="https://blog.thalium.re/posts/"><div class="nav-item-title">Posts</div></a>
     
-    <a class="nav-item" href="https://thalium.github.io/blog/joinus/"><div class="nav-item-title">Join Us</div></a>
+    <a class="nav-item" href="https://blog.thalium.re/joinus/"><div class="nav-item-title">Join Us</div></a>
     
-    <a class="nav-item" href="https://thalium.github.io/blog/about/"><div class="nav-item-title">About</div></a>
+    <a class="nav-item" href="https://blog.thalium.re/about/"><div class="nav-item-title">About</div></a>
     
 
   </nav>
@@ -185,7 +184,7 @@ Projects such as <a href="https://github.com/google/rekall">Rekall</a> and <a hr
 <li>list living processes</li>
 <li>observe the creation of processes</li>
 </ul>
-<p>These two methods have been documented in a <a href="https://thalium.github.io/blog/posts/getting_started/">previous blogpost</a>:</p>
+<p>These two methods have been documented in a <a href="https://blog.thalium.re/posts/getting_started/">previous blogpost</a>:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> icebox
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>vm <span style="color:#f92672">=</span> icebox<span style="color:#f92672">.</span>attach(<span style="color:#e6db74">&#34;win10&#34;</span>)
@@ -855,7 +854,7 @@ Security Descriptor: NULL
   
 
   <div class="social-link">
-  <a href="https://thalium.github.io/blog/index.xml" target="_blank">RSS</a>
+  <a href="https://blog.thalium.re/index.xml" target="_blank">RSS</a>
   </div>
 
 </div>

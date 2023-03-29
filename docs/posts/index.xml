@@ -2,18 +2,18 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Posts on THALIUM</title>
-    <link>https://thalium.github.io/blog/posts/</link>
+    <link>https://blog.thalium.re/posts/</link>
     <description>Recent content in Posts on THALIUM</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>Copyright (c) 2020, all rights reserved.</copyright>
-    <lastBuildDate>Fri, 24 Mar 2023 13:37:00 +0000</lastBuildDate><atom:link href="https://thalium.github.io/blog/posts/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 24 Mar 2023 13:37:00 +0000</lastBuildDate><atom:link href="https://blog.thalium.re/posts/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>ARM TrustZone: pivoting to the secure world</title>
-      <link>https://thalium.github.io/blog/posts/pivoting_to_the_secure_world/</link>
+      <link>https://blog.thalium.re/posts/pivoting_to_the_secure_world/</link>
       <pubDate>Fri, 24 Mar 2023 13:37:00 +0000</pubDate>
       
-      <guid>https://thalium.github.io/blog/posts/pivoting_to_the_secure_world/</guid>
+      <guid>https://blog.thalium.re/posts/pivoting_to_the_secure_world/</guid>
       <description>&lt;ol&gt;
 &lt;li&gt;Discovery of two vulnerabilities in secure world components&lt;/li&gt;
 &lt;li&gt;Exploitation to get code execution in a trusted driver, while not having a debugger for this obscure environment&lt;/li&gt;
@@ -24,46 +24,46 @@
     
     <item>
       <title>Fuzzing RDPEGFX with &#34;what the fuzz&#34;</title>
-      <link>https://thalium.github.io/blog/posts/rdpegfx/</link>
+      <link>https://blog.thalium.re/posts/rdpegfx/</link>
       <pubDate>Fri, 14 Oct 2022 00:00:00 +0000</pubDate>
       
-      <guid>https://thalium.github.io/blog/posts/rdpegfx/</guid>
-      <description>Microsoft’s Remote Desktop Protocol (RDP) client was fuzzed by various teams in the past few years, it thus seemed like a good target to try a recent snapshot fuzzer: &lt;a href=&#34;https://github.com/0vercl0k/wtf&#34;&gt;what the fuzz (wtf)&lt;/a&gt; (of which we are only users). In this companion post to our &lt;a href=&#34;https://www.hexacon.fr/conference/speakers/#fuzzing_rdpegfx&#34;&gt;Hexacon 2022 talk&lt;/a&gt; (&lt;a href=&#34;https://thalium.github.io/blog/posts/misc/rdpegfx/Hexacon2022-Fuzzing_RDPEGFX_with_wtf.pdf&#34;&gt;slides&lt;/a&gt;, &lt;a href=&#34;https://youtu.be/4pftjmKqeoM&#34;&gt;video&lt;/a&gt;) we’ll show how we took advantage of wtf flexibility in order to efficiently fuzz the RDPEGFX channel of Microsoft RDP client and uncover &lt;a href=&#34;https://msrc.microsoft.com/update-guide/en-US/vulnerability/CVE-2022-30221&#34;&gt;CVE-2022-30221&lt;/a&gt;.</description>
+      <guid>https://blog.thalium.re/posts/rdpegfx/</guid>
+      <description>Microsoft’s Remote Desktop Protocol (RDP) client was fuzzed by various teams in the past few years, it thus seemed like a good target to try a recent snapshot fuzzer: &lt;a href=&#34;https://github.com/0vercl0k/wtf&#34;&gt;what the fuzz (wtf)&lt;/a&gt; (of which we are only users). In this companion post to our &lt;a href=&#34;https://www.hexacon.fr/conference/speakers/#fuzzing_rdpegfx&#34;&gt;Hexacon 2022 talk&lt;/a&gt; (&lt;a href=&#34;https://blog.thalium.re/posts/misc/rdpegfx/Hexacon2022-Fuzzing_RDPEGFX_with_wtf.pdf&#34;&gt;slides&lt;/a&gt;, &lt;a href=&#34;https://youtu.be/4pftjmKqeoM&#34;&gt;video&lt;/a&gt;) we’ll show how we took advantage of wtf flexibility in order to efficiently fuzz the RDPEGFX channel of Microsoft RDP client and uncover &lt;a href=&#34;https://msrc.microsoft.com/update-guide/en-US/vulnerability/CVE-2022-30221&#34;&gt;CVE-2022-30221&lt;/a&gt;.</description>
     </item>
     
     <item>
       <title>Remote Deserialization Bug in Microsoft&#39;s RDP Client through Smart Card Extension (CVE-2021-38666)</title>
-      <link>https://thalium.github.io/blog/posts/deserialization-bug-through-rdp-smart-card-extension/</link>
+      <link>https://blog.thalium.re/posts/deserialization-bug-through-rdp-smart-card-extension/</link>
       <pubDate>Fri, 10 Dec 2021 06:00:01 +0100</pubDate>
       
-      <guid>https://thalium.github.io/blog/posts/deserialization-bug-through-rdp-smart-card-extension/</guid>
+      <guid>https://blog.thalium.re/posts/deserialization-bug-through-rdp-smart-card-extension/</guid>
       <description>&lt;p&gt;This is the &lt;strong&gt;third installment&lt;/strong&gt; in my three-part series of articles on fuzzing Microsoft&amp;rsquo;s RDP client, where I explain a bug I found by fuzzing the &lt;strong&gt;smart card extension&lt;/strong&gt;.&lt;/p&gt;</description>
     </item>
     
     <item>
       <title>Remote ASLR Leak in Microsoft&#39;s RDP Client through Printer Cache Registry (CVE-2021-38665)</title>
-      <link>https://thalium.github.io/blog/posts/leaking-aslr-through-rdp-printer-cache-registry/</link>
+      <link>https://blog.thalium.re/posts/leaking-aslr-through-rdp-printer-cache-registry/</link>
       <pubDate>Fri, 10 Dec 2021 06:00:00 +0100</pubDate>
       
-      <guid>https://thalium.github.io/blog/posts/leaking-aslr-through-rdp-printer-cache-registry/</guid>
+      <guid>https://blog.thalium.re/posts/leaking-aslr-through-rdp-printer-cache-registry/</guid>
       <description>&lt;p&gt;This is the &lt;strong&gt;second installment&lt;/strong&gt; in my three-part series of articles on fuzzing Microsoft&amp;rsquo;s RDP client. I will explain a bug I found by fuzzing the &lt;strong&gt;printer sub-protocol&lt;/strong&gt;, and how I exploited it.&lt;/p&gt;</description>
     </item>
     
     <item>
       <title>Fuzzing Microsoft&#39;s RDP Client using Virtual Channels: Overview &amp; Methodology</title>
-      <link>https://thalium.github.io/blog/posts/fuzzing-microsoft-rdp-client-using-virtual-channels/</link>
+      <link>https://blog.thalium.re/posts/fuzzing-microsoft-rdp-client-using-virtual-channels/</link>
       <pubDate>Wed, 10 Nov 2021 12:00:00 +0000</pubDate>
       
-      <guid>https://thalium.github.io/blog/posts/fuzzing-microsoft-rdp-client-using-virtual-channels/</guid>
+      <guid>https://blog.thalium.re/posts/fuzzing-microsoft-rdp-client-using-virtual-channels/</guid>
       <description>&lt;p&gt;This article begins my three-part series on fuzzing Microsoft&amp;rsquo;s RDP client. In this &lt;strong&gt;first installment&lt;/strong&gt;, I set up a methodology for &lt;strong&gt;fuzzing Virtual Channels&lt;/strong&gt; using WinAFL and share some of my findings.&lt;/p&gt;</description>
     </item>
     
     <item>
       <title>ECW 2021 - WriteUp</title>
-      <link>https://thalium.github.io/blog/posts/ecw2021-writeup/</link>
+      <link>https://blog.thalium.re/posts/ecw2021-writeup/</link>
       <pubDate>Mon, 25 Oct 2021 12:00:01 +0100</pubDate>
       
-      <guid>https://thalium.github.io/blog/posts/ecw2021-writeup/</guid>
+      <guid>https://blog.thalium.re/posts/ecw2021-writeup/</guid>
       <description>&lt;p&gt;For the &lt;a href=&#34;https://www.european-cyber-week.eu/&#34;&gt;European Cyber Week&lt;/a&gt; CTF 2021 Thalium created some challenges in our core competencies: reverse and exploitation. This blog post presents some of the write-ups:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;#chest&#34;&gt;Chest (36 solve) - reverse&lt;/a&gt;&lt;/li&gt;
@@ -80,39 +80,39 @@
     
     <item>
       <title>NT objects access tracing</title>
-      <link>https://thalium.github.io/blog/posts/nt_py_icebox/</link>
+      <link>https://blog.thalium.re/posts/nt_py_icebox/</link>
       <pubDate>Mon, 07 Jun 2021 12:00:00 +0100</pubDate>
       
-      <guid>https://thalium.github.io/blog/posts/nt_py_icebox/</guid>
+      <guid>https://blog.thalium.re/posts/nt_py_icebox/</guid>
       <description>Draw me a map As homework during the lockdown, I wanted to automate the attack surface analysis of a target on Windows. The main objective was to construct a view of a software architecture to highlight the attack surface (whether remote or local).
 The software architecture can be composed of several elements:
- processes privileges ipc etc  Usually, software architecture analysis is done with tools that give a view at a specific time (ProcessHacker, WinObjEx, etc).</description>
+processes privileges ipc etc Usually, software architecture analysis is done with tools that give a view at a specific time (ProcessHacker, WinObjEx, etc).</description>
     </item>
     
     <item>
       <title>SSTIC : how to setup a ctf win10 pwn user environment</title>
-      <link>https://thalium.github.io/blog/posts/sstic_infra_windows/</link>
+      <link>https://blog.thalium.re/posts/sstic_infra_windows/</link>
       <pubDate>Wed, 02 Jun 2021 15:30:00 +0100</pubDate>
       
-      <guid>https://thalium.github.io/blog/posts/sstic_infra_windows/</guid>
+      <guid>https://blog.thalium.re/posts/sstic_infra_windows/</guid>
       <description>Introduction This post aims to present how to easily setup a lightweight secure user pwning environment for Windows. From your binary challenge communicating with stdin/stdout, this environment provides a multi-client broker listening on a socket, redirecting it to the IO of your binary, and executing it in a jail. This environment is mainly based on the project AppJaillauncher-rs from trailofbits, with some security fixes and some tips to easily setup the RW rights to the system files from the jail.</description>
     </item>
     
     <item>
       <title>Cyber Apocalypse 2021 5/5 - Artillery</title>
-      <link>https://thalium.github.io/blog/posts/apocalypse2021-artillery/</link>
+      <link>https://blog.thalium.re/posts/apocalypse2021-artillery/</link>
       <pubDate>Wed, 28 Apr 2021 12:00:04 +0100</pubDate>
       
-      <guid>https://thalium.github.io/blog/posts/apocalypse2021-artillery/</guid>
+      <guid>https://blog.thalium.re/posts/apocalypse2021-artillery/</guid>
       <description>&lt;p&gt;&lt;strong&gt;Artillery&lt;/strong&gt; was a web challenge of the Cyber Apocalypse 2021 CTF organized by HackTheBox. We were given the source code of the server to help us solve the challenge. This challenge was a nice opportunity to learn more about &lt;strong&gt;XXE&lt;/strong&gt; vulnerabilities.&lt;/p&gt;</description>
     </item>
     
     <item>
       <title>Cyber Apocalypse 2021 4/5 - Discovery</title>
-      <link>https://thalium.github.io/blog/posts/apocalypse2021-discovery/</link>
+      <link>https://blog.thalium.re/posts/apocalypse2021-discovery/</link>
       <pubDate>Wed, 28 Apr 2021 12:00:03 +0100</pubDate>
       
-      <guid>https://thalium.github.io/blog/posts/apocalypse2021-discovery/</guid>
+      <guid>https://blog.thalium.re/posts/apocalypse2021-discovery/</guid>
       <description>&lt;p&gt;One of the least solved challenges, yet probably not the most difficult one. It is a Hardware challenge, though it is significantly different from the other challenges of this category. The first thing to spot is that when starting the challenge machine, we have access to two network services:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;an HTTP server, requesting an authentication&lt;/li&gt;
@@ -122,20 +122,20 @@ The software architecture can be composed of several elements:
     
     <item>
       <title>Cyber Apocalypse 2021 3/5 - Off the grid</title>
-      <link>https://thalium.github.io/blog/posts/apocalypse2021-off-the-grid/</link>
+      <link>https://blog.thalium.re/posts/apocalypse2021-off-the-grid/</link>
       <pubDate>Wed, 28 Apr 2021 12:00:02 +0100</pubDate>
       
-      <guid>https://thalium.github.io/blog/posts/apocalypse2021-off-the-grid/</guid>
+      <guid>https://blog.thalium.re/posts/apocalypse2021-off-the-grid/</guid>
       <description>&lt;p&gt;&lt;strong&gt;Off-the-grid&lt;/strong&gt; was the 4th hardware challenge of the Cyber Apocalypse 2021 CTF organized by HackTheBox.
-We were given an &lt;a href=&#34;https://thalium.github.io/blog/posts/misc/off-the-grid/off_the_grid.sal&#34;&gt;Saleae trace&lt;/a&gt; and schematics to analyse. Thalium was one of the very first of 99 players to complete it.&lt;/p&gt;</description>
+We were given an &lt;a href=&#34;https://blog.thalium.re/posts/misc/off-the-grid/off_the_grid.sal&#34;&gt;Saleae trace&lt;/a&gt; and schematics to analyse. Thalium was one of the very first of 99 players to complete it.&lt;/p&gt;</description>
     </item>
     
     <item>
       <title>Cyber Apocalypse 2021 2/5 - Wii-Phit</title>
-      <link>https://thalium.github.io/blog/posts/apocalypse2021-wii-phit/</link>
+      <link>https://blog.thalium.re/posts/apocalypse2021-wii-phit/</link>
       <pubDate>Wed, 28 Apr 2021 12:00:01 +0100</pubDate>
       
-      <guid>https://thalium.github.io/blog/posts/apocalypse2021-wii-phit/</guid>
+      <guid>https://blog.thalium.re/posts/apocalypse2021-wii-phit/</guid>
       <description>&lt;p&gt;&lt;strong&gt;Wii-Phit&lt;/strong&gt; was the only &lt;em&gt;Hard&lt;/em&gt; crypto challenge designed by &lt;a href=&#34;https://cryptohack.org/&#34;&gt;CryptoHack&lt;/a&gt; for the &lt;a href=&#34;https://www.hackthebox.eu/cyber-apocalypse-ctf-2021&#34;&gt;Cyber Apocalypse 2021&lt;/a&gt; CTF (there were also 4 challenges categorized as &lt;em&gt;Insane&lt;/em&gt; though).&lt;/p&gt;
 &lt;p&gt;There is already an excellent &lt;a href=&#34;https://blog.cryptohack.org/cyber-apocalypse-2021#wii-phit&#34;&gt;writeup&lt;/a&gt; by the challenge organizers:
 one could recognize a well known equation related to the &lt;a href=&#34;https://en.wikipedia.org/wiki/Erd%C5%91s%E2%80%93Straus_conjecture&#34;&gt;Erdős–Straus conjecture&lt;/a&gt;, some participants used &lt;a href=&#34;https://github.com/Z3Prover/z3&#34;&gt;Z3&lt;/a&gt;.
@@ -144,16 +144,16 @@ We took a different approach.&lt;/p&gt;</description>
     
     <item>
       <title>Cyber Apocalypse 2021 1/5 - PWN challenges</title>
-      <link>https://thalium.github.io/blog/posts/apocalypse2021-pwn/</link>
+      <link>https://blog.thalium.re/posts/apocalypse2021-pwn/</link>
       <pubDate>Wed, 28 Apr 2021 12:00:00 +0100</pubDate>
       
-      <guid>https://thalium.github.io/blog/posts/apocalypse2021-pwn/</guid>
+      <guid>https://blog.thalium.re/posts/apocalypse2021-pwn/</guid>
       <description>&lt;p&gt;Thalium participated in the &lt;a href=&#34;https://www.hackthebox.eu/cyber-apocalypse-ctf-2021&#34;&gt;Cyber Apocalypse 2021&lt;/a&gt; CTF organized last week by &lt;a href=&#34;https://www.hackthebox.eu/&#34;&gt;HackTheBox&lt;/a&gt;.
 It was a great success with 4,740 teams composed of around 10,000 hackers from all over the world.
 Our team finished in fifth place and solved sixty out of the sixty-two challenges:&lt;/p&gt;
 &lt;p&gt;
-  &lt;a href=&#34;https://thalium.github.io/blog/posts/img/Cyber_Apocalypse_2021-scoreboard.png&#34; target=&#34;_blank&#34;&gt;
-    &lt;img src=&#34;https://thalium.github.io/blog/posts/img/Cyber_Apocalypse_2021-scoreboard.png&#34; alt=&#34;fig_scoreboard&#34;&gt;
+  &lt;a href=&#34;https://blog.thalium.re/posts/img/Cyber_Apocalypse_2021-scoreboard.png&#34; target=&#34;_blank&#34;&gt;
+    &lt;img src=&#34;https://blog.thalium.re/posts/img/Cyber_Apocalypse_2021-scoreboard.png&#34; alt=&#34;fig_scoreboard&#34;&gt;
   &lt;/a&gt;
 &lt;/p&gt;
 &lt;p&gt;This article explains how we solved each pwn challenge and what tools we used, it is written to be accessible to beginners:&lt;/p&gt;</description>
@@ -161,20 +161,20 @@ Our team finished in fifth place and solved sixty out of the sixty-two challenge
     
     <item>
       <title>Windows Memory Introspection with IceBox</title>
-      <link>https://thalium.github.io/blog/posts/windows-full-memory-introspection-with-icebox/</link>
+      <link>https://blog.thalium.re/posts/windows-full-memory-introspection-with-icebox/</link>
       <pubDate>Mon, 22 Jun 2020 12:00:00 +0100</pubDate>
       
-      <guid>https://thalium.github.io/blog/posts/windows-full-memory-introspection-with-icebox/</guid>
+      <guid>https://blog.thalium.re/posts/windows-full-memory-introspection-with-icebox/</guid>
       <description>Virtual Machine Introspection (VMI) is an extremely powerful technique to explore a guest OS. Directly acting on the hypervisor allows a stealth and precise control of the guest state, which means its CPU context as well as its memory.
 Basically, a common use case in VMI consists in (1) setting a breakpoint on an address, (2) wait for a break and (3) finally read some virtual memory. For example, to simply monitor the user file writing activity on Windows, just set a breakpoint on the NtWriteFile function in kernel land.</description>
     </item>
     
     <item>
       <title>Getting Started with Icebox VMI</title>
-      <link>https://thalium.github.io/blog/posts/getting_started/</link>
+      <link>https://blog.thalium.re/posts/getting_started/</link>
       <pubDate>Fri, 24 Jan 2020 12:00:00 +0100</pubDate>
       
-      <guid>https://thalium.github.io/blog/posts/getting_started/</guid>
+      <guid>https://blog.thalium.re/posts/getting_started/</guid>
       <description>Icebox is a VMI (Virtual Machine Introspection) framework enabling you to stealthily trace and debug any kernel or user code system-wide.
 All Icebox source code can be found on our github page.
 Try Icebox Icebox now comes with full Python bindings enabling fast prototyping on top of VMI, whether you want to trace a user process or inspect the kernel internals.

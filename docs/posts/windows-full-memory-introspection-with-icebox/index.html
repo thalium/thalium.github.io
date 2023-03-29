@@ -7,17 +7,16 @@
 <meta name="description" content="Thalium blog." />
 <meta name="keywords" content="blog, tech" />
 <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
-<meta name="generator" content="Hugo 0.95.0" />
+<meta name="generator" content="Hugo 0.108.0">
 
-<link rel="canonical" href="https://thalium.github.io/blog/posts/windows-full-memory-introspection-with-icebox/">
+<link rel="canonical" href="https://blog.thalium.re/posts/windows-full-memory-introspection-with-icebox/">
 <meta property="og:title" content="Windows Memory Introspection with IceBox" />
 <meta property="og:description" content="Virtual Machine Introspection (VMI) is an extremely powerful technique to explore a guest OS. Directly acting on the hypervisor allows a stealth and precise control of the guest state, which means its CPU context as well as its memory.
 Basically, a common use case in VMI consists in (1) setting a breakpoint on an address, (2) wait for a break and (3) finally read some virtual memory. For example, to simply monitor the user file writing activity on Windows, just set a breakpoint on the NtWriteFile function in kernel land." />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://thalium.github.io/blog/posts/windows-full-memory-introspection-with-icebox/" /><meta property="article:section" content="posts" />
+<meta property="og:url" content="https://blog.thalium.re/posts/windows-full-memory-introspection-with-icebox/" /><meta property="article:section" content="posts" />
 <meta property="article:published_time" content="2020-06-22T12:00:00+01:00" />
 <meta property="article:modified_time" content="2020-06-22T12:00:00+01:00" />
-
 
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Windows Memory Introspection with IceBox"/>
@@ -32,13 +31,13 @@ Basically, a common use case in VMI consists in (1) setting a breakpoint on an a
 <meta itemprop="wordCount" content="4232">
 <meta itemprop="keywords" content="" />
 
-<link rel="stylesheet" href="https://thalium.github.io/blog/css/layout.css" />
+<link rel="stylesheet" href="https://blog.thalium.re/css/layout.css" />
 
 
-<link rel="stylesheet" href="https://thalium.github.io/blog/css/default-dark.css" />
+<link rel="stylesheet" href="https://blog.thalium.re/css/default-dark.css" />
 
 
-<link rel="icon" href="https://thalium.github.io/blog/favicon.ico" />
+<link rel="icon" href="https://blog.thalium.re/favicon.ico" />
 
 
 <script type="application/javascript">
@@ -109,19 +108,19 @@ if (!doNotTrack) {
 
   <nav>
     <div class="siteTitle">
-      <a href="https://thalium.github.io/blog/">
-        <img src="https://thalium.github.io/blog/shard_only_no_background.png" width=12%></img>
+      <a href="https://blog.thalium.re/">
+        <img src="https://blog.thalium.re/shard_only_no_background.png" width=12%></img>
         <span>THALIUM</span>
       </a>
     </div> 
 
     
     
-    <a class="nav-item" href="https://thalium.github.io/blog/posts/"><div class="nav-item-title">Posts</div></a>
+    <a class="nav-item" href="https://blog.thalium.re/posts/"><div class="nav-item-title">Posts</div></a>
     
-    <a class="nav-item" href="https://thalium.github.io/blog/joinus/"><div class="nav-item-title">Join Us</div></a>
+    <a class="nav-item" href="https://blog.thalium.re/joinus/"><div class="nav-item-title">Join Us</div></a>
     
-    <a class="nav-item" href="https://thalium.github.io/blog/about/"><div class="nav-item-title">About</div></a>
+    <a class="nav-item" href="https://blog.thalium.re/about/"><div class="nav-item-title">About</div></a>
     
 
   </nav>
@@ -187,8 +186,8 @@ Here, we just present the most common current case: 64-bits 4-level paging mode.
 <p>The last 12 bits correspond to the offset in a page.</p>
 <p>The whole process is illustrated in the next figure:</p>
 <p>
-  <a href="https://thalium.github.io/blog/posts/img/Amd64Paging.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/Amd64Paging.png" alt="fig_amd64_paging">
+  <a href="https://blog.thalium.re/posts/img/Amd64Paging.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/Amd64Paging.png" alt="fig_amd64_paging">
   </a>
 </p>
 <ul>
@@ -233,8 +232,8 @@ It basically corresponds to the set of pages that can be accessed without incurr
 Three types of WS exist: process, system and session one, each with its own limit.</p>
 <p>Throughout this article, we use the following simplified WS figure to illustrate how Windows virtual address translation behaves:</p>
 <p>
-  <a href="https://thalium.github.io/blog/posts/img/InitWorkingSet.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/InitWorkingSet.png" alt="fig_working_set">
+  <a href="https://blog.thalium.re/posts/img/InitWorkingSet.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/InitWorkingSet.png" alt="fig_working_set">
   </a>
 </p>
 <p>Here, we consider the working set of a single process.
@@ -278,8 +277,8 @@ When the available physical memory falls under a certain threshold, this compone
 This is achieved by changing the current state of a PTE from <em>valid</em> (<code>_MMPTE.u.hard.Valid=1</code>) to <em>transition</em> (<code>_MMPTE.u.Hard.Valid=0</code> and <code>_MMPTE.u.Soft.Transition=1</code>).
 This step is illustrated in the next figure:</p>
 <p>
-  <a href="https://thalium.github.io/blog/posts/img/Transition.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/Transition.png" alt="fig_transition">
+  <a href="https://blog.thalium.re/posts/img/Transition.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/Transition.png" alt="fig_transition">
   </a>
 </p>
 <p>In gray, a previously valid page was removed from the working set and the corresponding PTE is marked in <em>transition</em> state.</p>
@@ -305,8 +304,8 @@ This <em>transition</em> state corresponds to a <code>_MMPTE_TRANSITION</code> s
 <p>Later, a page in the <em>transition</em> state will be paged-out to a paging file located on the disk.
 This step frees the page from the physical memory and backs it up to the disk as illustrated by the following figure:</p>
 <p>
-  <a href="https://thalium.github.io/blog/posts/img/PagingFile.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/PagingFile.png" alt="fig_paging_file">
+  <a href="https://blog.thalium.re/posts/img/PagingFile.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/PagingFile.png" alt="fig_paging_file">
   </a>
 </p>
 <p>The corresponding structure is the already viewed <code>_MMPTE_SOFTWARE</code> with <code>Valid</code>, <code>Prototype</code> and <code>Transition</code> flags set to zero but a non null <code>PageFileHigh</code>.</p>
@@ -355,8 +354,8 @@ This list of zero pages is maintained by the zero page thread (<code>MiZeroPageT
 A section object can be created by the <code>CreateFileMapping</code> function, opened by <code>OpenFileMapping</code> and mapped with <code>MapViewOfFile</code>.
 Basically, section objects correspond to shared memory as illustrated below:</p>
 <p>
-  <a href="https://thalium.github.io/blog/posts/img/Section.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/Section.png" alt="fig_section">
+  <a href="https://blog.thalium.re/posts/img/Section.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/Section.png" alt="fig_section">
   </a>
 </p>
 <p>We have two processes, each one owns the same section object (<em>sectionX</em>), which points to the same physical pages.
@@ -385,8 +384,8 @@ Since then, when removing a page, the OS just has to update the corresponding <e
 Technically other states exists (see Prototype PTEs in <a href="https://www.microsoftpressstore.com/store/windows-internals-part-1-system-architecture-processes-9780735684188">Windows Internals 7th edition chaper 5 : Memory Management</a>) but are not involved in virtual address translation.</p>
 <p>For example, the next figure illustrates a prototype PTE in <em>transition</em> state, which means its <code>PageFrameNumber</code> still targets a physical page with valid content:</p>
 <p>
-  <a href="https://thalium.github.io/blog/posts/img/PrototypePTE.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/PrototypePTE.png" alt="fig_prototype">
+  <a href="https://blog.thalium.re/posts/img/PrototypePTE.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/PrototypePTE.png" alt="fig_prototype">
   </a>
 </p>
 <h4 id="subsection-pte">Subsection PTE</h4>
@@ -407,8 +406,8 @@ The corresponding structure for this PTE is then a <code>_MMPTE_SUBSECTION</code
 </span></span><span style="display:flex;"><span>   <span style="color:#f92672">+</span><span style="color:#ae81ff">0x000</span> SubsectionAddress : Pos <span style="color:#ae81ff">16</span>, <span style="color:#ae81ff">48</span> Bits
 </span></span></code></pre></div><p>The following figure illustrates this case where a page from the <code>ntdll.dll</code> is removed from both working sets:</p>
 <p>
-  <a href="https://thalium.github.io/blog/posts/img/SubsectionPTE.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/SubsectionPTE.png" alt="fig_subsection">
+  <a href="https://blog.thalium.re/posts/img/SubsectionPTE.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/SubsectionPTE.png" alt="fig_subsection">
   </a>
 </p>
 <p>Without entering into details, the <code>_MMPTE.u.Subsect.SubsectionAddress</code> points to a <code>_CONTROL_AREA</code> structure, which itselfs points to a <code>_FILE_OBJECT</code>.
@@ -431,8 +430,8 @@ The same case exists when the <code>_MMPTE.u.Soft.Prototype</code> flag is set a
 </span></span><span style="display:flex;"><span>   <span style="color:#f92672">+</span><span style="color:#ae81ff">0x000</span> ProtoAddress         : Pos <span style="color:#ae81ff">16</span>, <span style="color:#ae81ff">48</span> Bits  <span style="color:#75715e">// 0xFFFFFFFF0000
 </span></span></span></code></pre></div><p>The following figure illustrates how we can access the desired <em>prototype</em> PTE in such cases.</p>
 <p>
-  <a href="https://thalium.github.io/blog/posts/img/VAD_PTEs.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/VAD_PTEs.png" alt="fig_vad_pte">
+  <a href="https://blog.thalium.re/posts/img/VAD_PTEs.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/VAD_PTEs.png" alt="fig_vad_pte">
   </a>
 </p>
 <p>First, this VAD-based case only happens in the context of a user process.
@@ -498,8 +497,8 @@ This is achieved by the <code>MiSwizzleInvalidPte</code> function:</p>
 <h3 id="summary">Summary</h3>
 <p>The whole PTE resolution algorithm can be summarized in the following figure:</p>
 <p>
-  <a href="https://thalium.github.io/blog/posts/img/WindowsPaging.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/WindowsPaging.png" alt="fig_windows_paging">
+  <a href="https://blog.thalium.re/posts/img/WindowsPaging.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/WindowsPaging.png" alt="fig_windows_paging">
   </a>
 </p>
 <p>We are now able to handle all the software PTE states involved in the Windows virtual address translation:</p>
@@ -518,14 +517,14 @@ In the ideal case, we&rsquo;d like to boot a VM and access its physical memory w
 <h3 id="disabling-the-paging-files">Disabling the paging files</h3>
 <p>Disabling the paging files is a well known feature using the <code>sysdm.cpl</code> as illustrated in the following figure:</p>
 <p>
-  <a href="https://thalium.github.io/blog/posts/img/sysdm.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/sysdm.png" alt="fig_sysdm">
+  <a href="https://blog.thalium.re/posts/img/sysdm.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/sysdm.png" alt="fig_sysdm">
   </a>
 </p>
 <p>Modifications are saved in the registry under the <code>\HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management</code> key, with a multi-string value named <code>PagingFiles</code> as shown in the following screenshot:</p>
 <p>
-  <a href="https://thalium.github.io/blog/posts/img/PagingFilesRegistry.png" target="_blank">
-    <img src="https://thalium.github.io/blog/posts/img/PagingFilesRegistry.png" alt="fig_registry">
+  <a href="https://blog.thalium.re/posts/img/PagingFilesRegistry.png" target="_blank">
+    <img src="https://blog.thalium.re/posts/img/PagingFilesRegistry.png" alt="fig_registry">
   </a>
 </p>
 <p>Paging files are created by the first user process named <code>smss.exe</code>, which is launched during kernel initialization (<code>Phase1InitializationIoReady</code>).
@@ -548,10 +547,10 @@ It starts with <code>NtCreateSection</code> and its subfunctions:</p>
     MiCreateNewSection
      MiCreateImageFileMap
 </code></pre><p>In this last function, the interesting pseudo-code portion can be summed up as follows:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>status <span style="color:#f92672">=</span> MiBuildImageControlArea(...,<span style="color:#f92672">&amp;</span>FileSize,<span style="color:#f92672">&amp;</span>pNewControlArea);
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>NT_SUCCESS(Status)) <span style="color:#66d9ef">goto</span> CleanUp;
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>status <span style="color:#f92672">=</span> <span style="color:#a6e22e">MiBuildImageControlArea</span>(...,<span style="color:#f92672">&amp;</span>FileSize,<span style="color:#f92672">&amp;</span>pNewControlArea);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">NT_SUCCESS</span>(Status)) <span style="color:#66d9ef">goto</span> CleanUp;
 </span></span><span style="display:flex;"><span><span style="color:#75715e">//...
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">if</span> (IoIsDeviceEjectable(arg0_pFileObject<span style="color:#f92672">-&gt;</span>DeviceObject))
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">IoIsDeviceEjectable</span>(arg0_pFileObject<span style="color:#f92672">-&gt;</span>DeviceObject))
 </span></span><span style="display:flex;"><span>{
 </span></span><span style="display:flex;"><span>    bIsEjectable <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;
 </span></span><span style="display:flex;"><span>}
@@ -578,10 +577,10 @@ As the paging file is disabled these PTEs will always stay in <em>transition</em
 <p>The first option requires to detect when the device is created, to update as soon as possible its <code>Characteristics</code>.
 The second option seems easier.
 Indeed, the <code>InitWinPEModeType</code> is initialized in the <code>Phase1InitializationDiscard</code> function:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">if</span> ( Options <span style="color:#f92672">&amp;&amp;</span> strstr(Options, <span style="color:#e6db74">&#34;MININT&#34;</span>) )
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">if</span> ( Options <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">strstr</span>(Options, <span style="color:#e6db74">&#34;MININT&#34;</span>) )
 </span></span><span style="display:flex;"><span>  {
 </span></span><span style="display:flex;"><span>    InitIsWinPEMode <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> ( strstr(Options, <span style="color:#e6db74">&#34;INRAM&#34;</span>) )
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> ( <span style="color:#a6e22e">strstr</span>(Options, <span style="color:#e6db74">&#34;INRAM&#34;</span>) )
 </span></span><span style="display:flex;"><span>      InitWinPEModeType <span style="color:#f92672">|=</span> <span style="color:#ae81ff">0x80000000</span>;
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">else</span>
 </span></span><span style="display:flex;"><span>      InitWinPEModeType <span style="color:#f92672">|=</span> <span style="color:#ae81ff">1u</span>;
@@ -676,7 +675,7 @@ All these aspects are implemented in <a href="https://github.com/thalium/icebox"
   
 
   <div class="social-link">
-  <a href="https://thalium.github.io/blog/index.xml" target="_blank">RSS</a>
+  <a href="https://blog.thalium.re/index.xml" target="_blank">RSS</a>
   </div>
 
 </div>

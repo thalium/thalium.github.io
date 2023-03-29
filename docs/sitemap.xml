@@ -2,111 +2,111 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://thalium.github.io/blog/joinus/</loc>
+    <loc>https://blog.thalium.re/joinus/</loc>
     <lastmod>2021-11-01T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://thalium.github.io/blog/about/</loc>
+    <loc>https://blog.thalium.re/about/</loc>
     <lastmod>2022-03-17T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://thalium.github.io/blog/posts/pivoting_to_the_secure_world/</loc>
+    <loc>https://blog.thalium.re/posts/pivoting_to_the_secure_world/</loc>
     <lastmod>2023-03-24T13:37:00+00:00</lastmod>
   </url><url>
-    <loc>https://thalium.github.io/blog/posts/</loc>
+    <loc>https://blog.thalium.re/posts/</loc>
     <lastmod>2023-03-24T13:37:00+00:00</lastmod>
   </url><url>
-    <loc>https://thalium.github.io/blog/</loc>
+    <loc>https://blog.thalium.re/</loc>
     <lastmod>2023-03-24T13:37:00+00:00</lastmod>
   </url><url>
-    <loc>https://thalium.github.io/blog/tags/cve/</loc>
+    <loc>https://blog.thalium.re/tags/cve/</loc>
     <lastmod>2022-10-14T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://thalium.github.io/blog/tags/fuzzing/</loc>
+    <loc>https://blog.thalium.re/tags/fuzzing/</loc>
     <lastmod>2022-10-14T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://thalium.github.io/blog/posts/rdpegfx/</loc>
+    <loc>https://blog.thalium.re/posts/rdpegfx/</loc>
     <lastmod>2022-10-14T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://thalium.github.io/blog/tags/rdp/</loc>
+    <loc>https://blog.thalium.re/tags/rdp/</loc>
     <lastmod>2022-10-14T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://thalium.github.io/blog/tags/</loc>
+    <loc>https://blog.thalium.re/tags/</loc>
     <lastmod>2022-10-14T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://thalium.github.io/blog/tags/vulnerability-research/</loc>
+    <loc>https://blog.thalium.re/tags/vulnerability-research/</loc>
     <lastmod>2022-10-14T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://thalium.github.io/blog/tags/exploit/</loc>
+    <loc>https://blog.thalium.re/tags/exploit/</loc>
     <lastmod>2021-12-10T06:00:01+01:00</lastmod>
   </url><url>
-    <loc>https://thalium.github.io/blog/tags/rce/</loc>
+    <loc>https://blog.thalium.re/tags/rce/</loc>
     <lastmod>2021-12-10T06:00:01+01:00</lastmod>
   </url><url>
-    <loc>https://thalium.github.io/blog/posts/deserialization-bug-through-rdp-smart-card-extension/</loc>
+    <loc>https://blog.thalium.re/posts/deserialization-bug-through-rdp-smart-card-extension/</loc>
     <lastmod>2021-12-10T06:00:01+01:00</lastmod>
   </url><url>
-    <loc>https://thalium.github.io/blog/tags/aslr/</loc>
+    <loc>https://blog.thalium.re/tags/aslr/</loc>
     <lastmod>2021-12-10T06:00:00+01:00</lastmod>
   </url><url>
-    <loc>https://thalium.github.io/blog/posts/leaking-aslr-through-rdp-printer-cache-registry/</loc>
+    <loc>https://blog.thalium.re/posts/leaking-aslr-through-rdp-printer-cache-registry/</loc>
     <lastmod>2021-12-10T06:00:00+01:00</lastmod>
   </url><url>
-    <loc>https://thalium.github.io/blog/posts/fuzzing-microsoft-rdp-client-using-virtual-channels/</loc>
+    <loc>https://blog.thalium.re/posts/fuzzing-microsoft-rdp-client-using-virtual-channels/</loc>
     <lastmod>2021-11-10T12:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://thalium.github.io/blog/tags/winafl/</loc>
+    <loc>https://blog.thalium.re/tags/winafl/</loc>
     <lastmod>2021-11-10T12:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://thalium.github.io/blog/tags/ctf/</loc>
+    <loc>https://blog.thalium.re/tags/ctf/</loc>
     <lastmod>2021-10-25T12:00:01+01:00</lastmod>
   </url><url>
-    <loc>https://thalium.github.io/blog/tags/ecw-2021/</loc>
+    <loc>https://blog.thalium.re/tags/ecw-2021/</loc>
     <lastmod>2021-10-25T12:00:01+01:00</lastmod>
   </url><url>
-    <loc>https://thalium.github.io/blog/posts/ecw2021-writeup/</loc>
+    <loc>https://blog.thalium.re/posts/ecw2021-writeup/</loc>
     <lastmod>2021-10-25T12:00:01+01:00</lastmod>
   </url><url>
-    <loc>https://thalium.github.io/blog/tags/exploitation/</loc>
+    <loc>https://blog.thalium.re/tags/exploitation/</loc>
     <lastmod>2021-10-25T12:00:01+01:00</lastmod>
   </url><url>
-    <loc>https://thalium.github.io/blog/tags/reverse-engineering/</loc>
+    <loc>https://blog.thalium.re/tags/reverse-engineering/</loc>
     <lastmod>2021-10-25T12:00:01+01:00</lastmod>
   </url><url>
-    <loc>https://thalium.github.io/blog/tags/writeup/</loc>
+    <loc>https://blog.thalium.re/tags/writeup/</loc>
     <lastmod>2021-10-25T12:00:01+01:00</lastmod>
   </url><url>
-    <loc>https://thalium.github.io/blog/posts/nt_py_icebox/</loc>
+    <loc>https://blog.thalium.re/posts/nt_py_icebox/</loc>
     <lastmod>2021-06-07T12:00:00+01:00</lastmod>
   </url><url>
-    <loc>https://thalium.github.io/blog/posts/sstic_infra_windows/</loc>
+    <loc>https://blog.thalium.re/posts/sstic_infra_windows/</loc>
     <lastmod>2021-06-02T15:30:00+01:00</lastmod>
   </url><url>
-    <loc>https://thalium.github.io/blog/posts/apocalypse2021-artillery/</loc>
+    <loc>https://blog.thalium.re/posts/apocalypse2021-artillery/</loc>
     <lastmod>2021-04-28T12:00:04+01:00</lastmod>
   </url><url>
-    <loc>https://thalium.github.io/blog/tags/cyberapocalypse2021/</loc>
+    <loc>https://blog.thalium.re/tags/cyberapocalypse2021/</loc>
     <lastmod>2021-04-28T12:00:04+01:00</lastmod>
   </url><url>
-    <loc>https://thalium.github.io/blog/posts/apocalypse2021-discovery/</loc>
+    <loc>https://blog.thalium.re/posts/apocalypse2021-discovery/</loc>
     <lastmod>2021-04-28T12:00:03+01:00</lastmod>
   </url><url>
-    <loc>https://thalium.github.io/blog/posts/apocalypse2021-off-the-grid/</loc>
+    <loc>https://blog.thalium.re/posts/apocalypse2021-off-the-grid/</loc>
     <lastmod>2021-04-28T12:00:02+01:00</lastmod>
   </url><url>
-    <loc>https://thalium.github.io/blog/tags/hardware/</loc>
+    <loc>https://blog.thalium.re/tags/hardware/</loc>
     <lastmod>2021-04-28T12:00:02+01:00</lastmod>
   </url><url>
-    <loc>https://thalium.github.io/blog/posts/apocalypse2021-wii-phit/</loc>
+    <loc>https://blog.thalium.re/posts/apocalypse2021-wii-phit/</loc>
     <lastmod>2021-04-28T12:00:01+01:00</lastmod>
   </url><url>
-    <loc>https://thalium.github.io/blog/posts/apocalypse2021-pwn/</loc>
+    <loc>https://blog.thalium.re/posts/apocalypse2021-pwn/</loc>
     <lastmod>2021-04-28T12:00:00+01:00</lastmod>
   </url><url>
-    <loc>https://thalium.github.io/blog/posts/windows-full-memory-introspection-with-icebox/</loc>
+    <loc>https://blog.thalium.re/posts/windows-full-memory-introspection-with-icebox/</loc>
     <lastmod>2020-06-22T12:00:00+01:00</lastmod>
   </url><url>
-    <loc>https://thalium.github.io/blog/posts/getting_started/</loc>
+    <loc>https://blog.thalium.re/posts/getting_started/</loc>
     <lastmod>2020-01-24T12:00:00+01:00</lastmod>
   </url><url>
-    <loc>https://thalium.github.io/blog/categories/</loc>
+    <loc>https://blog.thalium.re/categories/</loc>
   </url>
 </urlset>
