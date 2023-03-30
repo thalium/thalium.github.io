@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Writeup on THALIUM</title><link>/tags/writeup/</link><description>Recent content in Writeup on THALIUM</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><copyright>Copyright (c) 2020, all rights reserved.</copyright><lastBuildDate>Mon, 25 Oct 2021 12:00:01 +0100</lastBuildDate><atom:link href="/tags/writeup/index.xml" rel="self" type="application/rss+xml"/><item><title>ECW 2021 - WriteUp</title><link>/posts/ecw2021-writeup/</link><pubDate>Mon, 25 Oct 2021 12:00:01 +0100</pubDate><guid>/posts/ecw2021-writeup/</guid><description>&lt;p>For the &lt;a href="https://www.european-cyber-week.eu/">European Cyber Week&lt;/a> CTF 2021 Thalium created some challenges in our core competencies: reverse and exploitation. This blog post presents some of the write-ups:&lt;/p>
+&lt;ul>
+&lt;li>&lt;a href="#chest">Chest (36 solve) - reverse&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#fsb-as-a-service">FSB as a service (3 solve) - exploitation&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#wysiwyg">WYSIWYG (3 solve) - reverse&lt;/a>&lt;/li>
+&lt;li>Pipe Dream (1 solve) - reverse
+&lt;ul>
+&lt;li>the author posted his solution on &lt;a href="https://face.0xff.re/posts/ecw-ctf-2021-pipe-dream-writeup/">his personal blog&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;p>Thalium&amp;rsquo;s challenges have been less resolved than others. They were not that difficult, but probably a bit more unexpected. A few additional challenges designed by Thalium are:&lt;/p></description></item><item><title>Cyber Apocalypse 2021 5/5 - Artillery</title><link>/posts/apocalypse2021-artillery/</link><pubDate>Wed, 28 Apr 2021 12:00:04 +0100</pubDate><guid>/posts/apocalypse2021-artillery/</guid><description>&lt;p>&lt;strong>Artillery&lt;/strong> was a web challenge of the Cyber Apocalypse 2021 CTF organized by HackTheBox. We were given the source code of the server to help us solve the challenge. This challenge was a nice opportunity to learn more about &lt;strong>XXE&lt;/strong> vulnerabilities.&lt;/p></description></item><item><title>Cyber Apocalypse 2021 4/5 - Discovery</title><link>/posts/apocalypse2021-discovery/</link><pubDate>Wed, 28 Apr 2021 12:00:03 +0100</pubDate><guid>/posts/apocalypse2021-discovery/</guid><description>&lt;p>One of the least solved challenges, yet probably not the most difficult one. It is a Hardware challenge, though it is significantly different from the other challenges of this category. The first thing to spot is that when starting the challenge machine, we have access to two network services:&lt;/p>
+&lt;ul>
+&lt;li>an HTTP server, requesting an authentication&lt;/li>
+&lt;li>an AMQP broker, &lt;code>rabbitmq&lt;/code>&lt;/li>
+&lt;/ul></description></item><item><title>Cyber Apocalypse 2021 3/5 - Off the grid</title><link>/posts/apocalypse2021-off-the-grid/</link><pubDate>Wed, 28 Apr 2021 12:00:02 +0100</pubDate><guid>/posts/apocalypse2021-off-the-grid/</guid><description>&lt;p>&lt;strong>Off-the-grid&lt;/strong> was the 4th hardware challenge of the Cyber Apocalypse 2021 CTF organized by HackTheBox.
+We were given an &lt;a href="/posts/misc/off-the-grid/off_the_grid.sal">Saleae trace&lt;/a> and schematics to analyse. Thalium was one of the very first of 99 players to complete it.&lt;/p></description></item><item><title>Cyber Apocalypse 2021 2/5 - Wii-Phit</title><link>/posts/apocalypse2021-wii-phit/</link><pubDate>Wed, 28 Apr 2021 12:00:01 +0100</pubDate><guid>/posts/apocalypse2021-wii-phit/</guid><description>&lt;p>&lt;strong>Wii-Phit&lt;/strong> was the only &lt;em>Hard&lt;/em> crypto challenge designed by &lt;a href="https://cryptohack.org/">CryptoHack&lt;/a> for the &lt;a href="https://www.hackthebox.eu/cyber-apocalypse-ctf-2021">Cyber Apocalypse 2021&lt;/a> CTF (there were also 4 challenges categorized as &lt;em>Insane&lt;/em> though).&lt;/p>
+&lt;p>There is already an excellent &lt;a href="https://blog.cryptohack.org/cyber-apocalypse-2021#wii-phit">writeup&lt;/a> by the challenge organizers:
+one could recognize a well known equation related to the &lt;a href="https://en.wikipedia.org/wiki/Erd%C5%91s%E2%80%93Straus_conjecture">Erdős–Straus conjecture&lt;/a>, some participants used &lt;a href="https://github.com/Z3Prover/z3">Z3&lt;/a>.
+We took a different approach.&lt;/p></description></item><item><title>Cyber Apocalypse 2021 1/5 - PWN challenges</title><link>/posts/apocalypse2021-pwn/</link><pubDate>Wed, 28 Apr 2021 12:00:00 +0100</pubDate><guid>/posts/apocalypse2021-pwn/</guid><description>&lt;p>Thalium participated in the &lt;a href="https://www.hackthebox.eu/cyber-apocalypse-ctf-2021">Cyber Apocalypse 2021&lt;/a> CTF organized last week by &lt;a href="https://www.hackthebox.eu/">HackTheBox&lt;/a>.
+It was a great success with 4,740 teams composed of around 10,000 hackers from all over the world.
+Our team finished in fifth place and solved sixty out of the sixty-two challenges:&lt;/p>
+&lt;p>
+&lt;a href="/posts/img/Cyber_Apocalypse_2021-scoreboard.png" target="_blank">
+&lt;img src="/posts/img/Cyber_Apocalypse_2021-scoreboard.png" alt="fig_scoreboard">
+&lt;/a>
+&lt;/p>
+&lt;p>This article explains how we solved each pwn challenge and what tools we used, it is written to be accessible to beginners:&lt;/p></description></item></channel></rss>
