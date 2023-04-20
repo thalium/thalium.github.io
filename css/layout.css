@@ -1,3 +1,7 @@
+:root {
+  color-scheme: dark;
+}
+
 body {
   font-family: "Arial", Gadget, sans-serif;
   counter-reset: heading;
@@ -111,6 +115,18 @@ code {
   white-space: -o-pre-wrap;    /* Opera 7 */
   word-wrap: break-word;       /* Internet Explorer 5.5+ */
   line-height: 1.5em;
+}
+
+pre code {
+  display: block;
+  white-space: pre;
+  overflow-x: auto;
+}
+
+pre:has(code) {
+  display: block;
+  word-break: break-all;
+  word-wrap: break-word;
 }
 
 blockquote {
@@ -404,6 +420,13 @@ th, td {
 .post-footer-data .series-name a {
   font-weight: bold;
   text-decoration: none;
+}
+
+.tags {
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.3em;
 }
 
 .tag {
