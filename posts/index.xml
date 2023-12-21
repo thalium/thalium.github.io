@@ -30,9 +30,10 @@ We took a different approach.&lt;/p></description></item><item><title>Cyber Apoc
 It was a great success with 4,740 teams composed of around 10,000 hackers from all over the world.
 Our team finished in fifth place and solved sixty out of the sixty-two challenges:&lt;/p>
 &lt;p>
-&lt;a href="/posts/img/Cyber_Apocalypse_2021-scoreboard.png" target="_blank">
-&lt;img src="/posts/img/Cyber_Apocalypse_2021-scoreboard.png" alt="fig_scoreboard">
-&lt;/a>
+ &lt;a href="/posts/img/Cyber_Apocalypse_2021-scoreboard.png" target="_blank">
+ &lt;img src="/posts/img/Cyber_Apocalypse_2021-scoreboard.png" alt="fig_scoreboard">
+ &lt;/a>
+
 &lt;/p>
 &lt;p>This article explains how we solved each pwn challenge and what tools we used, it is written to be accessible to beginners:&lt;/p></description></item><item><title>Windows Memory Introspection with IceBox</title><link>/posts/windows-full-memory-introspection-with-icebox/</link><pubDate>Mon, 22 Jun 2020 12:00:00 +0100</pubDate><guid>/posts/windows-full-memory-introspection-with-icebox/</guid><description>Virtual Machine Introspection (VMI) is an extremely powerful technique to explore a guest OS. Directly acting on the hypervisor allows a stealth and precise control of the guest state, which means its CPU context as well as its memory.
 Basically, a common use case in VMI consists in (1) setting a breakpoint on an address, (2) wait for a break and (3) finally read some virtual memory. For example, to simply monitor the user file writing activity on Windows, just set a breakpoint on the NtWriteFile function in kernel land.</description></item><item><title>Getting Started with Icebox VMI</title><link>/posts/getting_started/</link><pubDate>Fri, 24 Jan 2020 12:00:00 +0100</pubDate><guid>/posts/getting_started/</guid><description>Icebox is a VMI (Virtual Machine Introspection) framework enabling you to stealthily trace and debug any kernel or user code system-wide.

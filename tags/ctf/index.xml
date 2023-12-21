@@ -21,8 +21,9 @@ We took a different approach.&lt;/p></description></item><item><title>Cyber Apoc
 It was a great success with 4,740 teams composed of around 10,000 hackers from all over the world.
 Our team finished in fifth place and solved sixty out of the sixty-two challenges:&lt;/p>
 &lt;p>
-&lt;a href="/posts/img/Cyber_Apocalypse_2021-scoreboard.png" target="_blank">
-&lt;img src="/posts/img/Cyber_Apocalypse_2021-scoreboard.png" alt="fig_scoreboard">
-&lt;/a>
+ &lt;a href="/posts/img/Cyber_Apocalypse_2021-scoreboard.png" target="_blank">
+ &lt;img src="/posts/img/Cyber_Apocalypse_2021-scoreboard.png" alt="fig_scoreboard">
+ &lt;/a>
+
 &lt;/p>
 &lt;p>This article explains how we solved each pwn challenge and what tools we used, it is written to be accessible to beginners:&lt;/p></description></item></channel></rss>
