@@ -86,7 +86,7 @@ th { background: #101010; }
 .post .content h6{ color: var(--main-sec); }
 .post .content a:hover { color: var(--main-sec); }
 .social-link:hover { color: var(--main-sec); }
-.nav-item-title:hover { color: var(--main-sec); }
+.nav-item:hover { color: var(--main-sec); }
 .tag a:hover { color: var(--main-sec); }
 .copyright { color: var(--copyright); }
 .poweredby { color: var(--copyright); }
