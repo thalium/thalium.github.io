@@ -1,4 +1,4 @@
-<!doctype html><html lang=en-us><head><meta charset=utf-8><meta name=author content><meta name=description content="Thalium blog."><meta name=keywords content="blog,tech"><meta name=viewport content="width=device-width,minimum-scale=1,initial-scale=1"><meta name=generator content="Hugo 0.152.2"><link rel=canonical href=/posts/rdpegfx/><meta property="og:url" content="/posts/rdpegfx/"><meta property="og:site_name" content="THALIUM"><meta property="og:title" content='Fuzzing RDPEGFX with "what the fuzz"'><meta property="og:description" content="Microsoft’s Remote Desktop Protocol (RDP) client was fuzzed by various teams in the past few years, it thus seemed like a good target to try a recent snapshot fuzzer: what the fuzz (wtf) (of which we are only users). In this companion post to our Hexacon 2022 talk (slides, video) we’ll show how we took advantage of wtf flexibility in order to efficiently fuzz the RDPEGFX channel of Microsoft RDP client and uncover CVE-2022-30221."><meta property="og:locale" content="en_us"><meta property="og:type" content="article"><meta property="article:section" content="posts"><meta property="article:published_time" content="2022-10-14T00:00:00+00:00"><meta property="article:modified_time" content="2022-10-14T00:00:00+00:00"><meta property="article:tag" content="RDP"><meta property="article:tag" content="Fuzzing"><meta property="article:tag" content="CVE"><meta property="article:tag" content="Vulnerability Research"><meta name=twitter:card content="summary"><meta name=twitter:title content='Fuzzing RDPEGFX with "what the fuzz"'><meta name=twitter:description content="Microsoft’s Remote Desktop Protocol (RDP) client was fuzzed by various teams in the past few years, it thus seemed like a good target to try a recent snapshot fuzzer: what the fuzz (wtf) (of which we are only users). In this companion post to our Hexacon 2022 talk (slides, video) we’ll show how we took advantage of wtf flexibility in order to efficiently fuzz the RDPEGFX channel of Microsoft RDP client and uncover CVE-2022-30221."><meta itemprop=name content='Fuzzing RDPEGFX with "what the fuzz"'><meta itemprop=description content="Microsoft’s Remote Desktop Protocol (RDP) client was fuzzed by various teams in the past few years, it thus seemed like a good target to try a recent snapshot fuzzer: what the fuzz (wtf) (of which we are only users). In this companion post to our Hexacon 2022 talk (slides, video) we’ll show how we took advantage of wtf flexibility in order to efficiently fuzz the RDPEGFX channel of Microsoft RDP client and uncover CVE-2022-30221."><meta itemprop=datePublished content="2022-10-14T00:00:00+00:00"><meta itemprop=dateModified content="2022-10-14T00:00:00+00:00"><meta itemprop=wordCount content="7596"><meta itemprop=keywords content="RDP,Fuzzing,CVE,Vulnerability Research"><link rel=stylesheet href=/css/layout.css><link rel=stylesheet href=/css/default-dark.css><link rel=icon href=/favicon.ico><title>Fuzzing RDPEGFX with "what the fuzz"</title><script>MathJax={tex:{inlineMath:[["∳","∳"]],displayMath:[["∳∳","∳∳"]],processEscapes:!0},svg:{fontCache:"global"}}</script><script type=text/javascript id=MathJax-script async src=https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js></script></head><body><div class=main><header><div class=header-bar><nav><div class=siteTitle><a href=/><img src=/shard_only_no_background.png></img>
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta name=author content><meta name=description content="Thalium blog."><meta name=keywords content="blog,tech"><meta name=viewport content="width=device-width,minimum-scale=1,initial-scale=1"><meta name=generator content="Hugo 0.154.5"><link rel=canonical href=/posts/rdpegfx/><meta property="og:url" content="/posts/rdpegfx/"><meta property="og:site_name" content="THALIUM"><meta property="og:title" content='Fuzzing RDPEGFX with "what the fuzz"'><meta property="og:description" content="Microsoft’s Remote Desktop Protocol (RDP) client was fuzzed by various teams in the past few years, it thus seemed like a good target to try a recent snapshot fuzzer: what the fuzz (wtf) (of which we are only users). In this companion post to our Hexacon 2022 talk (slides, video) we’ll show how we took advantage of wtf flexibility in order to efficiently fuzz the RDPEGFX channel of Microsoft RDP client and uncover CVE-2022-30221."><meta property="og:locale" content="en_us"><meta property="og:type" content="article"><meta property="article:section" content="posts"><meta property="article:published_time" content="2022-10-14T00:00:00+00:00"><meta property="article:modified_time" content="2022-10-14T00:00:00+00:00"><meta property="article:tag" content="RDP"><meta property="article:tag" content="Fuzzing"><meta property="article:tag" content="CVE"><meta property="article:tag" content="Vulnerability Research"><meta name=twitter:card content="summary"><meta name=twitter:title content='Fuzzing RDPEGFX with "what the fuzz"'><meta name=twitter:description content="Microsoft’s Remote Desktop Protocol (RDP) client was fuzzed by various teams in the past few years, it thus seemed like a good target to try a recent snapshot fuzzer: what the fuzz (wtf) (of which we are only users). In this companion post to our Hexacon 2022 talk (slides, video) we’ll show how we took advantage of wtf flexibility in order to efficiently fuzz the RDPEGFX channel of Microsoft RDP client and uncover CVE-2022-30221."><meta itemprop=name content='Fuzzing RDPEGFX with "what the fuzz"'><meta itemprop=description content="Microsoft’s Remote Desktop Protocol (RDP) client was fuzzed by various teams in the past few years, it thus seemed like a good target to try a recent snapshot fuzzer: what the fuzz (wtf) (of which we are only users). In this companion post to our Hexacon 2022 talk (slides, video) we’ll show how we took advantage of wtf flexibility in order to efficiently fuzz the RDPEGFX channel of Microsoft RDP client and uncover CVE-2022-30221."><meta itemprop=datePublished content="2022-10-14T00:00:00+00:00"><meta itemprop=dateModified content="2022-10-14T00:00:00+00:00"><meta itemprop=wordCount content="7596"><meta itemprop=keywords content="RDP,Fuzzing,CVE,Vulnerability Research"><link rel=stylesheet href=/css/layout.css><link rel=stylesheet href=/css/default-dark.css><link rel=icon href=/favicon.ico><title>Fuzzing RDPEGFX with "what the fuzz"</title><script>MathJax={tex:{inlineMath:[["∳","∳"]],displayMath:[["∳∳","∳∳"]],processEscapes:!0},svg:{fontCache:"global"}}</script><script type=text/javascript id=MathJax-script async src=https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js></script></head><body><div class=main><header><div class=header-bar><nav><div class=siteTitle><a href=/><img src=/shard_only_no_background.png></img>
 <span>THALIUM</span></a></div><div class=nav-item-title><a class=nav-item href=/posts/>Posts</a></div><div class=nav-item-title><a class=nav-item href=/joinus/>Join Us</a></div><div class=nav-item-title><a class=nav-item href=/about/>About</a></div></nav></div></header><article class=post><h1 class=title>Fuzzing RDPEGFX with "what the fuzz"</h1><div class=content><p>Last year, in 2021, Valentino Ricotta performed his first internship with us working on fuzzing RDP clients.
 He found some vulnerabilities and got four CVEs by fuzzing various RDP clients.
 Most of his work was presented <a href=https://blog.thalium.re/posts/fuzzing-microsoft-rdp-client-using-virtual-channels/>here in a three blog posts series</a>.
@@ -34,30 +34,30 @@ Similarly our initial harness needed a few iterations.</p><p>First, we got issue
 </span></span><span style=display:flex><span>                             Backend<span style=color:#f92672>-&gt;</span>Stop(Ok_t());
 </span></span><span style=display:flex><span>                           });
 </span></span></code></pre></div><p>Similarly we deactivated <a href=https://learn.microsoft.com/en-us/windows-hardware/drivers/devtest/wpp-software-tracing>event tracing</a>:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span>  <span style=color:#75715e>//
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>  <span style=color:#75715e>// Overwrite mstscax!WPP_GLOBAL_Control to deactivate event tracing
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>  <span style=color:#75715e>//
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>  <span style=color:#66d9ef>const</span> <span style=color:#66d9ef>uint64_t</span> pWPP_GLOBAL_Control <span style=color:#f92672>=</span>
+</span></span></span><span style=display:flex><span>  <span style=color:#75715e>// Overwrite mstscax!WPP_GLOBAL_Control to deactivate event tracing
+</span></span></span><span style=display:flex><span>  <span style=color:#75715e>//
+</span></span></span><span style=display:flex><span>  <span style=color:#66d9ef>const</span> <span style=color:#66d9ef>uint64_t</span> pWPP_GLOBAL_Control <span style=color:#f92672>=</span>
 </span></span><span style=display:flex><span>      g_Dbg.GetSymbol(<span style=color:#e6db74>&#34;mstscax!WPP_GLOBAL_Control&#34;</span>);
 </span></span><span style=display:flex><span>  g_Backend<span style=color:#f92672>-&gt;</span>VirtWriteStruct(Gva_t(pWPP_GLOBAL_Control),
 </span></span><span style=display:flex><span>                             <span style=color:#f92672>&amp;</span>pWPP_GLOBAL_Control);
 </span></span></code></pre></div><p>We also had to hook <code>__imp_QueryPerformanceCounter</code>:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span>  <span style=color:#75715e>//
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>  <span style=color:#75715e>// Emulate __imp_QueryPerformanceCounter
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>  <span style=color:#75715e>//
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>  g_Backend<span style=color:#f92672>-&gt;</span>SetBreakpoint(
+</span></span></span><span style=display:flex><span>  <span style=color:#75715e>// Emulate __imp_QueryPerformanceCounter
+</span></span></span><span style=display:flex><span>  <span style=color:#75715e>//
+</span></span></span><span style=display:flex><span>  g_Backend<span style=color:#f92672>-&gt;</span>SetBreakpoint(
 </span></span><span style=display:flex><span>      <span style=color:#e6db74>&#34;KERNEL32!QueryPerformanceCounterStub&#34;</span>,
 </span></span><span style=display:flex><span>      [](Backend_t<span style=color:#f92672>*</span> Backend) {
 </span></span><span style=display:flex><span>        <span style=color:#75715e>//
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>        <span style=color:#75715e>// Set PerformanceCount.
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>        <span style=color:#75715e>//
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>        <span style=color:#66d9ef>const</span> <span style=color:#66d9ef>uint64_t</span> lpPerformanceCount <span style=color:#f92672>=</span> Backend<span style=color:#f92672>-&gt;</span>Rcx();
+</span></span></span><span style=display:flex><span>        <span style=color:#75715e>// Set PerformanceCount.
+</span></span></span><span style=display:flex><span>        <span style=color:#75715e>//
+</span></span></span><span style=display:flex><span>        <span style=color:#66d9ef>const</span> <span style=color:#66d9ef>uint64_t</span> lpPerformanceCount <span style=color:#f92672>=</span> Backend<span style=color:#f92672>-&gt;</span>Rcx();
 </span></span><span style=display:flex><span>        g_query_perf_count<span style=color:#f92672>++</span>;
 </span></span><span style=display:flex><span>        Backend<span style=color:#f92672>-&gt;</span>VirtWriteStructDirty(Gva_t(lpPerformanceCount),
 </span></span><span style=display:flex><span>                                      <span style=color:#f92672>&amp;</span>g_query_perf_count);
 </span></span><span style=display:flex><span>
 </span></span><span style=display:flex><span>        <span style=color:#75715e>//
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>        <span style=color:#75715e>// Return 1.
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>        <span style=color:#75715e>//
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>        Backend<span style=color:#f92672>-&gt;</span>SimulateReturnFromFunction(<span style=color:#ae81ff>1</span>);
+</span></span></span><span style=display:flex><span>        <span style=color:#75715e>// Return 1.
+</span></span></span><span style=display:flex><span>        <span style=color:#75715e>//
+</span></span></span><span style=display:flex><span>        Backend<span style=color:#f92672>-&gt;</span>SimulateReturnFromFunction(<span style=color:#ae81ff>1</span>);
 </span></span><span style=display:flex><span>      }
 </span></span><span style=display:flex><span>  );
 </span></span></code></pre></div><p>At that point wtf was fuzzing smoothly. We did not get any crashes though, even after injecting intentionally faulty code in our target&mldr;
@@ -73,83 +73,83 @@ Our initial fuzzing campaigns generated a lot of invalid PDUs.
 There are three classical ways to overcome this problem:</p><ul><li>implement a custom mutator based on the grammar;</li><li>modify the target to skip <em>skippable</em> sanity checks;</li><li>discard or attempt to fix a priori invalid samples.</li></ul><p>Not wanting to go through the specification, we went with the last two approaches and focused on the common header part of the PDUs: <code>cmdId</code> and <code>pduLength</code>.</p><p>We were lucky enough that our target behaved predictably with respect to those parameters,
 which allowed us to fix samples on the fly.
 Remember that our samples are composed of several commands (or PDUs) that are processed in a loop composed of:</p><ul><li>some pre-processing and basic checks</li><li>a switch on <code>cmdId</code>, an invalid PDU is just skipped using its <code>pduLength</code></li><li>the corresponding handler is called: before processing the PDU its <code>pduLength</code> is checked against a minimal value, after processing and if no error occurred the consumed length is returned</li><li>the consumed length is then checked against the <code>pduLength</code> declared in the header, if they differ an error is reported</li></ul><p><code>cmdId</code> are read only once just before the dispatcher. We can thus safely modify the <code>cmdId</code> of each PDU composing the sample under execution with the following callback triggered at the beginning of each iteration:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span>    <span style=color:#75715e>// Fix message type
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#66d9ef>uint16_t</span> cmdId <span style=color:#f92672>=</span> Backend<span style=color:#f92672>-&gt;</span>VirtRead4(Gva_t(pPduStart)) <span style=color:#f92672>&amp;</span> <span style=color:#ae81ff>0xFFFF</span>;
+</span></span></span><span style=display:flex><span>    <span style=color:#66d9ef>uint16_t</span> cmdId <span style=color:#f92672>=</span> Backend<span style=color:#f92672>-&gt;</span>VirtRead4(Gva_t(pPduStart)) <span style=color:#f92672>&amp;</span> <span style=color:#ae81ff>0xFFFF</span>;
 </span></span><span style=display:flex><span>    cmdId <span style=color:#f92672>=</span> g_fix_cmdId[cmdId <span style=color:#f92672>%</span> std<span style=color:#f92672>::</span>size(g_fix_cmdId)];
 </span></span><span style=display:flex><span>    Backend<span style=color:#f92672>-&gt;</span>VirtWriteStruct(Gva_t(pPduStart), <span style=color:#f92672>&amp;</span>cmdId);
 </span></span></code></pre></div><p>Basically we replace <code>cmdId</code> with the corresponding entry in a circular array of valid values.
 Instead of looking at the specification we determined the valid values directly from the code of <code>RdpGfxProtocolClientDecoder::Decode</code>, which allowed us to identify the undocumented <code>RDPGFX_DIAGNOSTIC_PDU</code>:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span><span style=color:#66d9ef>const</span> <span style=color:#66d9ef>uint16_t</span> g_fix_cmdId[] <span style=color:#f92672>=</span> {
 </span></span><span style=display:flex><span>    <span style=color:#ae81ff>24</span>,  <span style=color:#75715e>// 0x18 RDPGFX_MAP_SURFACE_TO_SCALED_WINDOW_PDU
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>1</span>,   <span style=color:#75715e>// 0x01 RDPGFX_WIRE_TO_SURFACE_PDU_1
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>2</span>,   <span style=color:#75715e>// 0x02 RDPGFX_WIRE_TO_SURFACE_PDU_2
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>3</span>,   <span style=color:#75715e>// 0x03 RDPGFX_DELETE_ENCODING_CONTEXT_PDU
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>4</span>,   <span style=color:#75715e>// 0x04 RDPGFX_SOLIDFILL_PDU
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>5</span>,   <span style=color:#75715e>// 0x05 RDPGFX_SURFACE_TO_SURFACE_PDU
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>6</span>,   <span style=color:#75715e>// 0x06 RDPGFX_SURFACE_TO_CACHE_PDU
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>7</span>,   <span style=color:#75715e>// 0x07 RDPGFX_CACHE_TO_SURFACE_PDU
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>8</span>,   <span style=color:#75715e>// 0x08 RDPGFX_EVICT_CACHE_ENTRY_PDU
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>9</span>,   <span style=color:#75715e>// 0x09 RDPGFX_CREATE_SURFACE_PDU
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>10</span>,  <span style=color:#75715e>// 0x0a RDPGFX_DELETE_SURFACE_PDU
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>11</span>,  <span style=color:#75715e>// 0x0b RDPGFX_START_FRAME_PDU
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>12</span>,  <span style=color:#75715e>// 0x0c RDPGFX_END_FRAME_PDU
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>12</span>,  <span style=color:#75715e>// 0x0d RDPGFX_FRAME_ACKNOWLEDGE_PDU -&gt; default -&gt; redirect
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>14</span>,  <span style=color:#75715e>// 0x0e RDPGFX_RESET_GRAPHICS_PDU
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>15</span>,  <span style=color:#75715e>// 0x0f RDPGFX_MAP_SURFACE_TO_OUTPUTS_PDU
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>15</span>,  <span style=color:#75715e>// 0x10 RDPGFX_CACHE_IMPORT_OFFER_PDU -&gt; default -&gt; redirect
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>17</span>,  <span style=color:#75715e>// 0x11 RDPGFX_CACHE_IMPORT_REPLY_PDU
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>17</span>,  <span style=color:#75715e>// 0x12 RDPGFX_CAPS_ADVERTISE_PDU -&gt; default -&gt; redirect
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>19</span>,  <span style=color:#75715e>// 0x13 RDPGFX_CAPS_CONFIRM_PDU
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>20</span>,  <span style=color:#75715e>// 0x14 UNDOCUMENTED -&gt; RDPGFX_DIAGNOSTIC_PDU
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>21</span>,  <span style=color:#75715e>// 0x15 RDPGFX_MAP_SURFACE_TO_WINDOW_PDU
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>21</span>,  <span style=color:#75715e>// 0x16 RDPGFX_QOE_FRAME_ACKNOWLEDGE_PDU -&gt; default -&gt; redirect
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>23</span>,  <span style=color:#75715e>// 0x17 RDPGFX_MAP_SURFACE_TO_SCALED_OUTPUT_PDU
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>};
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>1</span>,   <span style=color:#75715e>// 0x01 RDPGFX_WIRE_TO_SURFACE_PDU_1
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>2</span>,   <span style=color:#75715e>// 0x02 RDPGFX_WIRE_TO_SURFACE_PDU_2
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>3</span>,   <span style=color:#75715e>// 0x03 RDPGFX_DELETE_ENCODING_CONTEXT_PDU
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>4</span>,   <span style=color:#75715e>// 0x04 RDPGFX_SOLIDFILL_PDU
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>5</span>,   <span style=color:#75715e>// 0x05 RDPGFX_SURFACE_TO_SURFACE_PDU
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>6</span>,   <span style=color:#75715e>// 0x06 RDPGFX_SURFACE_TO_CACHE_PDU
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>7</span>,   <span style=color:#75715e>// 0x07 RDPGFX_CACHE_TO_SURFACE_PDU
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>8</span>,   <span style=color:#75715e>// 0x08 RDPGFX_EVICT_CACHE_ENTRY_PDU
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>9</span>,   <span style=color:#75715e>// 0x09 RDPGFX_CREATE_SURFACE_PDU
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>10</span>,  <span style=color:#75715e>// 0x0a RDPGFX_DELETE_SURFACE_PDU
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>11</span>,  <span style=color:#75715e>// 0x0b RDPGFX_START_FRAME_PDU
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>12</span>,  <span style=color:#75715e>// 0x0c RDPGFX_END_FRAME_PDU
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>12</span>,  <span style=color:#75715e>// 0x0d RDPGFX_FRAME_ACKNOWLEDGE_PDU -&gt; default -&gt; redirect
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>14</span>,  <span style=color:#75715e>// 0x0e RDPGFX_RESET_GRAPHICS_PDU
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>15</span>,  <span style=color:#75715e>// 0x0f RDPGFX_MAP_SURFACE_TO_OUTPUTS_PDU
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>15</span>,  <span style=color:#75715e>// 0x10 RDPGFX_CACHE_IMPORT_OFFER_PDU -&gt; default -&gt; redirect
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>17</span>,  <span style=color:#75715e>// 0x11 RDPGFX_CACHE_IMPORT_REPLY_PDU
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>17</span>,  <span style=color:#75715e>// 0x12 RDPGFX_CAPS_ADVERTISE_PDU -&gt; default -&gt; redirect
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>19</span>,  <span style=color:#75715e>// 0x13 RDPGFX_CAPS_CONFIRM_PDU
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>20</span>,  <span style=color:#75715e>// 0x14 UNDOCUMENTED -&gt; RDPGFX_DIAGNOSTIC_PDU
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>21</span>,  <span style=color:#75715e>// 0x15 RDPGFX_MAP_SURFACE_TO_WINDOW_PDU
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>21</span>,  <span style=color:#75715e>// 0x16 RDPGFX_QOE_FRAME_ACKNOWLEDGE_PDU -&gt; default -&gt; redirect
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>23</span>,  <span style=color:#75715e>// 0x17 RDPGFX_MAP_SURFACE_TO_SCALED_OUTPUT_PDU
+</span></span></span><span style=display:flex><span>};
 </span></span></code></pre></div><p>You&rsquo;ll remark that some values appear twice, and might thus be over-represented in fixed PDUs. Some PDUs are indeed only sent and not processed by the client, in order to avoid them we just replaced them with the preceding <code>cmdId</code> as we wanted valid samples not to change and keep the code simple.</p><p>As a side note, we can easily use this table to target a specific subset of all valid commands.</p><p>Most PDUs have a variable length. The value of <code>pduLength</code> is checked twice (actually thrice as we will discuss later). First, in the PDU loop body, to check if there is enough data in the received buffer, then in the PDU handlers to check that <code>pduLength</code> is bigger than the minimal length. Again we retrieved those minimal length from the code, more precisely from the preamble of each handler:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span><span style=color:#66d9ef>const</span> <span style=color:#66d9ef>uint32_t</span> g_min_body_size[] <span style=color:#f92672>=</span> {
 </span></span><span style=display:flex><span>    <span style=color:#ae81ff>0</span>,      <span style=color:#75715e>// 0x18 Invalid msg type
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>0x11</span>,   <span style=color:#75715e>// 0x01 RDPGFX_WIRE_TO_SURFACE_PDU_1
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>0xd</span>,    <span style=color:#75715e>// 0x02 RDPGFX_WIRE_TO_SURFACE_PDU_2
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>0x6</span>,    <span style=color:#75715e>// 0x03 RDPGFX_DELETE_ENCODING_CONTEXT_PDU
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>0x8</span>,    <span style=color:#75715e>// 0x04 RDPGFX_SOLIDFILL_PDU
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>0xe</span>,    <span style=color:#75715e>// 0x05 RDPGFX_SURFACE_TO_SURFACE_PDU
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>0x14</span>,   <span style=color:#75715e>// 0x06 RDPGFX_SURFACE_TO_CACHE_PDU
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>0x6</span>,    <span style=color:#75715e>// 0x07 RDPGFX_CACHE_TO_SURFACE_PDU
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>0x2</span>,    <span style=color:#75715e>// 0x08 RDPGFX_EVICT_CACHE_ENTRY_PDU
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>0x7</span>,    <span style=color:#75715e>// 0x09 RDPGFX_CREATE_SURFACE_PDU
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>0x2</span>,    <span style=color:#75715e>// 0x0a RDPGFX_DELETE_SURFACE_PDU
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>0x8</span>,    <span style=color:#75715e>// 0x0b RDPGFX_START_FRAME_PDU
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>0x4</span>,    <span style=color:#75715e>// 0x0c RDPGFX_END_FRAME_PDU
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>0</span>,      <span style=color:#75715e>// 0x0d RDPGFX_FRAME_ACKNOWLEDGE_PDU -&gt; default -&gt; 0
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>0x14c</span>,  <span style=color:#75715e>// 0x0e RDPGFX_RESET_GRAPHICS_PDU
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>0xc</span>,    <span style=color:#75715e>// 0x0f RDPGFX_MAP_SURFACE_TO_OUTPUTS_PDU
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>0</span>,      <span style=color:#75715e>// 0x10 RDPGFX_CACHE_IMPORT_OFFER_PDU -&gt; default -&gt; 0
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>0x2</span>,    <span style=color:#75715e>// 0x11 RDPGFX_CACHE_IMPORT_REPLY_PDU
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>0</span>,      <span style=color:#75715e>// 0x12 RDPGFX_CAPS_ADVERTISE_PDU -&gt; default -&gt; 0
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>0x8</span>,    <span style=color:#75715e>// 0x13 RDPGFX_CAPS_CONFIRM_PDU
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>0x4</span>,    <span style=color:#75715e>// 0x14 UNDOCUMENTED -&gt; DiagnosticPDU
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>0x12</span>,   <span style=color:#75715e>// 0x15 RDPGFX_MAP_SURFACE_TO_WINDOW_PDU
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>0</span>,      <span style=color:#75715e>// 0x16 RDPGFX_QOE_FRAME_ACKNOWLEDGE_PDU -&gt; default -&gt; 0
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>0x14</span>,   <span style=color:#75715e>// 0x17 RDPGFX_MAP_SURFACE_TO_SCALED_OUTPUT_PDU
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#ae81ff>0x1a</span>,   <span style=color:#75715e>// 0x18 RDPGFX_MAP_SURFACE_TO_SCALED_WINDOW_PDU
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>};
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>0x11</span>,   <span style=color:#75715e>// 0x01 RDPGFX_WIRE_TO_SURFACE_PDU_1
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>0xd</span>,    <span style=color:#75715e>// 0x02 RDPGFX_WIRE_TO_SURFACE_PDU_2
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>0x6</span>,    <span style=color:#75715e>// 0x03 RDPGFX_DELETE_ENCODING_CONTEXT_PDU
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>0x8</span>,    <span style=color:#75715e>// 0x04 RDPGFX_SOLIDFILL_PDU
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>0xe</span>,    <span style=color:#75715e>// 0x05 RDPGFX_SURFACE_TO_SURFACE_PDU
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>0x14</span>,   <span style=color:#75715e>// 0x06 RDPGFX_SURFACE_TO_CACHE_PDU
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>0x6</span>,    <span style=color:#75715e>// 0x07 RDPGFX_CACHE_TO_SURFACE_PDU
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>0x2</span>,    <span style=color:#75715e>// 0x08 RDPGFX_EVICT_CACHE_ENTRY_PDU
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>0x7</span>,    <span style=color:#75715e>// 0x09 RDPGFX_CREATE_SURFACE_PDU
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>0x2</span>,    <span style=color:#75715e>// 0x0a RDPGFX_DELETE_SURFACE_PDU
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>0x8</span>,    <span style=color:#75715e>// 0x0b RDPGFX_START_FRAME_PDU
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>0x4</span>,    <span style=color:#75715e>// 0x0c RDPGFX_END_FRAME_PDU
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>0</span>,      <span style=color:#75715e>// 0x0d RDPGFX_FRAME_ACKNOWLEDGE_PDU -&gt; default -&gt; 0
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>0x14c</span>,  <span style=color:#75715e>// 0x0e RDPGFX_RESET_GRAPHICS_PDU
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>0xc</span>,    <span style=color:#75715e>// 0x0f RDPGFX_MAP_SURFACE_TO_OUTPUTS_PDU
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>0</span>,      <span style=color:#75715e>// 0x10 RDPGFX_CACHE_IMPORT_OFFER_PDU -&gt; default -&gt; 0
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>0x2</span>,    <span style=color:#75715e>// 0x11 RDPGFX_CACHE_IMPORT_REPLY_PDU
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>0</span>,      <span style=color:#75715e>// 0x12 RDPGFX_CAPS_ADVERTISE_PDU -&gt; default -&gt; 0
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>0x8</span>,    <span style=color:#75715e>// 0x13 RDPGFX_CAPS_CONFIRM_PDU
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>0x4</span>,    <span style=color:#75715e>// 0x14 UNDOCUMENTED -&gt; DiagnosticPDU
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>0x12</span>,   <span style=color:#75715e>// 0x15 RDPGFX_MAP_SURFACE_TO_WINDOW_PDU
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>0</span>,      <span style=color:#75715e>// 0x16 RDPGFX_QOE_FRAME_ACKNOWLEDGE_PDU -&gt; default -&gt; 0
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>0x14</span>,   <span style=color:#75715e>// 0x17 RDPGFX_MAP_SURFACE_TO_SCALED_OUTPUT_PDU
+</span></span></span><span style=display:flex><span>    <span style=color:#ae81ff>0x1a</span>,   <span style=color:#75715e>// 0x18 RDPGFX_MAP_SURFACE_TO_SCALED_WINDOW_PDU
+</span></span></span><span style=display:flex><span>};
 </span></span></code></pre></div><p>Then we ensure in the same callback fixing <code>cmdId</code> that <code>pduLength</code> will pass those two checks:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span>    <span style=color:#75715e>// Fix message length
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#66d9ef>const</span> <span style=color:#66d9ef>uint32_t</span> min_msg_size <span style=color:#f92672>=</span> <span style=color:#ae81ff>8</span> <span style=color:#f92672>+</span> g_min_body_size[msg_type];
+</span></span></span><span style=display:flex><span>    <span style=color:#66d9ef>const</span> <span style=color:#66d9ef>uint32_t</span> min_msg_size <span style=color:#f92672>=</span> <span style=color:#ae81ff>8</span> <span style=color:#f92672>+</span> g_min_body_size[msg_type];
 </span></span><span style=display:flex><span>
 </span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> (min_msg_size <span style=color:#f92672>&gt;</span> max_msg_size) {
 </span></span><span style=display:flex><span>      <span style=color:#75715e>// not enough data
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>      Backend<span style=color:#f92672>-&gt;</span>Stop(Ok_t());
+</span></span></span><span style=display:flex><span>      Backend<span style=color:#f92672>-&gt;</span>Stop(Ok_t());
 </span></span><span style=display:flex><span>      <span style=color:#66d9ef>return</span>;
 </span></span><span style=display:flex><span>    }
 </span></span><span style=display:flex><span>
 </span></span><span style=display:flex><span>    <span style=color:#66d9ef>uint32_t</span> msg_size <span style=color:#f92672>=</span> Backend<span style=color:#f92672>-&gt;</span>VirtRead4(Gva_t(pBufferStart <span style=color:#f92672>+</span> <span style=color:#ae81ff>4</span>));
 </span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> (msg_size <span style=color:#f92672>&lt;</span> min_msg_size) {
 </span></span><span style=display:flex><span>      <span style=color:#75715e>// msg_size too small
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>      msg_size <span style=color:#f92672>=</span> min_msg_size;
+</span></span></span><span style=display:flex><span>      msg_size <span style=color:#f92672>=</span> min_msg_size;
 </span></span><span style=display:flex><span>    } <span style=color:#66d9ef>else</span> <span style=color:#a6e22e>if</span> (msg_size <span style=color:#f92672>&gt;</span> max_msg_size) {
 </span></span><span style=display:flex><span>      <span style=color:#75715e>// msg_size too big
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>      msg_size <span style=color:#f92672>=</span> max_msg_size;
+</span></span></span><span style=display:flex><span>      msg_size <span style=color:#f92672>=</span> max_msg_size;
 </span></span><span style=display:flex><span>    }
 </span></span><span style=display:flex><span>    Backend<span style=color:#f92672>-&gt;</span>VirtWriteStruct(Gva_t(pBufferStart <span style=color:#f92672>+</span> <span style=color:#ae81ff>4</span>), <span style=color:#f92672>&amp;</span>msg_size);
 </span></span></code></pre></div><p><code>pduLength</code> is actually checked a third time at the end of each loop iteration against the consumed length reported by the handlers. We cannot know that value before processing without parsing the PDU ourselves, instead we just nopped that check:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span>  <span style=color:#75715e>// Overwrite jnz with nop in order to skip length check
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>  <span style=color:#66d9ef>const</span> <span style=color:#66d9ef>uint64_t</span> pJNZ <span style=color:#f92672>=</span> g_Dbg.GetSymbol(
+</span></span></span><span style=display:flex><span>  <span style=color:#66d9ef>const</span> <span style=color:#66d9ef>uint64_t</span> pJNZ <span style=color:#f92672>=</span> g_Dbg.GetSymbol(
 </span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;mstscax!RdpGfxProtocolClientDecoder::Decode+0x1e6&#34;</span>
 </span></span><span style=display:flex><span>  );
 </span></span><span style=display:flex><span>  <span style=color:#66d9ef>const</span> <span style=color:#66d9ef>uint8_t</span> NOP[<span style=color:#ae81ff>6</span>] <span style=color:#f92672>=</span> {<span style=color:#ae81ff>0x90</span>, <span style=color:#ae81ff>0x90</span>, <span style=color:#ae81ff>0x90</span>, <span style=color:#ae81ff>0x90</span>, <span style=color:#ae81ff>0x90</span>, <span style=color:#ae81ff>0x90</span>};
@@ -159,7 +159,7 @@ Instead of looking at the specification we determined the valid values directly 
 Instead of fixing samples even further we decided to limit the number of PDUs executed.
 The reason is the same as for <code>max_len</code> and <code>limit</code>: keeping samples small and executions shorts, but in a way more suitable to our target.
 As we already had a callback triggering at the start of each loop iteration we just had to add:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span>    <span style=color:#75715e>// Stop if MAX_MSG_COUNT_ALLOWED PDUs were processed
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#66d9ef>if</span> (g_msg_count <span style=color:#f92672>&gt;=</span> MAX_MSG_COUNT_ALLOWED) {
+</span></span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> (g_msg_count <span style=color:#f92672>&gt;=</span> MAX_MSG_COUNT_ALLOWED) {
 </span></span><span style=display:flex><span>      Backend<span style=color:#f92672>-&gt;</span>Stop(Ok_t());
 </span></span><span style=display:flex><span>      <span style=color:#66d9ef>return</span>;
 </span></span><span style=display:flex><span>    }
@@ -262,9 +262,9 @@ Our PoC is composed of a FreeRDP patch, a Dockerfile, and a Makefile to build an
 The patch is rather simple
 and just appends our payload to every messages sent through the GFX channel in the function
 <code>rdpgfx_server_packet_send</code>:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-diff data-lang=diff><span style=display:flex><span><span style=color:#f92672>--- a/channels/rdpgfx/server/rdpgfx_main.c
-</span></span></span><span style=display:flex><span><span style=color:#f92672></span><span style=color:#a6e22e>+++ b/channels/rdpgfx/server/rdpgfx_main.c
-</span></span></span><span style=display:flex><span><span style=color:#a6e22e></span><span style=color:#75715e>@@ -100,6 +100,38 @@ static UINT rdpgfx_server_packet_send(RdpgfxServerContext* context, wStream* s)
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span> 	BYTE* pSrcData = Stream_Buffer(s);
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>+++ b/channels/rdpgfx/server/rdpgfx_main.c
+</span></span></span><span style=display:flex><span><span style=color:#75715e>@@ -100,6 +100,38 @@ static UINT rdpgfx_server_packet_send(RdpgfxServerContext* context, wStream* s)
+</span></span></span><span style=display:flex><span> 	BYTE* pSrcData = Stream_Buffer(s);
 </span></span><span style=display:flex><span> 	UINT32 SrcSize = Stream_GetPosition(s);
 </span></span><span style=display:flex><span> 	wStream* fs;
 </span></span><span style=display:flex><span><span style=color:#a6e22e>+	BYTE payload[] = {
@@ -299,21 +299,21 @@ and just appends our payload to every messages sent through the GFX channel in t
 </span></span></span><span style=display:flex><span><span style=color:#a6e22e>+
 </span></span></span><span style=display:flex><span><span style=color:#a6e22e>+	printf(&#34;Payload appended to legitimate message\n&#34;);
 </span></span></span><span style=display:flex><span><span style=color:#a6e22e>+
-</span></span></span><span style=display:flex><span><span style=color:#a6e22e></span> 	/* Allocate new stream with enough capacity. Additional overhead is
+</span></span></span><span style=display:flex><span> 	/* Allocate new stream with enough capacity. Additional overhead is
 </span></span><span style=display:flex><span> 	 * descriptor (1 bytes) + segmentCount (2 bytes) + uncompressedSize (4 bytes)
 </span></span><span style=display:flex><span> 	 * + segmentCount * size (4 bytes) */
 </span></span><span style=display:flex><span><span style=color:#75715e>@@ -133,10 +165,13 @@ static UINT rdpgfx_server_packet_send(RdpgfxServerContext* context, wStream* s)
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span> 		          Stream_GetPosition(fs));
+</span></span></span><span style=display:flex><span> 		          Stream_GetPosition(fs));
 </span></span><span style=display:flex><span> 	}
 </span></span><span style=display:flex><span> 
 </span></span><span style=display:flex><span><span style=color:#a6e22e>+	printf(&#34;Payload sent\n&#34;);
 </span></span></span><span style=display:flex><span><span style=color:#a6e22e>+
-</span></span></span><span style=display:flex><span><span style=color:#a6e22e></span> 	error = CHANNEL_RC_OK;
+</span></span></span><span style=display:flex><span> 	error = CHANNEL_RC_OK;
 </span></span><span style=display:flex><span> out:
 </span></span><span style=display:flex><span> 	Stream_Free(fs, TRUE);
 </span></span><span style=display:flex><span> 	Stream_Free(s, TRUE);
 </span></span><span style=display:flex><span><span style=color:#a6e22e>+	free(pAltData);
-</span></span></span><span style=display:flex><span><span style=color:#a6e22e></span> 	return error;
+</span></span></span><span style=display:flex><span> 	return error;
 </span></span><span style=display:flex><span> }
 </span></span></code></pre></div><p>Connecting to this patched server from Microsoft&rsquo;s RDP client shipped with the last versions of Windows Insider Preview (as of time of submission) led to a crash of the application.</p><p>We did not get much news for almost a month but then we got a few exchanges with our case manager. They reviewed our HexaCon submission and eventually awarded us with a $5000 bounty just before releasing a patch early July.</p><p><a href=/posts/img/rdpegfx/Timeline.svg target=_blank><img src=/posts/img/rdpegfx/Timeline.svg alt=Timeline></a></p><h1 id=conclusion>Conclusion</h1><p>Thanks to <a href=https://github.com/0vercl0k/wtf>whatthefuzz</a> we were able to get up and fuzzing relatively easily on Microsoft RDP client.
 The hardest part was to get a suitable initial snapshot.
